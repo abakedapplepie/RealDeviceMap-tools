@@ -1,5 +1,5 @@
 <?php
-//set uour db up here
+//set your db up here
 $DB_TYPE = "mysql"; 
 $DB_HOST = "1.2.3.4";
 $DB_USER = "rdmuser";
