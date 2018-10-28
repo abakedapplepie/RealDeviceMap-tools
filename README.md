@@ -2,8 +2,6 @@
 Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
-This file contains all tools in one go.
-
 ### Features
 * Nest polygon importer
   * Query Overpass for nests from the latest PoGo OSM sync
@@ -20,6 +18,29 @@ This file contains all tools in one go.
 * Delete any generated circle by clicking on it
 * When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
 * When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
+
+#### Usage
+Under settings (the Cog icon) you will find various modes of operation.
+* Circle Size is the radius of circles generated for your routes. Adjust for raids or pokemon (500 for raids, 75 for pokemon)
+* Show gyms/pokestops/pokemon turns on and off viewing of existing points in your RDM RB
+* Run route generator creates a blanket of coordinates covering all your current polygons (drawn, imported, or nest)
+* Run route optimizer creates an optimized route that covers all known points in all your current polygons (drawn, imported, or nest)
+* Retrieve nests will query Overpass for nests polygons and import them into your map
+  * Queries for 2018-04-09T01:32:00Z - the last OSM Pogo import (the last nest update)
+  * Queries "park" and "recreation_ground" only
+* Optimization attempts is the number of times the optimization routine will shuffle the given points and try for a better attempt
+* Show unknown POIs will only show POIs with a name of null
+  * Instructions for using Ingress Intel map to generate SQL queries for importing unknown POIs coming soon.
+
+The general flow is to create your polygons, then create a route based off those polygons. 
+
+Click the top polygon button to draw your own polygon
+
+Click the second polygon button to import a polygon
+
+Click the garbage button to remove all circles (route coordinates) and polygons
+
+Click the checkbox to output all route coordinates for saving in the RDM dashboard as an instance.
 
 #### Nest scanning
 The best way to use the nest scanning feature is to import the nest polygons, generate a route, run that route in RDM to get a list of all spawnpoints into your RDM DB, then go back and import nest polygons and run an optimized route on those polygons.
