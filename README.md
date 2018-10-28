@@ -4,25 +4,31 @@ Tools for managing RealDeviceMap data
 ## rdm-tools.php
 This file contains all tools in one go.
 
-### More settings
-Click the Cog icon to open settings and adjust them accordingly
-
-### Map Modes
+### Features
+* Nest polygon importer
+ * Query Overpass for nests from the latest PoGo OSM sync
+ * Currently only queries "parks" and "recreation areas"
+* Coordinate polygon importer
+ * Import a pre-generated polygon coordinate set
+ * GeoJSON polygon importing coming soon
 * Route generator
-  * Generate a winding path of circles in a drawn polygon
+ * Generate a snaking route of coordinates for all polygons on the map
 * Route optimizer
-  * Takes all data points in a drawn polygon and optimizes coordinates for efficiency
-  * Can optimize gyms, stops, spawns, or all three (set your circle size accordingly)
-* POI viewer
-  * View gyms, stops, and spawns
-  * Optionally view only unknown gyms and stops (for updating POI metadata using Ingress Intel Map)
-  
-### Polygon importer
-Import a list of coords to draw a polygon. If importing a polygon for route optimization, you have to be viewing the full area of the map where the polygon will be placed so that all the data points will be loaded into the map
+ * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
+* Instance importer
+ * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
+* Delete any generated circle by clicking on it
+* When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
+* When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
+
+#### Nest scanning
+The best way to use the nest scanning feature is to import the nest polygons, generate a route, run that route in RDM to get a list of all spawnpoints into your RDM DB, then go back and import nest polygons and run an optimized route on those polygons.
 
 
 
 # The following are deprecated:
+
+These tools are available in the main rdm-tools.php file and will no longer be maintained separately.
 
 ## circle-generator.html
 Using Leaflet and OSM now.
