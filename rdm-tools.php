@@ -1,31 +1,1226 @@
-<?php
-//set your db up here
-$DB_TYPE = "mysql"; 
-$DB_HOST = "1.2.3.4";
-$DB_USER = "rdmuser";
-$DB_PSWD = "password";
-$DB_NAME = "rdmdb";
-$DB_PORT = 3306;
+<?php if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
+<html>
+    <head>
+        <title>RealDeviceMap Toolbox</title>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <style>
+            html, body {
+                height: 100%;
+            }
+            #map {
+                height: 100%;
+            }
+            .modal-loader .modal-dialog{
+                display: table;
+                position: relative;
+                margin: 0 auto;
+                top: calc(50% - 24px);
+            }
 
+            .modal-loader .modal-dialog .modal-content{
+                background-color: transparent;
+                border: none;
+            }
+        </style>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-//optimization vars
-$DELAY = 5;
-$GYM_COUNT = 6;
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">        
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.EasyButton/2.3.0/easy-button.min.js"></script>      
+        <script src="https://npmcdn.com/leaflet-geometryutil"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+        <script src='js/osmtogeojson.js'></script>
+        <script>
+//map and control vars
+var map;
 
-$args = json_decode($_POST['data']);
-if ($args->get_data == true) {
+var drawControl,
+    buttonSettingsModal,
+    buttonTrash,
+    buttonModalOutput,
+    buttonModalImportInstance,
+    buttonModalImportPolygon;
+
+//data vars
+var gyms = [],
+    pokestops = [],
+    spawnpoints = [];
+
+//options vars
+var settings = {
+    showGyms: null,
+    showPokestops: null,
+    showSpawnpoints: null,
+    showUnknownPOIs: null,
+    circleSize: null,
+    optimizationAttempts: null,
+    mapMode: null
+};
+
+//map layer vars
+var gymLayers,
+    pokestopLayers,    
+    spawnpointLayers,
+    editableLayers,
+    circleLayers;
     
     
+$(document).ready(function() {
+    $('#getOutput').click(function() {
+        $('#outputCircles').empty();
+        var allCircles = circleLayers.getLayers();
+        for (i=0;i<allCircles.length;i++) {
+            var circleLatLng = allCircles[i].getLatLng();
+            $('#outputCircles').val(function(index, text) {
+                if (i != allCircles.length-1) {
+                    return text + (circleLatLng.lat + "," + circleLatLng.lng) + "\n" ;
+                }
+                return text + (circleLatLng.lat + "," + circleLatLng.lng);
+            });
+        }
+    });
+});
+
+$(document).on("click", ".deleteLayer", function() {
+    var id = $(this).attr('data-layer-id');
+    var container = $(this).attr('data-layer-container');
+    switch (container) {
+        case 'circleLayers':
+            circleLayers.removeLayer(parseInt(id));  
+            break;
+        case 'editableLayers':
+            editableLayers.removeLayer(parseInt(id));  
+            break;
+    }
+});
+
+$(function(){
+    processSettings();
+    initMap();
+    loadData();
+    setMapMode();
+    setOptionsDisplay();
+    
+    $('#modeRouteGenerator').parent().on('click', function(event) {
+        setOptionsDisplay('modeRouteGenerator');
+    });
+    $('#modeRouteOptimizer').parent().on('click', function(event) {
+        setOptionsDisplay('modeRouteOptimizer');
+    });
+    $('#modePoiViewer').parent().on('click', function(event) {
+        setOptionsDisplay('modePoiViewer');
+    });
+    $('#modeNestHelper').parent().on('click', function(event) {
+        setOptionsDisplay('modeNestHelper');
+    });
+    
+    $('#fetchNests').on('click', function(event) {
+        fetchNests();
+    });
+    
+    $('#generateRoute').on('click', function(event) {
+        generateRoute();
+    });
+    
+    $('#generateOptimizedRoute').on('click', function(event) {
+        generateOptimizedRoute();
+    });
+    
+    $('#savePolygon').on('click', function(event) {
+        //TODO: add error handling
+        //TODO: add check for json or txt
+        //TODO: add support for multi poly json array
+        const polygonData = csvtoarray($('#polygon-data').val());
+        var polygonOptions = {
+            clickable: false,
+            color: "#3388ff",
+            fill: true,
+            fillColor: null,
+            fillOpacity: 0.2,
+            opacity: 0.5,
+            stroke: true,
+            weight: 4
+        };
+        var newPolygon = L.polygon(polygonData, polygonOptions).addTo(editableLayers);
+
+        $('#modalImport').modal('hide');
+    });
+    
+     $('#importInstance').on('click', function(event) {
+         var name = $("#importInstanceName" ).val();
+         getInstance(name);         
+     });
+     
+    $('#modalSettings').on('hidden.bs.modal', function(event) {
+        if ($('#modeRouteGenerator').parent().hasClass('active') !== false) {
+            var mapMode = 'modeRouteGenerator';
+        } else if ($('#modeRouteOptimizer').parent().hasClass('active') !== false) {
+            var mapMode = 'modeRouteOptimizer';
+        } else if ($('#modePoiViewer').parent().hasClass('active') !== false) {
+            var mapMode = 'modePoiViewer';
+        } else if ($('#modeNestHelper').parent().hasClass('active') !== false) {
+            var mapMode = 'modeNestHelper';
+        }
+        
+        var showGyms = $('#showGyms').parent().hasClass('active');
+        var showPokestops = $('#showPokestops').parent().hasClass('active');
+        var showSpawnpoints = $('#showSpawnpoints').parent().hasClass('active');
+        var showUnknownPOIs = $('#showUnknownPOIs').parent().hasClass('active');
+        var circleSize = $('#circleSize').val();
+        var optimizationAttempts = $('#optimizationAttempts').val();
+        
+        const newSettings = {
+            showGyms: showGyms,
+            showPokestops: showPokestops,
+            showSpawnpoints: showSpawnpoints,
+            showUnknownPOIs: showUnknownPOIs,
+            circleSize: circleSize,
+            optimizationAttempts: optimizationAttempts,
+            mapMode: mapMode
+        };
+        
+        Object.keys(settings).forEach(function(key) {
+            if (settings[key] != newSettings[key]) {
+                settings[key] = newSettings[key];
+            }
+        });
+        
+        processSettings();
+        setMapMode();
+        loadData();
+    });
+    
+    $('#cancelSettings').on('click', function(event) {
+        //reset settings to stored values
+        processSettings();
+    });
+    
+    $("#selectAllAndCopy").click(function () {
+        $(this).parents("#output-body").children("#outputCircles").select();
+        document.execCommand('copy');
+        $(this).text("Copied!");
+    });
+
+})
+
+function initMap() {
+    var attrOsm = 'Map data &copy; <a href="http://openstreetmap.org/">OpenStreetMap</a> contributors';
+    var attrOverpass = 'POI via <a href="http://www.overpass-api.de/">Overpass API</a>';
+    var osm = new L.TileLayer(
+    'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: [attrOsm, attrOverpass].join(', ')
+    });
+
+    map = L.map('map').addLayer(osm).setView([42.548197, -83.14684], 13);
+    
+    circleLayers = new L.FeatureGroup();
+    map.addLayer(circleLayers);
+
+    editableLayers = new L.FeatureGroup();
+    map.addLayer(editableLayers);
+
+    pokestopLayers = new L.LayerGroup();
+    map.addLayer(pokestopLayers);
+
+    gymLayers = new L.LayerGroup();
+    map.addLayer(gymLayers);
+
+    spawnpointLayers = new L.LayerGroup();
+    map.addLayer(spawnpointLayers);
+    
+    circleLayers.on('layeradd', function (layerevent) {
+        var layer = layerevent.layer;
+        layer.bindPopup(function (layer) {
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayers" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button>';
+        });
+    });
+    
+    editableLayers.on('layeradd', function (layerevent) {
+        var layer = layerevent.layer;
+        layer.bindPopup(function (layer) {
+            var output = '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayers" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button>';
+            if (layer.tags.name !== null) {
+                output = "<span>" + layer.tags.name + "</span><br />" + output;
+            }
+            return output;
+        });
+    });
+    
+    buttonModalSettings = L.easyButton({
+        states: [{
+            stateName: 'openSettingsModal',
+            icon: 'fas fa-cog', 
+            title: 'Open settings',
+            onClick: function (control){ 
+                setOptionsDisplay();
+				if (settings.showGyms == true) {
+                    $('#showGyms').parent().addClass('active');
+                    $('#hideGyms').parent().removeClass('active');
+				} else {
+                    $('#showGyms').parent().removeClass('active');
+                    $('#hideGyms').parent().addClass('active');
+				}
+                
+				if (settings.showPokestops == true) {
+                    $('#showPokestops').parent().addClass('active');
+                    $('#hidePokestops').parent().removeClass('active');
+				} else {
+                    $('#showPokestops').parent().removeClass('active');
+                    $('#hidePokestops').parent().addClass('active');
+				}
+                
+				if (settings.showSpawnpoints == true) {
+                    $('#showSpawnpoints').parent().addClass('active');
+                    $('#hideSpawnpoints').parent().removeClass('active');
+				} else {
+                    $('#showSpawnpoints').parent().removeClass('active');
+                    $('#hideSpawnpoints').parent().addClass('active');
+				}
+                
+				if (settings.showUnknownPOIs == true) {
+                    $('#showUnknownPOIs').parent().addClass('active');
+                    $('#hideUnknownPOIs').parent().removeClass('active');
+				} else {
+                    $('#showUnknownPOIs').parent().removeClass('active');
+                    $('#hideUnknownPOIs').parent().addClass('active');
+				}
+                
+				if (settings.circleSize != null) {
+                    $('#circleSize').val(settings.circleSize);
+				} else {
+                    $('#circleSize').val('500');
+				}
+                
+				if (settings.optimizationAttempts != null) {
+                    $('#optimizationAttempts').val(settings.optimizationAttempts);
+				} else {
+                    $('#optimizationAttempts').val('100');
+				}
+                
+                setMapMode();
+                $('#modalSettings').modal('show');
+            }
+        }]
+    }).addTo(map);
+    
+    drawControl = new L.Control.Draw({
+        position: 'topleft',
+        draw: {
+            polyline: false,
+            polygon:   {
+                shapeOptions: {
+                    clickable: false
+                }
+            },
+            circle: false,
+            rectangle: false,
+            circlemarker: false,
+            marker: false
+        },
+        edit: {
+            featureGroup: editableLayers, 
+            edit: false,
+            remove: false,
+            poly: false
+        }
+    }).addTo(map);
+    
+    buttonModalImportPolygon = L.easyButton({
+        states: [{
+            stateName: 'openImportPolygonModal',
+            icon: 'fas fa-draw-polygon', 
+            title: 'Import polygon',
+            onClick: function (control){
+                $('#modalImportPolygon').modal('show');
+            }
+        }]
+    }).addTo(map);    
+    
+    buttonModalImportInstance = L.easyButton({
+        states: [{
+            stateName: 'openImportInstanceModal',
+            icon: 'fas fa-file-import', 
+            title: 'Import instance',
+            onClick: function (control){
+                getInstance();
+                $('#modalImportInstance').modal('show');
+            }
+        }]
+    }).addTo(map);
+
+    buttonTrash = L.easyButton({
+        states: [{
+            stateName: 'clearMap',
+            icon: 'fas fa-trash', 
+            title: 'Clear map',
+            onClick: function (control){
+                circleLayers.clearLayers();
+                editableLayers.clearLayers();
+            }
+        }]
+    }).addTo(map);
+    
+    buttonModalOutput = L.easyButton({
+        states: [{
+            stateName: 'openOutputModal',
+            icon: 'fas fa-check', 
+            title: 'Get output',
+            onClick: function (control){
+                $('#modalOutput').modal('show');
+            }
+        }]
+    }).addTo(map);    
+    
+    map.on('draw:created', function (e) {
+        var layer = e.layer;
+        editableLayers.addLayer(layer);
+    });
+
+	map.on('zoomend', function() {
+		loadData();
+	});
+
+	map.on('moveend', function() {
+		loadData();
+	});
+
+	map.on('dragend', function() {
+		loadData();
+	});
+}
+
+function setOptionsDisplay(mode = settings.mapMode) {
+    switch (mode) {
+        case 'modeRouteGenerator':
+            $('#circleSize').parent('.input-group').show();
+            $('#optimizationAttempts').parent('.input-group').hide();
+            $('#showGyms').parent().parent().parent().show();
+            $('#showPokestops').parent().parent().parent().show();
+            $('#showSpawnpoints').parent().parent().parent().show();
+            $('#showUnknownPOIs').parent().parent().parent().hide();
+            
+            $('#fetchNests').parent().hide();
+            $('#generateRoute').parent().show();
+            $('#generateOptimizedRoute').parent().hide();
+            
+            $('#showUnknownPOIs').parent().removeClass('active');
+            $('#hideUnknownPOIs').parent().addClass('active');
+            
+            $('#modeRouteGenerator').parent().addClass('active');
+            $('#modeRouteOptimizer').parent().removeClass('active');
+            $('#modePoiViewer').parent().removeClass('active');
+            $('#modeNestHelper').parent().removeClass('active');
+            break;
+            
+        case 'modeRouteOptimizer':
+            $('#circleSize').parent('.input-group').show();
+            $('#optimizationAttempts').parent('.input-group').show();
+            $('#showGyms').parent().parent().parent().show();
+            $('#showPokestops').parent().parent().parent().show();
+            $('#showSpawnpoints').parent().parent().parent().show();
+            $('#showUnknownPOIs').parent().parent().parent().hide();
+            
+            $('#fetchNests').parent().hide();
+            $('#generateRoute').parent().hide();
+            $('#generateOptimizedRoute').parent().show();
+            
+            $('#showUnknownPOIs').parent().removeClass('active');
+            $('#hideUnknownPOIs').parent().addClass('active');
+            
+            $('#modeRouteGenerator').parent().removeClass('active');
+            $('#modeRouteOptimizer').parent().addClass('active');
+            $('#modePoiViewer').parent().removeClass('active');
+            $('#modeNestHelper').parent().removeClass('active');
+            break;
+            
+        case 'modePoiViewer':
+            $('#circleSize').parent('.input-group').hide();
+            $('#optimizationAttempts').parent('.input-group').hide();
+            $('#showPokestops').parent().parent().parent().show();
+            $('#showGyms').parent().parent().parent().show();
+            $('#showSpawnpoints').parent().parent().parent().show();
+            $('#showUnknownPOIs').parent().parent().parent().show();
+            
+            $('#fetchNests').parent().hide();
+            $('#generateRoute').parent().hide();
+            $('#generateOptimizedRoute').parent().hide();
+            
+            $('#modeRouteGenerator').parent().removeClass('active');
+            $('#modeRouteOptimizer').parent().removeClass('active');
+            $('#modePoiViewer').parent().addClass('active');
+            $('#modeNestHelper').parent().removeClass('active');            
+            break;
+            
+        case 'modeNestHelper':
+            $('#circleSize').parent('.input-group').hide();
+            $('#optimizationAttempts').parent('.input-group').hide();
+            $('#showPokestops').parent().parent().parent().show();
+            $('#showGyms').parent().parent().parent().show();
+            $('#showSpawnpoints').parent().parent().parent().show();
+            $('#showUnknownPOIs').parent().parent().parent().hide();
+            
+            $('#fetchNests').parent().show();
+            $('#generateRoute').parent().show();
+            $('#generateOptimizedRoute').parent().show();
+            
+            $('#modeRouteGenerator').parent().removeClass('active');
+            $('#modeRouteOptimizer').parent().removeClass('active');
+            $('#modePoiViewer').parent().removeClass('active');
+            $('#modeNestHelper').parent().addClass('active');   
+            break;
+    }
+}
+
+function setMapMode(){
+    setOptionsDisplay();
+    
+    switch (settings.mapMode) {
+        case 'modeRouteGenerator':
+            $('#showUnknownPOIs').parent().removeClass('active');
+            $('#showUnknownPOIs').parent().addClass('active');
+            settings.showUnknownPOIs = false;
+            
+            map.addControl(drawControl);
+            buttonModalImportPolygon.addTo(map);
+            buttonModalImportInstance.addTo(map);
+            buttonTrash.addTo(map);
+            buttonModalOutput.addTo(map);
+            break;
+            
+        case 'modeRouteOptimizer':
+            $('#showUnknownPOIs').parent().removeClass('active');
+            $('#showUnknownPOIs').parent().addClass('active');            
+            settings.showUnknownPOIs = false;
+            
+            map.addControl(drawControl);
+            buttonModalImportPolygon.addTo(map);
+            buttonModalImportInstance.removeFrom(map);
+            buttonTrash.addTo(map);
+            buttonModalOutput.addTo(map);
+            break;
+            
+        case 'modePoiViewer':        
+            editableLayers.clearLayers();
+            circleLayers.clearLayers();
+            
+            map.removeControl(drawControl);
+            buttonModalImportPolygon.removeFrom(map);
+            buttonModalImportInstance.removeFrom(map);
+            buttonTrash.removeFrom(map);
+            buttonModalOutput.removeFrom(map);
+            break;
+            
+        case 'modeNestHelper':        
+            $('#show-gyms').parent().removeClass('active');
+            $('#hide-gyms').parent().addClass('active');
+            settings.showGyms = false;
+            $('#show-pokestops').parent().removeClass('active');
+            $('#hide-pokestops').parent().addClass('active');
+            settings.showPokestops = false;
+            
+            map.addControl(drawControl);
+            buttonModalImportPolygon.addTo(map);
+            buttonModalImportInstance.addTo(map);
+            buttonTrash.addTo(map);
+            buttonModalOutput.addTo(map);
+            break;
+    }
+    processSettings();
+    loadData();
+}
+
+function generateOptimizedRoute() {
+    circleLayers.clearLayers();
+    
+    var newCircle,
+        currentLatLng,
+        point;
+        
+    var points = [];
+        
+    editableLayers.eachLayer(function (layer) {
+        var poly = layer.toGeoJSON();
+        var line = turf.polygonToLine(poly);
+        
+        if (settings.showGyms == true) {
+            gymLayers.eachLayer(function (layer) {
+                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
+                point = turf.point([currentLatLng[1], currentLatLng[0]]);
+                if (turf.inside(point, poly)) {
+                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+                }
+            });
+        }
+        if (settings.showPokestops == true) {
+            pokestopLayers.eachLayer(function (layer) {
+                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
+                point = turf.point([currentLatLng[1], currentLatLng[0]]);
+                if (turf.inside(point, poly)) {
+                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+                }
+            });       
+        }
+        if (settings.showSpawnpoints == true) {
+            spawnpointLayers.eachLayer(function (layer) {
+                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
+                point = turf.point([currentLatLng[1], currentLatLng[0]]);
+                if (turf.inside(point, poly)) {
+                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+                }
+            });       
+        }
+    });
+    const data = {
+		'get_optimization': true,
+        'circle_size': settings.circleSize,
+        'optimization_attempts': settings.optimizationAttempts,
+        'points': points
+	};
+    const json = JSON.stringify(data);
+    
+	$.ajax({
+		url: this.href,
+        type: 'POST',
+        dataType: 'json',
+		data: {'data': json},
+		success: function (result) {
+            result.bestAttempt.forEach(function(point) {
+                 newCircle = L.circle([point.latitude, point.longitude], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                    radius: settings.circleSize
+                });
+                newCircle.addTo(circleLayers);
+            });
+        }
+    });
+}
+
+function generateRoute() {
+    circleLayers.clearLayers();
+    
+    var xMod = Math.sqrt(0.75);
+    var yMod = Math.sqrt(0.568);
+    
+    
+    editableLayers.eachLayer(function (layer) {
+        var poly = layer.toGeoJSON();
+        var line = turf.polygonToLine(poly);
+        var newCircle;
+        
+        var currentLatLng = layer.getBounds().getNorthEast();
+                
+        var startLatLng = L.GeometryUtil.destination(currentLatLng, 90, settings.circleSize*1.5);
+        var endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, settings.circleSize*1.5), 180, settings.circleSize);
+
+        var row = 0;
+        var heading = 270;
+        var i = 0;
+        while(currentLatLng.lat > endLatLng.lat) {
+            
+            do {
+                var point = turf.point([currentLatLng.lng, currentLatLng.lat]);
+                var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+                if (distance <= settings.circleSize || distance == 0 || turf.inside(point, poly)) {
+                    newCircle = L.circle(currentLatLng, {
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5,
+                        radius: settings.circleSize
+                    });
+                    newCircle.addTo(circleLayers);
+                }
+                currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*settings.circleSize*2));  
+                i++;          
+            }while((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
+            
+            currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*settings.circleSize*2));   
+            
+            rem = row%2;        
+            if (rem == 1) {
+                heading = 270;
+            } else {
+                heading = 90;
+            }             
+            currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*settings.circleSize)*3);
+            row++;
+        }
+    });
+}
+
+function fetchNests() {
+    circleLayers.clearLayers();
+    editableLayers.clearLayers();
+    
+	const bounds = map.getBounds();
+    const overpassApiEndpoint = 'http://overpass-api.de/api/interpreter';
+    
+    var queryBbox = [ // s, e, n, w
+		bounds.getSouthWest().lat,
+		bounds.getSouthWest().lng,
+		bounds.getNorthEast().lat,
+        bounds.getNorthEast().lng
+    ].join(',');
+    
+    var queryDate = "2018-04-09T01:32:00Z";
+    
+    var queryOptions = [
+        '[out:json]',
+        '[bbox:' + queryBbox + ']',
+        '[date:"' + queryDate + '"]'        
+    ].join('');
+    
+    var queryNestWays = [
+        'way["leisure"="park"];',
+        'way["leisure"="recreation_ground"];',
+        'way["landuse"="recreation_ground"];'        
+    ].join('');
+    
+    //var overPassQuery = '[bbox:{{bbox}}][timeout:240][date:"2018-04-09T01:32:00Z"];(way["leisure"="park"];way["landuse"="recreation_ground"];way["leisure"="recreation_ground"];);out;>;out skel qt;'
+    var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
+    
+    $.ajax({
+        url: overpassApiEndpoint,
+        type: 'GET',
+        dataType: 'json',
+        data: {'data': overPassQuery},
+        success: function (result) {
+            var geoJsonFeatures = osmtogeojson(result);
+            geoJsonFeatures.features.forEach(function(feature) {
+                feature = turf.flip(feature);
+                var polygon = L.polygon(feature.geometry.coordinates, {
+                    clickable: false,
+                    color: "#3388ff",
+                    fill: true,
+                    fillColor: null,
+                    fillOpacity: 0.2,
+                    opacity: 0.5,
+                    stroke: true,
+                    weight: 4
+                });
+                polygon.tags = {};
+                polygon.tags.name = feature.properties.tags.name;
+                polygon.addTo(editableLayers);
+            });
+        }
+    });
+    
+    /* nestLayers.eachLayer(function (layer) {
+        var poly = layer.toGeoJSON();
+        var line = turf.polygonToLine(poly);
+        
+        pokestopLayers.eachLayer(function (layer) {
+            currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
+            point = turf.point([currentLatLng[1], currentLatLng[0]]);
+            if (turf.inside(point, poly)) {
+                points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+            }
+        });
+        
+        spawnpointLayers.eachLayer(function (layer) {
+            currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
+            point = turf.point([currentLatLng[1], currentLatLng[0]]);
+            if (turf.inside(point, poly)) {
+                points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+            }
+        });    
+        
+        const data = {
+            'get_spawndata': true,
+            'points': points
+        };
+        const json = JSON.stringify(data);
+        
+        $.ajax({
+            url: this.href,
+            type: 'POST',
+            dataType: 'json',
+            data: {'data': json},
+            success: function (result) {
+                result.bestAttempt.forEach(function(point) {
+                });
+            }
+        });
+    }); */
+}
+
+function loadData() {
+    
+	const bounds = map.getBounds();
+    
+    const data = {
+        'get_data': true,
+		'min_lat': bounds.getSouthWest().lat,
+		'max_lat': bounds.getNorthEast().lat,
+		'min_lon': bounds.getSouthWest().lng,
+		'max_lon': bounds.getNorthEast().lng,
+		'show_gyms': settings.showGyms,
+		'show_pokestops': settings.showPokestops,
+		'show_spawnpoints': settings.showSpawnpoints,
+        'show_unknownpois': settings.showUnknownPOIs
+	};
+    const json = JSON.stringify(data);
+
+	$.ajax({
+		url: this.href,
+        type: 'POST',
+        dataType: 'json',
+		data: {'data': json},
+		success: function (result) {
+            pokestopLayers.clearLayers();
+            gymLayers.clearLayers();
+            spawnpointLayers.clearLayers();
+            
+            if (result.gyms != null && settings.showGyms == true) {
+                for (i=0;i<result.gyms.length;i++) {
+                    var marker = L.circleMarker([result.gyms[i].lat, result.gyms[i].lon], {
+                        color: 'red',
+                        radius: 1,
+                        opacity: 0.5
+                    }).addTo(map);
+                    marker.bindPopup("ID: " + result.gyms[i].id);
+                    marker.addTo(gymLayers);
+                }
+            }
+            
+            if (result.pokestops != null && settings.showPokestops == true) {
+                for (i=0;i<result.pokestops.length;i++) {
+                    var marker = L.circleMarker([result.pokestops[i].lat, result.pokestops[i].lon], {
+                        color: 'green',
+                        radius: 1,
+                        opacity: 0.5
+                    }).addTo(map);
+                    marker.bindPopup("ID: " + result.pokestops[i].id);
+                    marker.addTo(pokestopLayers);
+                }
+            }
+            
+            if (result.spawnpoints != null && settings.showSpawnpoints == true) {
+                for (i=0;i<result.spawnpoints.length;i++) {
+                    var marker = L.circleMarker([result.spawnpoints[i].lat, result.spawnpoints[i].lon], {
+                        color: 'blue',
+                        radius: 1,
+                        opacity: 0.5
+                    }).addTo(map);
+                    marker.bindPopup("ID: " + result.spawnpoints[i].id);
+                    marker.addTo(spawnpointLayers);
+                }
+            }
+        }
+    });
+}
+
+function getInstance(instanceName = null) {
+    if (instanceName === null) {
+        //get names of all instances
+        const data = {
+            'get_instance_names': true,
+        };
+        const json = JSON.stringify(data);
+
+        $.ajax({
+            url: this.href,
+            type: 'POST',
+            dataType: 'json',
+            data: {'data': json},
+            success: function (result) {
+                console.log(result);
+                var select = $('#importInstanceName');
+                select.empty();
+                result.forEach(function(item) {
+                    select.append($("<option>").attr('value',item.name).text(item.name + " (" + item.type + ")"));
+                });
+            }
+        });
+    } else {
+        
+        //get single instance
+        const data = {
+            'get_instance_data': true,
+            'instance_name': instanceName
+        };
+        const json = JSON.stringify(data);
+
+        $.ajax({
+            url: this.href,
+            type: 'POST',
+            dataType: 'json',
+            data: {'data': json},
+            success: function (result) {
+                circleLayers.clearLayers();
+                    points = result.area;
+                    if (points.length > 0 ) {    
+                        points.forEach(function(item) {                
+                            newCircle = L.circle(item, {
+                                color: '#87CEFA',
+                                fillOpacity: 0.5,
+                                radius: settings.circleSize
+                            });
+                            newCircle.addTo(circleLayers);                    
+                        });
+                    }
+            }
+        });
+    }
+}
+
+function processSettings() {
+     const defaultSettings = {
+        showGyms: true,
+        showPokestops: true,
+        showSpawnpoints: false,
+        showUnknownPOIs: false,
+        circleSize: 500,
+        optimizationAttempts: 100,
+        mapMode: 'modePoiViewer'
+    }
+    storedSettings = JSON.parse(localStorage.getItem('settings'));
+    
+    Object.keys(settings).forEach(function(key) {
+        if (storedSettings !== null) {
+            if (settings[key] === null) {
+                settings[key] = storedSettings[key];
+            }
+        } else {
+            settings[key] = defaultSettings[key];
+        }
+    });
+    
+    localStorage.setItem('settings', JSON.stringify(settings));
+    
+}
+
+function csvtoarray(dataString) {
+    var lines = dataString
+        .split(/\n/)                     // Convert to one string per line
+        .map(function(lineStr) {
+            return lineStr.split(",");   // Convert each line to array (,)
+        })
+    return lines;
+}
+
+</script>
+        
+    </head>
+    <body>
+        <div id="map"></div>
+        
+        <div class="modal" id="modalSettings" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Settings</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="mapMode">Map Operation Mode:</label>
+                        <div class="input-group mb-3" style="width:100%">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-primary active">
+                                    <input type="radio" name="mapMode" id="modeRouteGenerator" autocomplete="off"> Generate Path
+                                </label>
+                                <label class="btn btn-primary">
+                                    <input type="radio" name="mapMode" id="modeRouteOptimizer" autocomplete="off"> Optimize Path
+                                </label>
+                                <label class="btn btn-primary">
+                                    <input type="radio" name="mapMode" id="modePoiViewer" autocomplete="off"> View POIs
+                                </label>
+                                <label class="btn btn-primary">
+                                    <input type="radio" name="mapMode" id="modeNestHelper" autocomplete="off"> Nest Report
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Optimization Attempts:</span>
+                            </div>
+                            <input id="optimizationAttempts" name="optimizationAttempts" type="text" class="form-control" aria-label="Optimization attempts">
+                            <div class="input-group-append">
+                                <span class="input-group-text">Tries</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Circle Radius:</span>
+                            </div>
+                            <input id="circleSize" name="circleSize" type="text" class="form-control" aria-label="Circle Radius (in meters)">
+                            <div class="input-group-append">
+                                <span class="input-group-text">Meters</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="showGyms" id="showGyms" autocomplete="off"> On
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="showGyms" id="hideGyms" autocomplete="off"> Off
+                                </label>
+                            </div>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Show known gyms</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="btn-group btn-group-toggle"data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="showPokestops" id="showPokestops" autocomplete="off"> On
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="showPokestops" id="hidePokestops" autocomplete="off"> Off
+                                </label>
+                            </div>
+                            <div class="input-group-append" width>
+                                <span style="padding: .375rem .75rem;">Show known pokestops</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="showSpawnpoints" id="showSpawnpoints" autocomplete="off"> On
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="showSpawnpoints" id="hideSpawnpoints" autocomplete="off"> Off
+                                </label>
+                            </div>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Show known spawn points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="showUnknownPOIs" id="showUnknownPOIs" autocomplete="off"> On
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="showUnknownPOIs" id="hideUnknownPOIs" autocomplete="off"> Off
+                                </label>
+                            </div>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Show unnamed POIs only</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <button id="fetchNests" class="btn btn-secondary" type="button">Go!</button>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Retrieve nests in current map bounds</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <button id="generateRoute" class="btn btn-secondary" type="button">Go!</button>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Generate route</span>
+                            </div>
+                        </div>
+                        <div class="input-group mb">
+                            <button id="generateOptimizedRoute" class="btn btn-secondary" type="button">Go!</button>
+                            <div class="input-group-append">
+                                <span style="padding: .375rem .75rem;">Generate optimized route</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="saveSettings" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="modalOutput" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Output</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="mapMode">Generated route:</label>
+                        <div class="input-group mb-3">
+                            <textarea id="outputCircles" style="height:400px;" class="form-control" aria-label="Route output"></textarea>
+                        </div>
+                        <div class="btn-toolbar">
+                            <div class="btn-group mr-2" role="group" aria-label="">
+                                <button id="getOutput" class="btn btn-secondary float-left" type="button">Get output</button>
+                            </div>
+                            <div class="btn-group" role="group" aria-label="">
+                                <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button">Copy to clipboard</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="modalImportInstance" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import Instance</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="importPolygonData">Select an instance:</label>
+                        <div class="input-group mb">
+                            <select name="importInstanceName" id="importInstanceName" class="form-control" aria-label="Select an insance to import">                            
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="importInstance" class="btn btn-primary">Import Instance</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="modalImportPolygon" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import Polygon</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="importPolygonData">Polygon data:</label>
+                        <div class="input-group mb-3">
+                            <textarea name="importPolygonData" id="importPolygonData" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="savePolygon" class="btn btn-primary">Import</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="modal modal-loader" id="modalLoading" data-backdrop="static" data-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content" style="width: 48px">
+                    <span class="fa fa-spinner fa-spin fa-3x"></span>
+                </div>
+            </div>
+        </div>
+    </body>
+</html><?php
+}
+
+
+
+function map_helper_init() {
+    global $db;
+    //db vars
+    $DB_TYPE = "mysql"; 
+    $DB_HOST = "1.2.3.4";
+    $DB_USER = "rdmuser";
+    $DB_PSWD = "pw
+    $DB_NAME = "rdmdb";
+    $DB_PORT = 3306;
+    
+    $db = initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT); 
+    
+    $args = json_decode($_POST['data']);
+    if ($args->get_spawndata === true) { getSpawnData($args); }
+    if ($args->get_data === true) { getData($args); }
+    if ($args->get_optimization === true) { getOptimization($args); }
+    if ($args->get_instance_data === true) { getInstanceData($args); }
+    if ($args->get_instance_names === true) { getInstanceNames($args); }
+    
+}
+
+function getInstanceData($args) {
+    global $db;
+    $sql_spawnpoint = "SELECT data FROM instance WHERE name = ?";
+    if ($stmt = $db->prepare($sql_spawnpoint)) {
+        $stmt->bind_param("s", $args->instance_name);
+        
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        while ($data = $result->fetch_array()) {
+            $instance = $data;
+        }
+    }
+    echo $instance[0];
+}
+function getInstanceNames($args) {
+    global $db;
+    $sql_spawnpoint = "SELECT name, type FROM instance";
+    if ($stmt = $db->prepare($sql_spawnpoint)) {
+    
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        while ($data = $result->fetch_array()) {
+            $instances[] = $data;
+        }
+    }
+    echo json_encode($instances);
+}
+
+function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
     $db = new mysqli($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT);
     if ($db->connect_error != '') {
         exit("Failed to connect to MySQL server!");
     }
     $db->set_charset('utf8');
-    if ($args->show_unknownpois === true) {
-        $show_unknown_mod = "name IS null AND ";
-    }
+    return $db;
+}
 
-    if ($args->show_gyms !== false) {
+function getSpawnData($args) {
+    global $db;
+    $sql_spawnpoint = "SELECT id, lat, lon FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    if ($stmt = $db->prepare($sql_spawnpoint)) {
+        $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
+        
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        while ($point = $result->fetch_array()) {
+            $spawns[] = array(
+                'id' => $point['id'],
+                'lat' => $point['lat'],
+                'lon' => $point['lon']
+            );
+        }
+    }
+    echo json_encode(array('spawns' => $spawns));
+}
+
+function getData($args) {
+    global $db;    
+    $show_unknown_mod = ($args->show_unknownpois === true ? "name IS null AND " : "");    
+    if ($args->show_gyms === true) {
         
         $sql_gym = "SELECT id, lat, lon FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
         if ($stmt = $db->prepare($sql_gym)) {
@@ -43,7 +1238,7 @@ if ($args->get_data == true) {
         }
     }
 
-    if ($args->show_pokestops !== false) {
+    if ($args->show_pokestops === true) {
         $sql_pokestop = "SELECT id, lat, lon FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
         if ($stmt = $db->prepare($sql_pokestop)) {       
             $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
@@ -61,7 +1256,7 @@ if ($args->get_data == true) {
         }
     }
         
-    if ($args->show_spawnpoints !== false) {
+    if ($args->show_spawnpoints === true) {
         $sql_spawnpoint = "SELECT id, lat, lon FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
         if ($stmt = $db->prepare($sql_spawnpoint)) {
             $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
@@ -80,9 +1275,14 @@ if ($args->get_data == true) {
     }
     
     echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'spawnpoints' => $spawns));
-    die();
-} else 
-if ($args->get_optimization == true) {
+}    
+
+function getOptimization($args) {
+    global $db;
+    
+    //optimization vars
+    $DELAY = 5;
+    $GYM_COUNT = 6;
     
     //adapted from https://github.com/123FLO321/RealDeviceRaidMap/blob/master/Control/createRoute.php
     $points = $args->points;
@@ -142,6 +1342,7 @@ if ($args->get_optimization == true) {
         $return['bestAttempt'][] = array("latitude"=>$location["latitude"], "longitude"=>$location["longitude"]);
     }
     echo json_encode($return);
+    
 }
     
 function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
@@ -155,992 +1356,6 @@ function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo
 	$angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
 			cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
 	return $angle * $earthRadius;
-}
-if (empty($args->get_optimization) && empty($args->get_data)) { ?>
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Circle Generator</title>
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-        <meta charset="utf-8">
-        <style>
-            html, body {
-                height: 100%;
-            }
-            #map {
-                height: 100%;
-            }
-        </style>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+} 
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-        <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
-        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.EasyButton/2.3.0/easy-button.min.js"></script>      
-        <script src="https://npmcdn.com/leaflet-geometryutil"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
-        <script type="text/javascript">
-        // Force zIndex of Leaflet
-        (function(global){
-          var MarkerMixin = {
-            _updateZIndex: function (offset) {
-              this._icon.style.zIndex = this.options.forceZIndex ? (this.options.forceZIndex + (this.options.zIndexOffset || 0)) : (this._zIndex + offset);
-            },
-            setForceZIndex: function(forceZIndex) {
-              this.options.forceZIndex = forceZIndex ? forceZIndex : null;
-            }
-          };
-          if (global) global.include(MarkerMixin);
-        })(L.Marker);
-        </script>
-    </head>
-    <body>
-        <div id="map"></div>
-        </div>
-        <script>
-let map;
-let drawControl;
-let buttonSettingsModal;
-let buttonTrash;
-let buttonOutputModal
-
-var gyms = [];
-var pokestops = [];
-var spawnpoints = [];
-
-let showGyms;
-let showPokestops;
-let showSpawnpoints;
-let showUnknownPOIs;
-let optimizeGyms;
-let optimizePokestops;
-let optimizeSpawnpoints;
-let circleSize;
-let optimizationAttempts;
-let mapMode;
-
-let pokestopLayers;
-let gymLayers;
-let spawnpointLayers;
-let editableLayers;
-let circleLayers;
-var workingLayers;
-
-var allCircles = [];
-
-$(function(){
-    
-    loadStorage();
-
-    initMap();
-    
-    loadData();
-    
-    setMapMode();
-    
-    $('#route-generator').parent().on('click', function(event) {
-        $('#circle-size').parent('.input-group').show();
-        $('#optimization-attempts').parent('.input-group').hide();
-        $('#show-unknownpois').parent().parent().parent().hide();
-        $('#show-optimizegyms').parent().parent().parent().hide();
-        $('#show-optimizepokestops').parent().parent().parent().hide();
-        $('#show-optimizespawnpoints').parent().parent().parent().hide();
-        $('#show-unknownpois').parent().removeClass('active');
-        $('#hide-unknownpois').parent().addClass('active');
-		showUnknownPOIs = false;
-		store('show_unknownpois', false);
-    });
-    $('#route-optimizer').parent().on('click', function(event) {
-        $('#circle-size').parent('.input-group').show();
-        $('#optimization-attempts').parent('.input-group').show();
-        $('#show-unknownpois').parent().parent().parent().hide();
-        $('#show-optimizegyms').parent().parent().parent().show();
-        $('#show-optimizepokestops').parent().parent().parent().show();
-        $('#show-optimizespawnpoints').parent().parent().parent().show();
-        $('#show-unknownpois').parent().removeClass('active');
-        $('#hide-unknownpois').parent().addClass('active');
-		showUnknownPOIs = false;
-		store('show_unknownpois', false);
-    });
-    $('#poi-viewer').parent().on('click', function(event) {
-        $('#circle-size').parent('.input-group').hide();
-        $('#optimization-attempts').parent('.input-group').hide();
-        $('#show-unknownpois').parent().parent().parent().show();
-        $('#show-optimizegyms').parent().parent().parent().hide();
-        $('#show-optimizepokestops').parent().parent().parent().hide();
-        $('#show-optimizespawnpoints').parent().parent().parent().hide();
-    });
-    //importPolygonData
-    
-    $('#save-polygon').on('click', function(event) {
-        const polygonData = csvtoarray($('#polygon-data').val());
-        var polygonOptions = {
-            clickable: false,
-            color: "#3388ff",
-            fill: true,
-            fillColor: null,
-            fillOpacity: 0.2,
-            opacity: 0.5,
-            stroke: true,
-            weight: 4
-        };
-        var newPolygon = L.polygon(polygonData, polygonOptions).addTo(editableLayers);
-        
-        switch (mapMode) {
-            case 'generator':
-                runGenerator();
-                break;
-            case 'optimizer':
-                runOptimizer();
-                break;
-            case 'poiviewer':
-                break;
-        }
-        $('#modalImport').modal('hide');
-        
-       
-    });
-    $('#save-settings').on('click', function(event) {
-
-        const newShowGyms = $('#show-gyms').parent().hasClass('active');
-		const newShowPokestops = $('#show-pokestops').parent().hasClass('active');
-        const newShowSpawnpoints = $('#show-spawnpoints').parent().hasClass('active');
-		const newShowUnknownPOIs = $('#show-unknownpois').parent().hasClass('active');
-		const newOptimizeGyms = $('#show-optimizegyms').parent().hasClass('active');
-		const newOptimizePokestops = $('#show-optimizepokestops').parent().hasClass('active');
-		const newOptimizeSpawnpoints = $('#show-optimizespawnpoints').parent().hasClass('active');
-        const newCircleSize = $('#circle-size').val();
-        const newOptimizationAttempts = $('#optimization-attempts').val();
-                
-        if ($('#route-generator').parent().hasClass('active') !== false) {
-            var newMapMode = 'generator';
-        } else if ($('#route-optimizer').parent().hasClass('active') !== false) {
-            var newMapMode = 'optimizer';
-        } else {
-            var newMapMode = 'poiviewer';
-        }
-        if (newMapMode !== mapMode) {
-            mapMode = newMapMode;
-            store('map_mode', newMapMode);
-            setMapMode();            
-        }
-        
-        showGyms = newShowGyms;
-		store('show_gyms', newShowGyms);
-		showPokestops = newShowPokestops;
-		store('show_pokestops', newShowPokestops);
-        showSpawnpoints = newShowSpawnpoints;
-        store('show_spawnpoints', newShowSpawnpoints);
-		showUnknownPOIs = newShowUnknownPOIs;
-		store('show_unknownpois', newShowUnknownPOIs);
-		optimizeGyms = newOptimizeGyms;
-		store('optimize_gyms', newOptimizeGyms);
-		optimizePokestops = newOptimizePokestops;
-		store('optimize_pokestops', newOptimizePokestops);
-		optimizeSpawnpoints = newOptimizeSpawnpoints;
-		store('optimize_spawnpoints', newOptimizeSpawnpoints);
-		circleSize = newCircleSize;
-		store('circlesize', newCircleSize);
-		optimizationAttempts = newOptimizationAttempts;
-		store('optimizationattempts', newOptimizationAttempts);
-        
-        loadData();
-        $('#modalSettings').modal('hide');
-    });
-    
-    $('#cancel-settings').on('click', function(event) {
-        //reset settings to stored values
-        loadStorage();
-    });    
-    
-    $("#selectAllAndCopy").click(function () {
-        $(this).parents("#output-body").children("#allCircles").select();
-        document.execCommand('copy');
-        $(this).text("Copied!");
-    });
-})
-function csvtoarray(dataString) {
-  var lines = dataString
-    .split(/\n/)                     // Convert to one string per line
-    .map(function(lineStr) {
-        return lineStr.split(",");   // Convert each line to array (,)
-    })
-  
-  return lines;
-}
-
-function initMap() {
-    map = L.map('map').setView([42.548197, -83.14684], 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        maxZoom: 18
-    }).addTo(map);
-
-    circleLayers = new L.LayerGroup();
-    map.addLayer(circleLayers);
-
-    editableLayers = new L.FeatureGroup();
-    map.addLayer(editableLayers);
-
-    pokestopLayers = new L.LayerGroup();
-    map.addLayer(pokestopLayers);
-
-    gymLayers = new L.LayerGroup();
-    map.addLayer(gymLayers);
-
-    spawnpointLayers = new L.LayerGroup();
-    map.addLayer(spawnpointLayers);
-    
-    workingLayers = new L.LayerGroup();
-    map.addLayer(workingLayers);
-    
-    var options = {
-        position: 'topleft',
-        draw: {
-            polyline: false,
-            polygon:   {
-                shapeOptions: {
-                    clickable: false
-                }
-            },
-            circle: false,
-            rectangle: false,
-            circlemarker: false,
-            marker: false
-        },
-        edit: {
-            featureGroup: editableLayers, 
-            edit: false,
-            remove: false,
-            poly: false
-        }
-    };
-    buttonSettingsModal = L.easyButton({
-        states: [{
-            stateName: 'openSettingsModal',
-            icon: 'fas fa-cog', 
-            title: 'Open settings',
-            onClick: function (control){ 
-            
-				if (retrieve('show_gyms') == 'true') {
-                    $('#show-gyms').parent().addClass('active');
-                    $('#hide-gyms').parent().removeClass('active');
-				} else {
-                    $('#hide-gyms').parent().addClass('active');
-                    $('#show-gyms').parent().removeClass('active');
-				}
-                
-				if (retrieve('show_pokestops') == 'true') {
-                    $('#show-pokestops').parent().addClass('active');
-                    $('#hide-pokestops').parent().removeClass('active');
-				} else {
-                    $('#hide-pokestops').parent().addClass('active');
-                    $('#show-pokestops').parent().removeClass('active');
-				}
-                
-				if (retrieve('show_spawnpoints') == 'true') {
-                    $('#show-spawnpoints').parent().addClass('active');
-                    $('#hide-spawnpoints').parent().removeClass('active');
-				} else {
-                    $('#hide-spawnpoints').parent().addClass('active');
-                    $('#show-spawnpoints').parent().removeClass('active');
-				}
-                
-				if (retrieve('show_unknownpois') == 'true') {
-                    $('#show-unknownpois').parent().addClass('active');
-                    $('#hide-unknownpois').parent().removeClass('active');
-				} else {
-                    $('#hide-unknownpois').parent().addClass('active');
-                    $('#show-unknownpois').parent().removeClass('active');
-				}
-                
-				if (retrieve('optimize_gyms') == 'true') {
-                    $('#show-optimizegyms').parent().addClass('active');
-                    $('#hide-optimizegyms').parent().removeClass('active');
-				} else {
-                    $('#hide-optimizegyms').parent().addClass('active');
-                    $('#show-optimizegyms').parent().removeClass('active');
-				}
-                
-				if (retrieve('optimize_pokestops') == 'true') {
-                    $('#show-optimizepokestops').parent().addClass('active');
-                    $('#hide-optimizepokestops').parent().removeClass('active');
-				} else {
-                    $('#hide-optimizepokestops').parent().addClass('active');
-                    $('#show-optimizepokestops').parent().removeClass('active');
-				}
-                
-				if (retrieve('optimize_spawnpoints') == 'true') {
-                    $('#show-optimizespawnpoints').parent().addClass('active');
-                    $('#hide-optimizespawnpoints').parent().removeClass('active');
-				} else {
-                    $('#hide-optimizespawnpoints').parent().addClass('active');
-                    $('#show-optimizespawnpoints').parent().removeClass('active');
-				}
-                
-				if (retrieve('map_mode') == 'generator') {
-                    $('#route-generator').parent().addClass('active');
-                    $('#route-optimizer').parent().removeClass('active');
-                    $('#poi-viewer').parent().removeClass('active');
-				} else if (retrieve('map_mode') == 'optimizer') {
-                    $('#route-generator').parent().removeClass('active');
-                    $('#route-optimizer').parent().addClass('active');
-                    $('#poi-viewer').parent().removeClass('active');
-				} else {
-                    $('#route-generator').parent().removeClass('active');
-                    $('#route-optimizer').parent().removeClass('active');
-                    $('#poi-viewer').parent().addClass('active');
-                }
-                
-				if (retrieve('circlesize') != null) {
-                    $('#circle-size').val(retrieve('circlesize'));
-				} else {
-                    $('#circle-size').val('500');
-				}
-                
-				if (retrieve('optimizationattempts') != null) {
-                    $('#optimization-attempts').val(retrieve('optimizationattempts'));
-				} else {
-                    $('#optimization-attempts').val('500');
-				}
-                
-                $('#modalSettings').modal('show');
-            }
-        }]
-    });
-    buttonSettingsModal.addTo(map);
-    
-    drawControl = new L.Control.Draw(options);
-    map.addControl(drawControl);
-    
-    buttonImportModal = L.easyButton({
-        states: [{
-            stateName: 'openImportModal',
-            icon: 'fas fa-file-import', 
-            title: 'Get output',
-            onClick: function (control){
-                $('#modalImport').modal('show');
-            }
-        }]
-    });
-    buttonImportModal.addTo(map);
-
-    buttonTrash = L.easyButton({
-        states: [{
-            stateName: 'clearMap',
-            icon: 'fas fa-trash', 
-            title: 'Clear map',
-            onClick: function (control){
-                circleLayers.clearLayers();
-                editableLayers.clearLayers();
-                workingLayers.clearLayers();
-            }
-        }]
-    });
-    buttonTrash.addTo(map);
-    
-    buttonOutputModal = L.easyButton({
-        states: [{
-            stateName: 'openOutputModal',
-            icon: 'fas fa-check', 
-            title: 'Get output',
-            onClick: function (control){
-                allCircles = circleLayers.getLayers();
-                for (i=0;i<allCircles.length;i++) {
-                    var circleLatLng = allCircles[i].getLatLng();
-                    $("#allCircles").append(circleLatLng.lat + "," + circleLatLng.lng);
-                    if (i != allCircles.length-1) {
-                        $("#allCircles").append("\n");
-                    }
-                }
-                $('#modalOutput').modal('show');
-            }
-        }]
-    });
-    buttonOutputModal.addTo(map);    
-    
-    map.on('draw:deleted', function (e) {
-        circleLayers.clearLayers();
-    });
-
-    map.on('draw:created', function (e) {
-        var layer = e.layer;
-        editableLayers.addLayer(layer);
-        switch (mapMode) {
-            case 'generator':
-                runGenerator();
-                break;
-            case 'optimizer':
-                runOptimizer();
-                break;
-            case 'poiviewer':
-                break;
-        }
-    });
-
-	map.on('zoomend', function() {
-		loadData();
-	});
-
-	map.on('moveend', function() {
-		loadData();
-	});
-
-	map.on('dragend', function() {
-		loadData();
-	});
-}
-
-function setMapMode(){
-    switch (mapMode) {
-        case 'generator':
-            $('#circle-size').parent('.input-group').show();
-            $('#optimization-attempts').parent('.input-group').hide();
-            $('#show-unknownpois').parent().parent().parent().hide();
-            $('#show-optimizegyms').parent().parent().parent().hide();
-            $('#show-optimizepokestops').parent().parent().parent().hide();
-            $('#show-optimizespawnpoints').parent().parent().parent().hide();
-            $('#show-unknownpois').parent().removeClass('active');
-            $('#hide-unknownpois').parent().addClass('active');
-            showUnknownPOIs = false;
-            store('show_unknownpois', false);
-            workingLayers.clearLayers();
-            runGenerator();
-            break;
-        case 'optimizer':
-            $('#circle-size').parent('.input-group').show();
-            $('#optimization-attempts').parent('.input-group').show();
-            $('#show-unknownpois').parent().parent().parent().hide();
-            $('#show-optimizegyms').parent().parent().parent().show();
-            $('#show-optimizepokestops').parent().parent().parent().show();
-            $('#show-optimizespawnpoints').parent().parent().parent().show();
-            $('#show-unknownpois').parent().removeClass('active');
-            $('#hide-unknownpois').parent().addClass('active');
-            showUnknownPOIs = false;
-            store('show_unknownpois', false);
-            runOptimizer();
-            break;
-        case 'poiviewer':
-            $('#circle-size').parent('.input-group').hide();
-            $('#optimization-attempts').parent('.input-group').hide();
-            $('#show-unknownpois').parent().parent().parent().show();
-            $('#show-optimizegyms').parent().parent().parent().hide();
-            $('#show-optimizepokestops').parent().parent().parent().hide();
-            $('#show-optimizespawnpoints').parent().parent().parent().hide();
-            editableLayers.clearLayers();
-            circleLayers.clearLayers();
-            workingLayers.clearLayers();
-            buttonOutputModal.removeFrom(map);
-            buttonTrash.removeFrom(map);
-            map.removeControl(drawControl);
-            break;
-    }
-}
-
-function runOptimizer() {
-    workingLayers.clearLayers();
-    circleLayers.clearLayers();
-    
-    var newCircle,
-        currentLatLng,
-        point;
-        
-    var points = [];
-        
-    editableLayers.eachLayer(function (layer) {
-        var poly = layer.toGeoJSON();
-        var line = turf.polygonToLine(poly);
-        
-        if (optimizeGyms == true) {
-            gymLayers.eachLayer(function (layer) {
-                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-                point = turf.point([currentLatLng[1], currentLatLng[0]]);
-                if (turf.inside(point, poly)) {
-                    newCircle = L.circle(currentLatLng, {
-                        color: 'gold',
-                        fillColor: '#FFA500',
-                        fillOpacity: 0.5,
-                        radius: 20
-                    });
-                    newCircle.addTo(workingLayers);
-                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
-                }
-            });
-        }
-        if (optimizePokestops == true) {
-            pokestopLayers.eachLayer(function (layer) {
-                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-                point = turf.point([currentLatLng[1], currentLatLng[0]]);
-                if (turf.inside(point, poly)) {
-                    newCircle = L.circle(currentLatLng, {
-                        color: 'gold',
-                        fillColor: '#FFA500',
-                        fillOpacity: 0.5,
-                        radius: 20
-                    });
-                    newCircle.addTo(workingLayers);
-                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
-                }
-            });       
-        }
-        if (optimizeSpawnpoints == true) {
-            spawnpointLayers.eachLayer(function (layer) {
-                currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-                point = turf.point([currentLatLng[1], currentLatLng[0]]);
-                if (turf.inside(point, poly)) {
-                    newCircle = L.circle(currentLatLng, {
-                        color: 'gold',
-                        fillColor: '#FFA500',
-                        fillOpacity: 0.5,
-                        radius: 20
-                    });
-                    newCircle.addTo(workingLayers);
-                    points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
-                }
-            });       
-        }
-    });
-    const data = {
-		'get_optimization': true,
-        'circle_size': circleSize,
-        'optimization_attempts': optimizationAttempts,
-        'points': points
-	};
-    const json = JSON.stringify(data);
-    
-	$.ajax({
-		url: this.href,
-        type: 'POST',
-        dataType: 'json',
-		data: {'data': json},
-		success: function (result) {
-            result.bestAttempt.forEach(function(point) {
-                 newCircle = L.circle([point.latitude, point.longitude], {
-                    color: 'red',
-                    fillColor: '#f03',
-                    fillOpacity: 0.5,
-                    radius: circleSize
-                });
-                newCircle.addTo(circleLayers);
-            });
-        }
-    });
-}
-
-function runGenerator(layer) {
-    circleLayers.clearLayers();
-    editableLayers.eachLayer(function (layer) {
-        var poly = layer.toGeoJSON();
-        var line = turf.polygonToLine(poly);
-        var newCircle;
-        
-        var xMod = Math.sqrt(0.75);
-        var yMod = Math.sqrt(0.568);
-        
-        
-        var currentLatLng = layer._bounds._northEast;
-        var startLatLng = L.GeometryUtil.destination(layer._bounds._northEast, 45, circleSize*4);
-        var endLatLng = L.GeometryUtil.destination(layer._bounds._southWest, 225, circleSize*4);
-
-        var row = 0;
-        var heading = 270;
-        while(currentLatLng.lat > endLatLng.lat) {
-            do {
-                newCircle = L.circle(currentLatLng, {
-                    color: 'red',
-                    fillColor: '#f03',
-                    fillOpacity: 0.5,
-                    radius: circleSize
-                });
-                var point = turf.point([currentLatLng.lng, currentLatLng.lat]);
-                var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
-                if (distance <= circleSize || turf.inside(point, poly)) {
-                    newCircle.addTo(circleLayers);
-                }
-                currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleSize*2));            
-            }while((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
-            currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*circleSize*2));   
-            
-            rem = row%2;        
-            if (rem == 1) {
-                heading = 270;
-            } else {
-                heading = 90;
-            }             
-            currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleSize)*3);
-            row++;
-        }
-    });
-}
-
-function loadData() {
-    
-	const bounds = map.getBounds();
-    
-    const data = {
-        'get_data': true,
-		'min_lat': bounds._southWest.lat,
-		'max_lat': bounds._northEast.lat,
-		'min_lon': bounds._southWest.lng,
-		'max_lon': bounds._northEast.lng,
-		'show_gyms': showGyms,
-		'show_pokestops': showPokestops,
-		'show_spawnpoints': showSpawnpoints,
-        'show_unknownpois': showUnknownPOIs
-	};
-    const json = JSON.stringify(data);
-    
-	$.ajax({
-		url: this.href,
-        type: 'POST',
-        dataType: 'json',
-		data: {'data': json},
-		success: function (result) {
-            pokestopLayers.clearLayers();
-            gymLayers.clearLayers();
-            spawnpointLayers.clearLayers();
-            
-            if (result.gyms != null && showGyms == true) {
-                for (i=0;i<result.gyms.length;i++) {
-                    var circle = L.circle([result.gyms[i].lat, result.gyms[i].lon], {
-                        color: 'red',
-                        fillColor: '#f03',
-                        fillOpacity: 0.5,
-                        radius: 10
-                    }).addTo(map);
-                    circle.bindPopup("ID: " + result.gyms[i].id);
-                    circle.addTo(gymLayers);
-                }
-            }
-            
-            if (result.pokestops != null && showPokestops == true) {
-                for (i=0;i<result.pokestops.length;i++) {
-                    var circle = L.circle([result.pokestops[i].lat, result.pokestops[i].lon], {
-                        color: 'green',
-                        fillColor: '#0f3',
-                        fillOpacity: 0.5,
-                        radius: 10
-                    }).addTo(map);
-                    circle.bindPopup("ID: " + result.pokestops[i].id);
-                    circle.addTo(pokestopLayers);
-                }
-            }
-            
-            if (result.spawnpoints != null && showSpawnpoints == true) {
-                for (i=0;i<result.spawnpoints.length;i++) {
-                    var circle = L.circle([result.spawnpoints[i].lat, result.spawnpoints[i].lon], {
-                        color: 'blue',
-                        fillColor: '#30f',
-                        fillOpacity: 0.5,
-                        radius: 10
-                    }).addTo(map);
-                    circle.bindPopup("ID: " + result.spawnpoints[i].id);
-                    circle.addTo(spawnpointLayers);
-                }
-            }
-        }
-    });
-}
-
-function loadStorage() {
-    const showGymsValue = retrieve('show_gyms');
-    if (showGymsValue === null) {
-        store('show_gyms', true);
-        showGyms = true;
-    } else {
-        showGyms = (showGymsValue === 'true');
-    }
-
-    const showPokestopsValue = retrieve('show_pokestops');
-    if (showPokestopsValue === null) {
-        store('show_pokestops', true);
-        showPokestops = true;
-    } else {
-        showPokestops = (showPokestopsValue  === 'true');
-    }
-
-    const showSpawnpointsValue = retrieve('show_spawnpoints');
-    if (showSpawnpointsValue === null) {
-        store('show_spawnpoints', false);
-        showSpawnpoints = false;
-    } else {
-        showSpawnpoints = (showSpawnpointsValue === 'true');
-    }
-    
-    const showUnknownPOIsValue = retrieve('show_unknownpois');
-    if (showUnknownPOIsValue === null) {
-        store('show_unknownpois', false);
-        showUnknownPOIs = false;
-    } else {
-        showUnknownPOIs = (showUnknownPOIsValue === 'true');
-    }
-    
-    const optimizeGymsValue = retrieve('optimize_gyms');
-    if (optimizeGymsValue === null) {
-        store('optimize_gyms', true);
-        optimizeGyms = true;
-    } else {
-        optimizeGyms = (optimizeGymsValue === 'true');
-    }
-    
-    const optimizePokestopsValue = retrieve('optimize_pokestops');
-    if (optimizePokestopsValue === null) {
-        store('optimize_pokestops', false);
-        optimizePokestops = false;
-    } else {
-        optimizePokestops = (optimizePokestopsValue === 'true');
-    }
-    
-    const optimizeSpawnpointsValue = retrieve('optimize_spawnpoints');
-    if (optimizeSpawnpointsValue === null) {
-        store('optimize_spawnpoints', false);
-        optimizeSpawnpoints = false;
-    } else {
-        optimizeSpawnpoints = (optimizeSpawnpointsValue === 'true');
-    }
-    
-    const mapModeValue = retrieve('map_mode');
-    if (mapModeValue === null) {
-        store('map_mode', 'generator');
-        mapMode = 'generator';
-    } else {
-        mapMode = mapModeValue;
-    }
-    
-    const circleSizeValue = retrieve('circlesize');
-    if (circleSizeValue === null) {
-        store('circlesize', 500);
-        circleSize = 500;
-    } else {
-        circleSize = circleSizeValue;
-    }
-    
-    const optimizationAttemptsValue = retrieve('optimizationattempts');
-    if (optimizationAttemptsValue === null) {
-        store('optimizationattempts', 100);
-        optimizationAttempts = 100;
-    } else {
-        optimizationAttempts = optimizationAttemptsValue;
-    }
-    
-}
-
-function store(name, value) {
-    localStorage.setItem(name, value);
-}
-
-function retrieve(name) {
-    return localStorage.getItem(name);
-}
-        </script>
-        
-        <div id="map_canvas"></div>
-        
-        <div class="modal" id="modalSettings" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Settings</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <label for="mapMode">Map Operation Mode:</label>
-                        <div class="input-group mb-3" style="width:100%">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-primary active">
-                                    <input type="radio" name="mapMode" id="route-generator" autocomplete="off"> Route Generator
-                                </label>
-                                <label class="btn btn-primary">
-                                    <input type="radio" name="mapMode" id="route-optimizer" autocomplete="off"> Route Optimizer
-                                </label>
-                                <label class="btn btn-primary">
-                                    <input type="radio" name="mapMode" id="poi-viewer" autocomplete="off"> POI Viewer
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Optimization Attempts:</span>
-                            </div>
-                            <input id="optimization-attempts" name="optimizationAttempts" type="text" class="form-control" aria-label="Optimization attempts">
-                            <div class="input-group-append">
-                                <span class="input-group-text">Tries</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Circle Radius:</span>
-                            </div>
-                            <input id="circle-size" name="circleSize" type="text" class="form-control" aria-label="Circle Radius (in meters)">
-                            <div class="input-group-append">
-                                <span class="input-group-text">Meters</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showGyms" id="show-gyms" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showGyms" id="hide-gyms" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Show known gyms</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle"data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showPokestops" id="show-pokestops" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showPokestops" id="hide-pokestops" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append" width>
-                                <span style="padding: .375rem .75rem;">Show known pokestops</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showSpawnpoints" id="show-spawnpoints" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showSpawnpoints" id="hide-spawnpoints" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Show known spawn points</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showUnknownPOIs" id="show-unknownpois" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showUnknownPOIs" id="hide-unknownpois" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Show unnamed POIs only</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showOptimizeGyms" id="show-optimizegyms" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showOptimizeGyms" id="hide-optimizegyms" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Optimize for gyms</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showOptimizePokestops" id="show-optimizepokestops" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showOptimizePokestops" id="hide-optimizepokestops" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Optimize for pokestops</span>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group mb-3">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="showOptimizeSpawnpoints" id="show-optimizespawnpoints" autocomplete="off"> On
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="showOptimizeSpawnpoints" id="hide-optimizespawnpoints" autocomplete="off"> Off
-                                </label>
-                            </div>
-                            <div class="input-group-append">
-                                <span style="padding: .375rem .75rem;">Optimize for spawnpoints</span>
-                            </div>
-                        </div>
-                        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="save-settings" class="btn btn-primary">Save changes</button>
-                        <button type="button"  id="cancel-settings" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal" id="modalOutput" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Output</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <label for="mapMode">Generated route:</label>
-                        <div class="input-group mb-3">
-                            <textarea id="allCircles" style="height:400px;" class="form-control" aria-label="Route output"></textarea>
-                        </div>
-                        <div class="input-group">
-                            <button id="selectAllAndCopy" class="btn btn-secondary" type="button">Copy to clipboard</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal" id="modalImport" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Import Polygon</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <label for="mapMode">Polygon data:</label>
-                        <div class="input-group mb-3">
-                            <textarea name="importPolygonData" id="polygon-data" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
-                            Note: if running route optimization, you should be viewing the map area where this polygon will be drawn so that current data points will be loaded into the map.
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="save-polygon" class="btn btn-primary">Import</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
-<?php } ?>
+?>
