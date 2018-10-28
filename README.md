@@ -10,12 +10,12 @@ Tools for managing RealDeviceMap data
   * Import a pre-generated polygon coordinate set
   * GeoJSON polygon importing coming soon
 * Route generator
-  * Generate a snaking route of coordinates for all polygons on the map
+  * Generate a snaking route of coordinates for that blankets all polygons on the map
 * Route optimizer
   * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
 * Instance importer
   * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
-* Delete any generated circle by clicking on it
+* Route point deletion - click on a circle and delete
 * When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
 * When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
 
@@ -23,11 +23,13 @@ Tools for managing RealDeviceMap data
 Under settings (the Cog icon) you will find various modes of operation.
 * Circle Size is the radius of circles generated for your routes. Adjust for raids or pokemon (500 for raids, 75 for pokemon)
 * Show gyms/pokestops/pokemon turns on and off viewing of existing points in your RDM RB
-* Run route generator creates a blanket of coordinates covering all your current polygons (drawn, imported, or nest)
-* Run route optimizer creates an optimized route that covers all known points in all your current polygons (drawn, imported, or nest)
-* Retrieve nests will query Overpass for nests polygons and import them into your map
+* Generate route creates a blanket of coordinates covering all your current polygons (drawn, imported, or nest)
+* Generate optimized route creates an optimized route that covers all known points in all your current polygons (drawn, imported, or nest)
+* Retrieve nests queries Overpass for nests polygons and import them into your map
   * Queries for 2018-04-09T01:32:00Z - the last OSM Pogo import (the last nest update)
   * Queries "park" and "recreation_ground" only
+* Click on any route circle to see the option to delete it
+
 * Optimization attempts is the number of times the optimization routine will shuffle the given points and try for a better attempt
 * Show unknown POIs will only show POIs with a name of null
   * Instructions for using Ingress Intel map to generate SQL queries for importing unknown POIs coming soon.
