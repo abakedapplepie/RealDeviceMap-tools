@@ -24,7 +24,11 @@ This file contains all tools in one go.
 #### Nest scanning
 The best way to use the nest scanning feature is to import the nest polygons, generate a route, run that route in RDM to get a list of all spawnpoints into your RDM DB, then go back and import nest polygons and run an optimized route on those polygons.
 
+#### Features coming soon
+* GeoJSON polygon importing
+* Manually add circles to your current route
 
+Have a feature you would like to see? I'm in the RDM Discord, hit me up.
 
 # The following are deprecated:
 
