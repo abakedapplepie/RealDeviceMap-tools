@@ -39,6 +39,8 @@
         <script src="https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.9.0/src/leaflet.geometryutil.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.3/osmtogeojson.js"></script>
+        
+<script type="text/javascript">
 //map and control vars
 var map;
 
