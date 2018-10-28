@@ -27,6 +27,8 @@ The best way to use the nest scanning feature is to import the nest polygons, ge
 #### Features coming soon
 * GeoJSON polygon importing
 * Manually add circles to your current route
+* Query RDM for last pokemon spawned - for running nest reports (eventually)
+  * Along those lines my grand scheme is to poll the spawns db while nest scanning to get statistics over time to build a highly confident nest report
 
 Have a feature you would like to see? I'm in the RDM Discord, hit me up.
 
