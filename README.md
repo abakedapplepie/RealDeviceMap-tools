@@ -6,17 +6,17 @@ This file contains all tools in one go.
 
 ### Features
 * Nest polygon importer
- * Query Overpass for nests from the latest PoGo OSM sync
- * Currently only queries "parks" and "recreation areas"
+  * Query Overpass for nests from the latest PoGo OSM sync
+  * Currently only queries "parks" and "recreation areas"
 * Coordinate polygon importer
- * Import a pre-generated polygon coordinate set
- * GeoJSON polygon importing coming soon
+  * Import a pre-generated polygon coordinate set
+  * GeoJSON polygon importing coming soon
 * Route generator
- * Generate a snaking route of coordinates for all polygons on the map
+  * Generate a snaking route of coordinates for all polygons on the map
 * Route optimizer
- * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
+  * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
 * Instance importer
- * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
+  * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
 * Delete any generated circle by clicking on it
 * When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
 * When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
