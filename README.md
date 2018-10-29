@@ -31,8 +31,8 @@ Under settings (the Cog icon) you will find various modes of operation.
   * Queries for 2018-04-09T01:32:00Z - the last OSM Pogo import (the last nest update)
   * Queries "park" and "recreation_ground" only
 * Click on any route circle to see the option to delete it
-
 * Optimization attempts is the number of times the optimization routine will shuffle the given points and try for a better attempt
+* Last Nest Migration is the time of the last nest migration, used for getting accurate nest reports
 * Show unknown POIs will only show POIs with a name of null
   * Instructions for using Ingress Intel map to generate SQL queries for importing unknown POIs coming soon.
 
