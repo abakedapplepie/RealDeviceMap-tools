@@ -815,7 +815,7 @@ function fetchNestReport(layer) {
             if (typeof layer.tags.name !== 'undefined') {
               $('#modalNestReport  .modal-title').text('Nest Report - ' + layer.tags.name);
             }
-            $('#nestReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id] + '</td><td>' + item.count + '</td></tr>');
+            $('#nestReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
             $('#modalNestReport').modal('show');
           });
         } else {
