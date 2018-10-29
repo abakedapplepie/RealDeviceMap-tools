@@ -6,6 +6,7 @@ Tools for managing RealDeviceMap data
 * Nest polygon importer
   * Query Overpass for nests from the latest PoGo OSM sync
   * Currently only queries "parks" and "recreation areas"
+* Nest reporting feature - after generating a nest, click on it, then click generate report. If spawn data is present in the DB you should see counts of all spawns since the time set as "Last Nest Migration" in settings
 * Coordinate polygon importer
   * Import a pre-generated polygon coordinate set
   * GeoJSON polygon importing coming soon
@@ -15,6 +16,7 @@ Tools for managing RealDeviceMap data
   * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
 * Instance importer
   * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
+* Manual route point placement - click the circle button to enable/disable
 * Route point deletion - click on a circle and delete
 * When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
 * When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
@@ -36,6 +38,8 @@ Under settings (the Cog icon) you will find various modes of operation.
 
 The general flow is to create your polygons, then create a route based off those polygons. 
 
+Click the circle outline to enable manual route point placement, click it again to disable
+
 Click the top polygon button to draw your own polygon
 
 Click the second polygon button to import a polygon
@@ -47,11 +51,10 @@ Click the checkbox to output all route coordinates for saving in the RDM dashboa
 #### Nest scanning
 The best way to use the nest scanning feature is to import the nest polygons, generate a route, run that route in RDM to get a list of all spawnpoints into your RDM DB, then go back and import nest polygons and run an optimized route on those polygons.
 
+You can also now click on a nest polygon to get a report of spawns for that nest since the "Last Nest Migration" setting 
+
 #### Features coming soon
 * GeoJSON polygon importing
-* Manually add circles to your current route
-* Query RDM for last pokemon spawned - for running nest reports (eventually)
-  * Along those lines my grand scheme is to poll the spawns db while nest scanning to get statistics over time to build a highly confident nest report
 
 Have a feature you would like to see? I'm in the RDM Discord, hit me up.
 
