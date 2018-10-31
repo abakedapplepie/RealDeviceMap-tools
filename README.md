@@ -57,7 +57,7 @@ To generate a spawn report, first make sure you are viewing spawnpoints and poke
 
 After a route is generated, you can click on any point of the route to remove it from the map.
 
-#### Example outputs
+## Example outputs
 ![Example spawn route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-spawn.png)
 
 Example route showing a blanket route of 75m circles covering a town for finding new spawn points.
