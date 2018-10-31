@@ -1,4 +1,4 @@
-![RealDeviceMap-tools](assets/map-header.png)
+![RealDeviceMap-tools](assets/map-header.png?raw=true)
 # RealDeviceMap-tools
 Tools for managing RealDeviceMap data
 
@@ -23,66 +23,66 @@ Simply upload rdm-tools.php to your favorite webserver, point the database varia
 ### Usage
 The map has a variety of control buttons for performing different functions: 
 
-#### ![Map Settings](assets/map-settings.png) Settings
+#### ![Map Settings](assets/map-settings.png?raw=true) Settings
 * Nest Migration Date - select the last nest migration
 * Optimization Attempts - number of passes to attempt to optimize coordinates during optimization
 * Circle Size - View distance radius (in meters) to route for
 
 #### Map mode
-* ![Map Mode - Routing](assets/map-routing.png) Enables full functionality including polygon and routing functions
-* ![Map Mode - Viewing](assets/map-viewing.png) For viewing points of interest and spawnpoints only. Enables the option to filter unknown points of interest.
+* ![Map Mode - Routing](assets/map-routing.png?raw=true) Enables full functionality including polygon and routing functions
+* ![Map Mode - Viewing](assets/map-viewing.png?raw=true) For viewing points of interest and spawnpoints only. Enables the option to filter unknown points of interest.
 
 #### View mode
-* ![View Mode - Gyms](assets/map-view-gyms.png) Enables/disables viewing gyms as red dots on the map.
-* ![View Mode - Pokestops](assets/map-view-stops.png) Enables/disables viewing pokestops as green dots on the map.
-* ![View Mode - Spawnpoints](assets/map-view-spawns.png) Enables/disables viewing spawnpoints as blue dots on the map.
+* ![View Mode - Gyms](assets/map-view-gyms.png?raw=true) Enables/disables viewing gyms as red dots on the map.
+* ![View Mode - Pokestops](assets/map-view-stops.png?raw=true) Enables/disables viewing pokestops as green dots on the map.
+* ![View Mode - Spawnpoints](assets/map-view-spawns.png?raw=true) Enables/disables viewing spawnpoints as blue dots on the map.
 
 #### Routing and Drawing
-* ![Draw Polygon](assets/map-draw-polygon.png) Enables drawing of polygons on the map.
-* ![Manual route placement](assets/map-place-circle.png) Enables/disables manual placement of route points. Click on the map to drop a route point in the routing layer based on view radius setting.
-* ![Import Nests](assets/map-import-nests.png) Pulls nest data from OSM and places polygons in the current map bounds covering all parks.
-* ![Import Polygon](assets/map-import-polygon.png) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually.
-* ![Import Instance](assets/map-import-instance.png) Imports an instance from your RDM DB and places the route points in the routing layer based on view radius setting.
-* ![Clear Routing Layer](assets/map-clear-routing-layer.png) Clears the current route from the map, leaving polygons behind
-* ![Clear All Layers](assets/map-clear-all-layers.png) Clears all route points and polygons from map.
-* ![Generate Route](assets/map-generate-route.png) Generates a blanket route over all polygons on the map.
-* ![Optimize Route](assets/map-optimize-route.png) Takes all visible points - gyms, stops, and spawns - and optimizes a route between them based on view radius (circle size).
-* ![Get Output](assets/map-get-output.png) Opens a textbox to generate lat,lon points for all routing layer coordinates, to be saved as an instance in RDM.
+* ![Draw Polygon](assets/map-draw-polygon.png?raw=true) Enables drawing of polygons on the map.
+* ![Manual route placement](assets/map-place-circle.png?raw=true) Enables/disables manual placement of route points. Click on the map to drop a route point in the routing layer based on view radius setting.
+* ![Import Nests](assets/map-import-nests.png?raw=true) Pulls nest data from OSM and places polygons in the current map bounds covering all parks.
+* ![Import Polygon](assets/map-import-polygon.png?raw=true) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually.
+* ![Import Instance](assets/map-import-instance.png?raw=true) Imports an instance from your RDM DB and places the route points in the routing layer based on view radius setting.
+* ![Clear Routing Layer](assets/map-clear-routing-layer.png?raw=true) Clears the current route from the map, leaving polygons behind
+* ![Clear All Layers](assets/map-clear-all-layers.png?raw=true) Clears all route points and polygons from map.
+* ![Generate Route](assets/map-generate-route.png?raw=true) Generates a blanket route over all polygons on the map.
+* ![Optimize Route](assets/map-optimize-route.png?raw=true) Takes all visible points - gyms, stops, and spawns - and optimizes a route between them based on view radius (circle size).
+* ![Get Output](assets/map-get-output.png?raw=true) Opens a textbox to generate lat,lon points for all routing layer coordinates, to be saved as an instance in RDM.
 
 #### Polygon options
-![Polygon Options](assets/polygon-options.png)
+![Polygon Options](assets/polygon-options.png?raw=true)
 
 Clicking on any polygon will allow you to generate a spawn report, remove it from the map, or export as GeoJSON.
 
 To generate a spawn report, first make sure you are viewing spawnpoints and pokestops as they must be visible on your map to generate the query for your database server. Keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
 
-![Example spawn report](assets/example-spawn-report.png)
+![Example spawn report](assets/example-spawn-report.png?raw=true)
 
 Example spawn report for a local nest
 
 
 #### Route options
-![Route Options](assets/route-point-options.png)
+![Route Options](assets/route-point-options.png?raw=true)
 
 After a route is generated, you can click on any point of the route to remove it from the map.
 
 ## Example outputs
-![Example spawn route](assets/example-blanket-route-spawn.png)
+![Example spawn route](assets/example-blanket-route-spawn.png?raw=true)
 
 Example route showing a blanket route of 75m circles covering a town for finding new spawn points.
 
-![Example gym route](assets/example-blanket-route-gym.png)
+![Example gym route](assets/example-blanket-route-gym.png?raw=true)
 
 Example route showing the same polygon covered with 500m circles for finding new raids and stops.
 
-![Example optimized gym route](assets/example-optimized-route-gyms.png)
+![Example optimized gym route](assets/example-optimized-route-gyms.png?raw=true)
 
 Example optimization covering gyms in a polygon
 
-![Example nest route](assets/example-blanket-route-nest.png)
+![Example nest route](assets/example-blanket-route-nest.png?raw=true)
 
 Example optimization covering all nests in map bounds, for finding new spawnpoints in nests
 
-![Example optimized nest route](assets/example-optimized-route-nests.png)
+![Example optimized nest route](assets/example-optimized-route-nests.png?raw=true)
 
 Example optimization covering known spawnpoints in multiple nests. Note that you can remove overlapping circles by clicking on them and choosing delete - the optimization routine still needs some work.
