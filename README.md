@@ -53,7 +53,7 @@ Clicking on any polygon will allow you to generate a spawn report, remove it fro
 To generate a spawn report, first make sure you are viewing spawnpoints and pokestops as they must be visible on your map to generate the query for your database server. Keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
 
 #### Route options
-![Route Options](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/route-options.png)
+![Route Options](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/route-point-options.png)
 
 After a route is generated, you can click on any point of the route to remove it from the map.
 
@@ -70,7 +70,7 @@ Example route showing the same polygon covered with 500m circles for finding new
 
 Example optimization covering gyms in a polygon
 
-![Example nest route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-nests.png)
+![Example nest route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-nest.png)
 
 Example optimization covering all nests in map bounds, for finding new spawnpoints in nests
 
