@@ -1,4 +1,10 @@
-<?php /* change db vars on line 1408 */ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
+<?php 
+$DB_TYPE="mysql"; 
+$DB_HOST="1.2.3.4"; 
+$DB_USER="rdmuser"; 
+$DB_PSWD="pw"; 
+$DB_NAME="rdmdb"; 
+if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 <html>
   <head>
     <title>RealDeviceMap Toolbox</title>
@@ -1402,12 +1408,8 @@ function retrieveSetting(key) {
 }
 
 function map_helper_init() {
-  global $db;
+  global $db,$DB_TYPE,$DB_HOST,$DB_USER,$DB_PSWD;
   //db vars
-  $DB_TYPE = "mysql";
-  $DB_HOST = "1.2.3.4";
-  $DB_USER = "rdmuser";
-  $DB_PSWD = "pw";
   $DB_NAME = "rdmdb";
   $DB_PORT = 3306;
 
