@@ -1,71 +1,79 @@
+![RealDeviceMap-tools](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-header.png)
 # RealDeviceMap-tools
 Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
 ### Features
-* Nest polygon importer
-  * Query Overpass for nests from the latest PoGo OSM sync
-  * Currently only queries "parks" and "recreation areas"
-* Nest reporting feature - after generating a nest, click on it, then click generate report. If spawn data is present in the DB you should see counts of all spawns since the time set as "Last Nest Migration" in settings
-* Coordinate polygon importer
-  * Import a pre-generated polygon coordinate set
-  * GeoJSON polygon importing coming soon
-* Route generator
-  * Generate a snaking route of coordinates for that blankets all polygons on the map
-* Route optimizer
-  * Generate a route optimized for existing points - gyms, stops, and/or spawns. 
-* Instance importer
-  * Import an instance from RDM. View the coordinates, delete unneeded coordinates, etc. Does not save back to DB, manually save in Dashboard.
-* Manual route point placement - click the circle button to enable/disable
-* Route point deletion - click on a circle and delete
-* When viewing gyms, stops, and spawns you can click on the marker to get the ID from the database
-* When viewing gyms and stops, turn on the unknown POI feature to show POIs that you do not have the metadata for yet. Useful for using the Ingress Intel map.
+* View/hide known gyms, stops, and spawnpoints
+* Optionally show only unknown gyms/stops
+* Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
+* CSV and GeoJSON polygon import
+* GeoJSON polygon export
+* Coordinate generation - blanket fill polygons with route points
+* Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
+* Instance import - view your instance and add/remove route points, then reexport and upload to RDM
 
-#### Usage
-Under settings (the Cog icon) you will find various modes of operation.
-* Circle Size is the radius of circles generated for your routes. Adjust for raids or pokemon (500 for raids, 75 for pokemon)
-* Show gyms/pokestops/pokemon turns on and off viewing of existing points in your RDM RB
-* Generate route creates a blanket of coordinates covering all your current polygons (drawn, imported, or nest)
-* Generate optimized route creates an optimized route that covers all known points in all your current polygons (drawn, imported, or nest)
-* Retrieve nests queries Overpass for nests polygons and import them into your map
-  * Queries for 2018-04-09T01:32:00Z - the last OSM Pogo import (the last nest update)
-  * Queries "park" and "recreation_ground" only
-* Click on any route circle to see the option to delete it
-* Optimization attempts is the number of times the optimization routine will shuffle the given points and try for a better attempt
-* Last Nest Migration is the time of the last nest migration, used for getting accurate nest reports
-* Show unknown POIs will only show POIs with a name of null
-  * Instructions for using Ingress Intel map to generate SQL queries for importing unknown POIs coming soon.
+### Installation
+Simply upload rdm-tools.php to your favorite webserver, point the database variables (found currently at line 1409) to your RDM DB's IP, and configure your username/password.
 
-The general flow is to create your polygons, then create a route based off those polygons. 
+### Usage
+The map has a variety of control buttons for performing different functions: 
 
-Click the circle outline to enable manual route point placement, click it again to disable
+#### ![Map Settings](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-settings.png) Settings
+* Nest Migration Date - select the last nest migration
+* Optimization Attempts - number of passes to attempt to optimize coordinates during optimization
+* Circle Size - View distance radius (in meters) to route for
 
-Click the top polygon button to draw your own polygon
+#### Map mode
+* ![Map Mode - Routing](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-routing.png) Enables full functionality including polygon and routing functions
+* ![Map Mode - Viewing](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-viewing.png) For viewing points of interest and spawnpoints only. Enables the option to filter unknown points of interest.
 
-Click the second polygon button to import a polygon
+#### View mode
+* ![View Mode - Gyms](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-view-gyms.png) Enables/disables viewing gyms as red dots on the map.
+* ![View Mode - Pokestops](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-view-stops.png) Enables/disables viewing pokestops as green dots on the map.
+* ![View Mode - Spawnpoints](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-view-spawns.png) Enables/disables viewing spawnpoints as blue dots on the map.
 
-Click the garbage button to remove all circles (route coordinates) and polygons
+#### Routing and Drawing
+* ![Draw Polygon](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-draw-polygon.png) Enables drawing of polygons on the map.
+* ![Manual route placement](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-place-circle.png) Enables/disables manual placement of route points. Click on the map to drop a route point in the routing layer based on view radius setting.
+* ![Import Nests](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-import-nests.png) Pulls nest data from OSM and places polygons in the current map bounds covering all parks.
+* ![Import Polygon](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-import-polygon.png) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually.
+* ![Import Instance](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-import-instance.png) Imports an instance from your RDM DB and places the route points in the routing layer based on view radius setting.
+* ![Clear Routing Layer](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-clear-routing-layer.png) Clears the current route from the map, leaving polygons behind
+* ![Clear All Layers](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-clear-all-layers.png) Clears all route points and polygons from map.
+* ![Generate Route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-generate-route.png) Generates a blanket route over all polygons on the map.
+* ![Optimize Route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-optimize-route.png) Takes all visible points - gyms, stops, and spawns - and optimizes a route between them based on view radius (circle size).
+* ![Get Output](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/map-get-output.png) Opens a textbox to generate lat,lon points for all routing layer coordinates, to be saved as an instance in RDM.
 
-Click the checkbox to output all route coordinates for saving in the RDM dashboard as an instance.
+#### Polygon options
+![Polygon Options](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/polygon-options.png)
 
-#### Nest scanning
-The best way to use the nest scanning feature is to import the nest polygons, generate a route, run that route in RDM to get a list of all spawnpoints into your RDM DB, then go back and import nest polygons and run an optimized route on those polygons.
+Clicking on any polygon will allow you to generate a spawn report, remove it from the map, or export as GeoJSON.
 
-You can also now click on a nest polygon to get a report of spawns for that nest since the "Last Nest Migration" setting 
+To generate a spawn report, first make sure you are viewing spawnpoints and pokestops as they must be visible on your map to generate the query for your database server. Keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
 
-#### Features coming soon
-* GeoJSON polygon importing
+#### Route options
+![Route Options](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/route-options.png)
 
-Have a feature you would like to see? I'm in the RDM Discord, hit me up.
+After a route is generated, you can click on any point of the route to remove it from the map.
 
-# The following are deprecated:
+#### Example outputs
+![Example spawn route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-spawn.png)
 
-These tools are available in the main rdm-tools.php file and will no longer be maintained separately.
+Example route showing a blanket route of 75m circles covering a town for finding new spawn points.
 
-## circle-generator.html
-Using Leaflet and OSM now.
+![Example gym route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-gym.png)
 
-Draw one or more polygons using the polygon editor (polygon icon), when each polygon is completed a set of coordinates will be generated and represented as circles based on your circle size setting, which you can change under the toolbox menu. To view the output, click the checkbox icon.
+Example route showing the same polygon covered with 500m circles for finding new raids and stops.
 
-## unknown-helper.php
-Connects to your database and shows you all the gyms and pokestops that you have listed as unknown on a map. Use this information to pull data from the Ingress Intel map. Pokestops are green, gyms are red.
+![Example optimized gym route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-optimized-route-gyms.png)
+
+Example optimization covering gyms in a polygon
+
+![Example nest route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-blanket-route-nests.png)
+
+Example optimization covering all nests in map bounds, for finding new spawnpoints in nests
+
+![Example optimized nest route](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-optimized-route-nests.png)
+
+Example optimization covering known spawnpoints in multiple nests. Note that you can remove overlapping circles by clicking on them and choosing delete - the optimization routine still needs some work.
