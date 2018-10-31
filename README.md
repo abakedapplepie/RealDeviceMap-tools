@@ -15,7 +15,7 @@ Tools for managing RealDeviceMap data
 * GeoJSON polygon export
 * Coordinate generation - blanket fill polygons with route points
 * Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
-* Instance import - view your instance and add/remove route points, then reexport and upload to RDM
+* Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
 
 ### Installation
 Simply upload rdm-tools.php to your favorite webserver, point the database variables (found currently at line 1409) to your RDM DB's IP, and configure your username/password.
