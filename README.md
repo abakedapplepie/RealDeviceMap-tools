@@ -55,6 +55,10 @@ The map has a variety of control buttons for performing different functions:
 Clicking on any polygon will allow you to generate a spawn report, remove it from the map, or export as GeoJSON.
 
 To generate a spawn report, first make sure you are viewing spawnpoints and pokestops as they must be visible on your map to generate the query for your database server. Keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
+![Example spawn report](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/example-spawn-report.png)
+
+Example spawn report for a local nest
+
 
 #### Route options
 ![Route Options](https://raw.githubusercontent.com/abakedapplepie/RealDeviceMap-tools/assets/route-point-options.png)
