@@ -3,6 +3,12 @@
 Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
+### Changes
+* Now you can report on all nests at once!
+* You don't have to have spawns/stops visible on map to perform reporting anymore.
+* Revised optimization function - same super simple algorithm, might be better performing though
+* Changes to data storage, functions no longer loop through map objects, coordinates for gyms/stops/spawns are stored separately. Should help with performance
+
 ### Features
 * View/hide known gyms, stops, and spawnpoints
 * Optionally show only unknown gyms/stops
@@ -24,12 +30,13 @@ Simply upload rdm-tools.php to your favorite webserver, point the database varia
 The map has a variety of control buttons for performing different functions: 
 
 #### ![Map Settings](assets/map-settings.png?raw=true) Settings
-* Nest Migration Date - select the last nest migration
-* Optimization Attempts - number of passes to attempt to optimize coordinates during optimization
-* Circle Size - View distance radius (in meters) to route for
+* Nest Migration Date - select the last nest migration.
+* Optimization Attempts - number of passes to attempt to optimize coordinates during optimization.
+* Circle Size - View distance radius (in meters) to route for.
+* Generate all nests - Get a report of spawns for all nests in current map bounds. _see below_
 
 #### Map mode
-* ![Map Mode - Routing](assets/map-routing.png?raw=true) Enables full functionality including polygon and routing functions
+* ![Map Mode - Routing](assets/map-routing.png?raw=true) Enables full functionality including polygon and routing functions.
 * ![Map Mode - Viewing](assets/map-viewing.png?raw=true) For viewing points of interest and spawnpoints only. Enables the option to filter unknown points of interest.
 
 #### View mode
@@ -54,12 +61,18 @@ The map has a variety of control buttons for performing different functions:
 
 Clicking on any polygon will allow you to generate a spawn report, remove it from the map, or export as GeoJSON.
 
-To generate a spawn report, first make sure you are viewing spawnpoints and pokestops as they must be visible on your map to generate the query for your database server. Keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
+To generate a spawn report, keep in mind the Nest Migration Date setting. The query generated for your database will only grab spawn data from that point forward. If you are just looking to get data for your area and not specifically reporting on a nest, set the date accordingly before generating your report. Once generated, a modal window will open showing a table of all the spawn counts for that polygon.
 
 ![Example spawn report](assets/example-spawn-report.png?raw=true)
 
-Example spawn report for a local nest
+Example spawn report for a local nest.
 
+#### New feature - generate a spawn report for all nests
+In the settings menu, a new button is available to create a report for all nests in your current map bounds. Make sure you import nest polygons first!
+
+![Example spawn report](assets/example-all-nests-report.png?raw=true)
+
+Example multi-nest report
 
 #### Route options
 ![Route Options](assets/route-point-options.png?raw=true)
