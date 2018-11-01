@@ -33,7 +33,7 @@ The map has a variety of control buttons for performing different functions:
 * Nest Migration Date - select the last nest migration.
 * Optimization Attempts - number of passes to attempt to optimize coordinates during optimization.
 * Circle Size - View distance radius (in meters) to route for.
-* Generate all nests - Get a report of spawns for all nests in current map bounds. _see below_
+* Generate all nests - Get a report of spawns for all nests in current map bounds. _See below_.
 
 #### Map mode
 * ![Map Mode - Routing](assets/map-routing.png?raw=true) Enables full functionality including polygon and routing functions.
