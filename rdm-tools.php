@@ -1,10 +1,12 @@
 <?php 
-$DB_TYPE="mysql"; 
-$DB_HOST="1.2.3.4"; 
-$DB_USER="rdmuser"; 
-$DB_PSWD="pw"; 
-$DB_NAME="rdmdb"; 
-$DB_PORT = 3306;
+
+define('DB_TYPE', "mysql");
+define('DB_HOST', "1.2.3.4");
+define('DB_USER', "rdmuser");
+define('DB_PSWD', "password");
+define('DB_NAME', "rdmdb");
+define('DB_PORT', 3306);
+
 if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 <html>
   <head>
@@ -1476,9 +1478,9 @@ function retrieveSetting(key) {
 }
 
 function map_helper_init() {
-  global $db,$DB_TYPE,$DB_HOST,$DB_USER,$DB_PSWD;
+  global $db;
 
-  $db = initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT);
+  $db = initDB(DB_HOST, DB_USER, DB_PSWD, DB_NAME, DB_PORT);
 
   $args = json_decode($_POST['data']);
   if ($args->get_spawndata === true) { getSpawnData($args); }
@@ -1608,6 +1610,7 @@ function getData($args) {
       );
     }
   }
+
 
   echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'spawnpoints' => $spawns));
 }
