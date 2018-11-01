@@ -24,7 +24,7 @@ Tools for managing RealDeviceMap data
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
 
 ### Installation
-Simply upload rdm-tools.php to your favorite webserver, point the database variables (found currently at line 1409) to your RDM DB's IP, and configure your username/password.
+Simply upload rdm-tools.php to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
 
 ### Usage
 The map has a variety of control buttons for performing different functions: 
