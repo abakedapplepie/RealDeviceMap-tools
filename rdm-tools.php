@@ -4,6 +4,7 @@ $DB_HOST="1.2.3.4";
 $DB_USER="rdmuser"; 
 $DB_PSWD="pw"; 
 $DB_NAME="rdmdb"; 
+$DB_PORT = 3306;
 if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 <html>
   <head>
@@ -48,7 +49,6 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -104,7 +104,7 @@ var settings = {
   showUnknownPois: null,
   circleSize: null,
   optimizationAttempts: null,
-  nestMigrationDate: null,  
+  nestMigrationDate: null,
   mapMode: null,
   mapCenter: null,
   mapZoom: null
@@ -118,15 +118,14 @@ var gymLayer,
   circleLayer,
   nestLayer;
 
-
 $(function(){
   loadSettings();
   initMap();
-  setMapMode();  
+  setMapMode();
   setShowMode();
-  
+
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
-  
+
   $('#savePolygon').on('click', function(event) {
     var polygonData = [];
     var importReady = true
@@ -134,7 +133,7 @@ $(function(){
     //TODO: add check for json or txt
     //TODO: add support for multi poly json array
     var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
-    
+
      if (importType == 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val()));
       importReady = true;
@@ -171,19 +170,18 @@ $(function(){
       };
       polygonData.forEach(function(polygon) {
         var newPolygon = L.polygon(polygon, polygonOptions).bindPopup(function (layer) {
-          var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Imported Polygon</span></div>' + 
-                       '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' + 
-                       layer._leaflet_id + 
-                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' + 
-                       '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' + 
-                       layer._leaflet_id + 
-                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' + 
-                       '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' + 
-                       layer._leaflet_id + 
+          var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Imported Polygon</span></div>' +
+                       '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
+                       layer._leaflet_id +
+                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+                       '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+                       layer._leaflet_id +
+                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+                       '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                       layer._leaflet_id +
                        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
           return output;
         }).addTo(editableLayer);
-        console.log(newPolygon)
       });
     }
     $('#modalImport').modal('hide');
@@ -198,16 +196,16 @@ $(function(){
     $('#spawnReportTable > tbody').empty();
     $('#modalSpawnReport .modal-title').text();
   });
-  
+
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
   });
-      
-  $('#modalSettings').on('hidden.bs.modal', function(event) { 
+
+  $('#modalSettings').on('hidden.bs.modal', function(event) {
     var circleSize = $('#circleSize').val();
-    var optimizationAttempts = $('#optimizationAttempts').val(); 
-    var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).format('X');  
-    
+    var optimizationAttempts = $('#optimizationAttempts').val();
+    var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
@@ -275,7 +273,7 @@ function initMap() {
       }
     }]
   })
-  
+
   buttonMapModeRouteGenerator = L.easyButton({
     id: 'enableMapModeRouteGenerator',
     states: [{
@@ -289,9 +287,9 @@ function initMap() {
       }
     }]
   })
-  
+
   var barMapMode = L.easyBar([buttonMapModeRouteGenerator, buttonMapModePoiViewer], { position: 'topright' }).addTo(map);
-  
+
   buttonShowGyms = L.easyButton({
     id: 'showGyms',
     states: [{
@@ -314,7 +312,7 @@ function initMap() {
       }
     }]
   })
-  
+
   buttonShowPokestops = L.easyButton({
     id: 'showPokestops',
     states: [{
@@ -337,7 +335,7 @@ function initMap() {
       }
     }]
   })
-  
+
   buttonShowSpawnpoints = L.easyButton({
     id: 'showSpawnpoints',
     states:[{
@@ -360,7 +358,7 @@ function initMap() {
       }
     }]
   })
-  
+
   buttonShowUnknownPois = L.easyButton({
     id: 'showUnknownPois',
     states:[{
@@ -383,7 +381,7 @@ function initMap() {
       }
     }]
   })
-  
+
   var barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
 
   drawControl = new L.Control.Draw({
@@ -407,7 +405,7 @@ function initMap() {
       poly: false
     }
   }).addTo(map);
-  
+
   buttonManualCircle = L.easyButton({
     states: [{
       stateName: 'enableManualCircle',
@@ -415,7 +413,7 @@ function initMap() {
       title: 'Enable manual circle mode',
       onClick: function (btn) {
         manualCircle = true;
-        btn.state('disableManualCircle');  
+        btn.state('disableManualCircle');
       }
     }, {
       stateName: 'disableManualCircle',
@@ -423,11 +421,11 @@ function initMap() {
       title: 'Disable manual circle mode',
       onClick: function (btn) {
         manualCircle = false;
-        btn.state('enableManualCircle');  
+        btn.state('enableManualCircle');
       }
     }]
   });
-  
+
   buttonImportNests = L.easyButton({
     states: [{
       stateName: 'openImportPolygonModal',
@@ -438,7 +436,7 @@ function initMap() {
       }
     }]
   });
-  
+
   buttonModalImportPolygon = L.easyButton({
     states: [{
       stateName: 'openImportPolygonModal',
@@ -472,7 +470,7 @@ function initMap() {
       }
     }]
   });
-  
+
   buttonTrash = L.easyButton({
     states: [{
       stateName: 'clearMap',
@@ -485,9 +483,9 @@ function initMap() {
       }
     }]
   });
-    
+
   barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute, buttonTrash], { position: 'topleft' }).addTo(map);
-    
+
   buttonGenerateRoute = L.easyButton({
     id: 'generateRoute',
     states:[{
@@ -499,7 +497,7 @@ function initMap() {
       }
     }]
   })
-  
+
   buttonOptimizeRoute = L.easyButton({
     id: 'optimizeRoute',
     states:[{
@@ -511,9 +509,9 @@ function initMap() {
       }
     }]
   })
-  
+
   barRoute = L.easyBar([buttonGenerateRoute, buttonOptimizeRoute], { position: 'topleft' }).addTo(map);
-  
+
   buttonModalOutput = L.easyButton({
     states: [{
       stateName: 'openOutputModal',
@@ -532,7 +530,7 @@ function initMap() {
       icon: 'fas fa-cog',
       title: 'Open settings',
       onClick: function (control){
-        
+
         if (settings.circleSize != null) {
           $('#circleSize').val(settings.circleSize);
         } else {
@@ -546,8 +544,8 @@ function initMap() {
         }
 
         if (settings.nestMigrationDate != null) {
-          $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).format('MM/DD/YYYY HH:mm'));
-        } 
+          $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
+        }
         $('#modalSettings').modal('show');
       }
     }]
@@ -556,15 +554,15 @@ function initMap() {
   map.on('draw:created', function (e) {
     var layer = e.layer;
     layer.bindPopup(function (layer) {
-      var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' + 
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' + 
-                   layer._leaflet_id + 
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' + 
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' + 
-                   layer._leaflet_id + 
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' + 
-                   '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' + 
-                   layer._leaflet_id + 
+      var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+                   '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
       return output;
     }).addTo(editableLayer);
@@ -573,9 +571,9 @@ function initMap() {
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
-    
+
   });
-  
+
   map.on('zoomend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -599,7 +597,7 @@ function initMap() {
     storeSetting('mapZoom');
     loadData();
   });
-  
+
   map.on('click', function(e) {
     if (manualCircle === true) {
       var newCircle = new L.circle(e.latlng, {
@@ -615,31 +613,34 @@ function initMap() {
 }
 
 function setShowMode() {
-  
+
   if (settings.showGyms !== false) {
     buttonShowGyms.state('enableShowGyms');
     buttonShowGyms.button.style.backgroundColor = '#B7E9B7';
   } else {
+    gymLayer.clearLayers();
     buttonShowGyms.state('disableShowGyms');
     buttonShowGyms.button.style.backgroundColor = '#E9B7B7';
   }
-  
+
   if (settings.showPokestops !== false) {
     buttonShowPokestops.state('enableShowPokestops');
     buttonShowPokestops.button.style.backgroundColor = '#B7E9B7';
   } else {
+    pokestopLayer.clearLayers();
     buttonShowPokestops.state('disableShowPokestops');
     buttonShowPokestops.button.style.backgroundColor = '#E9B7B7';
   }
-  
+
   if (settings.showSpawnpoints !== false) {
     buttonShowSpawnpoints.state('enableShowSpawnpoints');
     buttonShowSpawnpoints.button.style.backgroundColor = '#B7E9B7';
   } else {
+    spawnpointLayer.clearLayers();
     buttonShowSpawnpoints.state('disableShowSpawnpoints');
     buttonShowSpawnpoints.button.style.backgroundColor = '#E9B7B7';
   }
-  
+
   if (settings.showUnknownPois !== false) {
     buttonShowUnknownPois.state('enableShowUnknownPois');
     buttonShowUnknownPois.button.style.backgroundColor = '#B7E9B7';
@@ -655,7 +656,7 @@ function setMapMode(){
     case 'RouteGenerator':
       buttonMapModePoiViewer.button.style.backgroundColor = '#E9B7B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#B7E9B7';
-      
+
       $('.leaflet-draw').show();
       buttonShowUnknownPois.disable();
       barShowPolyOpts.enable();
@@ -666,7 +667,7 @@ function setMapMode(){
     case 'PoiViewer':
       buttonMapModePoiViewer.button.style.backgroundColor = '#B7E9B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#E9B7B7';
-      
+
       editableLayer.clearLayers();
       circleLayer.clearLayers();
       nestLayer.clearLayers();
@@ -733,7 +734,7 @@ function getInstance(instanceName = null) {
       }
     });
   }
-}  
+}
 
 function generateOptimizedRoute() {
   circleLayer.clearLayers();
@@ -743,49 +744,45 @@ function generateOptimizedRoute() {
     point;
 
   var points = [];
-  
+
   var route = function(layer) {
     var poly = layer.toGeoJSON();
     var line = turf.polygonToLine(poly);
 
     if (settings.showGyms == true) {
-      gymLayer.eachLayer(function (layer) {
-        currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-        point = turf.point([currentLatLng[1], currentLatLng[0]]);
+      gyms.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
-          points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+          points.push(item)
         }
       });
     }
     if (settings.showPokestops == true) {
-      pokestopLayer.eachLayer(function (layer) {
-        currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-        point = turf.point([currentLatLng[1], currentLatLng[0]]);
+      stops.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
-          points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+          points.push(item)
         }
       });
     }
     if (settings.showSpawnpoints == true) {
-      spawnpointLayer.eachLayer(function (layer) {
-        currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-        point = turf.point([currentLatLng[1], currentLatLng[0]]);
+      spawns.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
-          points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
+          points.push(item)
         }
       });
     }
   }
 
-
   editableLayer.eachLayer(function (layer) {
      route(layer);
   });
-  
+
   nestLayer.eachLayer(function (layer) {
      route(layer);
   });
-  
+
   const data = {
     'get_optimization': true,
     'circle_size': settings.circleSize,
@@ -794,14 +791,18 @@ function generateOptimizedRoute() {
   };
   const json = JSON.stringify(data);
 
+  var sent = points.length;
+
   $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
+      var recieved = result.bestAttempt.length;
+      console.log("sent: " + sent + ", recieved: " + recieved);
       result.bestAttempt.forEach(function(point) {
-         newCircle = L.circle([point.latitude, point.longitude], {
+         newCircle = L.circle([point.lat, point.lng], {
           color: 'red',
           fillColor: '#f03',
           fillOpacity: 0.5,
@@ -819,7 +820,7 @@ function generateRoute() {
 
   var xMod = Math.sqrt(0.75);
   var yMod = Math.sqrt(0.568);
-  
+
   var route = function(layer) {
     var poly = layer.toGeoJSON();
     var line = turf.polygonToLine(poly);
@@ -865,7 +866,6 @@ function generateRoute() {
     }
   }
 
-
   editableLayer.eachLayer(function (layer) {
      route(layer);
   });
@@ -874,64 +874,56 @@ function generateRoute() {
   });
 }
 
-function exportLayer(layer) {
-}
-
 function getSpawnReport(layer) {
-  var currentLatLng,
-    points = [];
-  
+  var reportStops = [],
+    reportSpawns = [];
+
   var poly = layer.toGeoJSON();
   var line = turf.polygonToLine(poly);
-  
-  if (settings.showPokestops == true) {
-    pokestopLayer.eachLayer(function (layer) {
-      currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-      point = turf.point([currentLatLng[1], currentLatLng[0]]);
-      if (turf.inside(point, poly)) {
-        points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
-      }
-    });
-  }
-  if (settings.showSpawnpoints == true) {
-    spawnpointLayer.eachLayer(function (layer) {
-      currentLatLng = [layer.getLatLng().lat, layer.getLatLng().lng];
-      point = turf.point([currentLatLng[1], currentLatLng[0]]);
-      if (turf.inside(point, poly)) {
-        points.push({'latitude': point.geometry.coordinates[1], 'longitude': point.geometry.coordinates[0]});
-      }
-    });
-  }
-  
+
+  stops.forEach(function(item) {
+    point = turf.point([item.lng, item.lat]);
+    if (turf.inside(point, poly)) {
+      reportStops.push(item.id);
+    }
+  });
+  spawns.forEach(function(item) {
+    point = turf.point([item.lng, item.lat]);
+    if (turf.inside(point, poly)) {
+      reportStops.push(item.id);
+    }
+  });
+
   const data = {
     'get_spawndata': true,
     'nest_migration_timestamp': settings.nestMigrationDate,
-    'spawnpoints': points
+    'stops': reportStops,
+    'spawns': reportSpawns
   };
   const json = JSON.stringify(data);
-  
+
   $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
-        if (result.spawns !== null) {
-          result.spawns.forEach(function(item) {
-            if (typeof layer.tags !== 'undefined') {
-              $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
-            }
-            $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
-            $('#modalSpawnReport').modal('show');
-          });
-        } else {
-            if (typeof layer.tags !== 'undefined') {
+      if (result.spawns !== null) {
+        result.spawns.forEach(function(item) {
+          if (typeof layer.tags !== 'undefined') {
             $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
           }
-          $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">No data available.</td></tr>');
+          $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
           $('#modalSpawnReport').modal('show');
-            
+        });
+      } else {
+          if (typeof layer.tags !== 'undefined') {
+          $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
         }
+        $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">No data available.</td></tr>');
+        $('#modalSpawnReport').modal('show');
+
+      }
     }
   });
 }
@@ -993,15 +985,15 @@ function getNests() {
           if (typeof layer.tags.name !== 'undefined') {
             var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Nest: ' + layer.tags.name + '</span></div>';
           }
-          var output = name + 
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' + 
-                  layer._leaflet_id + 
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' + 
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' + 
-                  layer._leaflet_id + 
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' + 
-                  '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' + 
-                  layer._leaflet_id + 
+          var output = name +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+                  '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
           return output;
         });
@@ -1025,11 +1017,11 @@ function loadData() {
     'get_data': true,
     'min_lat': bounds.getSouthWest().lat,
     'max_lat': bounds.getNorthEast().lat,
-    'min_lon': bounds.getSouthWest().lng,
-    'max_lon': bounds.getNorthEast().lng,
-    'show_gyms': settings.showGyms,
-    'show_pokestops': settings.showPokestops,
-    'show_spawnpoints': settings.showSpawnpoints,
+    'min_lng': bounds.getSouthWest().lng,
+    'max_lng': bounds.getNorthEast().lng,
+    'show_gyms': true,
+    'show_pokestops': true,
+    'show_spawnpoints': true,
     'show_unknownpois': settings.showUnknownPois
   };
   const json = JSON.stringify(data);
@@ -1043,39 +1035,55 @@ function loadData() {
       gymLayer.clearLayers();
       spawnpointLayer.clearLayers();
 
-      if (result.gyms != null && settings.showGyms == true) {
+      gyms = [];
+      stops = [];
+      spawns = [];
+
+      if (result.gyms != null) {
         result.gyms.forEach(function(item) {
-          var marker = L.circleMarker([item.lat, item.lon], {
-            color: 'red',
-            radius: 2,
-            opacity: 0.6
-          }).addTo(map);
-          marker.tags = { id } = item.id;
-          marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(gymLayer);
+          gyms.push(item);
+          if (settings.showGyms === true) {
+            var marker = L.circleMarker([item.lat, item.lng], {
+              color: 'red',
+              radius: 2,
+              opacity: 0.6
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(gymLayer);
+          }
         });
       }
 
-      if (result.pokestops != null && settings.showPokestops == true) {
+      if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
-          var marker = L.circleMarker([item.lat, item.lon], {
-            color: 'green',
-            radius: 2,
-            opacity: 0.6
-          }).addTo(map);
-          marker.tags = { id } = item.id;
-          marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopLayer);
+          stops.push(item);
+          if (settings.showPokestops === true) {
+            var marker = L.circleMarker([item.lat, item.lng], {
+              color: 'green',
+              radius: 2,
+              opacity: 0.6
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopLayer);
+          }
         });
-      }
+      }showPokestops
 
-      if (result.spawnpoints != null && settings.showSpawnpoints == true) {
+      if (result.spawnpoints != null) {
         result.spawnpoints.forEach(function(item) {
-          var marker = L.circleMarker([item.lat, item.lon], {
-            color: 'blue',
-            radius: 1,
-            opacity: 0.6
-          }).addTo(map);
-          marker.tags = { id } = item.id;
-          marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(spawnpointLayer);
+          spawns.push(item);
+          if (settings.showSpawnpoints === true) {
+            var marker = L.circleMarker([item.lat, item.lng], {
+              color: 'blue',
+              radius: 1,
+              opacity: 0.6
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(spawnpointLayer);
+          }
         });
       }
     }
@@ -1129,9 +1137,69 @@ $(document).on("click", ".getSpawnReport", function() {
   getSpawnReport(layer);
 });
 
+$(document).on("click", "#getAllNests", function() {
+  var missedCount = 0;
+  nestLayer.eachLayer(function(layer) {
+    var reportStops = [],
+      reportSpawns = [];
+
+    var center = layer.getBounds().getCenter()
+
+    var poly = layer.toGeoJSON();
+    var line = turf.polygonToLine(poly);
+
+    stops.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        reportStops.push(item.id);
+      }
+    });
+    spawns.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        reportStops.push(item.id);
+      }
+    });
+
+    const data = {
+      'get_spawndata': true,
+      'nest_migration_timestamp': settings.nestMigrationDate,
+      'stops': reportStops,
+      'spawns': reportSpawns
+    };
+    const json = JSON.stringify(data);
+
+    $.ajax({
+      url: this.href,
+      type: 'POST',
+      dataType: 'json',
+      data: {'data': json},
+      success: function (result) {
+        if (result.spawns !== null) {
+          if (typeof layer.tags.name !== 'undefined') {
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+          } else {
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">Spawn Report - Unnamed atg <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+          }
+          result.spawns.forEach(function(item) {
+            $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
+          });
+        } else {
+          if (typeof layer.tags.name !== 'undefined') {
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong>  at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+          } else {
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small">Unnamed at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+          }
+        }
+      }
+    });
+    $('#modalSettings').modal('hide');
+    $('#modalSpawnReport').modal('show');
+  });
+});
+
 $(document).on("click", ".exportLayer", function() {
   var id = $(this).attr('data-layer-id');
-  console.log(id)
   var layer;
   var container = $(this).attr('data-layer-container');
   switch (container) {
@@ -1142,15 +1210,15 @@ $(document).on("click", ".exportLayer", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-  
+
   var poly = JSON.stringify(layer.toGeoJSON());
   $('#exportPolygonData').val(poly);
-  
+
   $('#modalExportPolygon').modal('show');
 });
 
 function loadSettings() {
-  
+
    const defaultSettings = {
     showGyms: true,
     showPokestops: true,
@@ -1158,7 +1226,7 @@ function loadSettings() {
     showUnknownPois: false,
     circleSize: 500,
     optimizationAttempts: 100,
-    nestMigrationDate: 1539201600,  
+    nestMigrationDate: 1539201600,
     mapMode: 'PoiViewer',
     mapCenter: [42.548197, -83.14684],
     mapZoom: 13
@@ -1189,11 +1257,6 @@ function retrieveSetting(key) {
   return value;
 }
 
-
-</script>
-<script>
-
-
 </script>
   </head>
   <body>
@@ -1209,7 +1272,7 @@ function retrieveSetting(key) {
             </button>
           </div>
           <div class="modal-body">
-            
+
             <div class="input-group mb-3 date" id="nestMigrationDate" data-target-input="nearest">
               <div class="input-group-prepend">
                 <span class="input-group-text">Last Nest Migration:</span>
@@ -1219,7 +1282,7 @@ function retrieveSetting(key) {
                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
               </div>
             </div>
-            
+
             <div class="input-group mb-3">
               <div class="input-group-prepend">
                 <span class="input-group-text">Route Optimization Attempts:</span>
@@ -1239,6 +1302,11 @@ function retrieveSetting(key) {
                 <span class="input-group-text">Meters</span>
               </div>
             </div>
+            <div class="btn-toolbar">
+              <div class="btn-group" role="group" aria-label="">
+                <button id="getAllNests" class="btn btn-primary float-left" type="button">Get all nest reports</button>
+              </div>
+            </div>
 
           </div>
           <div class="modal-footer">
@@ -1247,7 +1315,7 @@ function retrieveSetting(key) {
         </div>
       </div>
     </div>
-    
+
     <div class="modal" id="modalOutput" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -1323,7 +1391,7 @@ function retrieveSetting(key) {
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="importPolygonDataType" id="importPolygonDataTypeGeoJson" value="importPolygonDataTypeGeoJson">
                 <label class="form-check-label" for="importPolygonDataTypeGeoJson">
-                  GeoJSON 
+                  GeoJSON
                 </label>
               </div>
               <div class="form-check disabled">
@@ -1345,7 +1413,7 @@ function retrieveSetting(key) {
         </div>
       </form>
     </div>
-    
+
     <div class="modal" id="modalExportPolygon" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -1367,7 +1435,7 @@ function retrieveSetting(key) {
         </div>
       </div>
     </div>
-    
+
     <div class="modal" id="modalSpawnReport" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -1409,9 +1477,6 @@ function retrieveSetting(key) {
 
 function map_helper_init() {
   global $db,$DB_TYPE,$DB_HOST,$DB_USER,$DB_PSWD;
-  //db vars
-  $DB_NAME = "rdmdb";
-  $DB_PORT = 3306;
 
   $db = initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT);
 
@@ -1439,6 +1504,7 @@ function getInstanceData($args) {
   }
   echo $instance[0];
 }
+
 function getInstanceNames($args) {
   global $db;
   $sql_spawnpoint = "SELECT name, type FROM instance";
@@ -1465,93 +1531,81 @@ function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
 
 function getSpawnData($args) {
   global $db;
-  
-  if ($args->spawnpoints) {
-      
-      foreach ($args->spawnpoints as $point) {
-          $points[] = $point->latitude . "" . $point->longitude;
-      }
-      
-      $point_string = "'" . implode("','",$points) . "'";
-      
+
+  if ($args->spawns || $args->stops) {
+
+      $spawns_string = implode("','", $args->spawns);
+      $stops_string = implode("','", $args->stops);
+
       if (is_numeric($args->nest_migration_timestamp) && (int)$args->nest_migration_timestamp == $args->nest_migration_timestamp) {
         $ts = $args->nest_migration_timestamp;
       } else {
         $ts = 0;
-      }
-      
-      $sql_spawn = "SELECT pokemon_id, COUNT(pokemon_id) as count FROM rdmdb.pokemon WHERE CONCAT(ROUND(lat, 12), ROUND(lon,12)) IN (" . $point_string . ") AND first_seen_timestamp >= " . $ts . " GROUP BY pokemon_id ORDER BY count DESC";
+      }$sql_spawn = "SELECT pokemon_id, COUNT(pokemon_id) as count FROM rdmdb.pokemon WHERE (pokestop_id IN ('" . $stops_string . "') OR spawn_id IN ('" . $spawns_string . "')) AND first_seen_timestamp >= " . $ts . " GROUP BY pokemon_id ORDER BY count DESC";
       if ($stmt = $db->prepare($sql_spawn)) {
 
         $stmt->execute();
 
         $result = $stmt->get_result();
         while ($data = $result->fetch_array()) {
-          $spawns[] = array( 
+          $spawns[] = array(
             'pokemon_id' => $data['pokemon_id'],
             'count' => $data['count'],
           );
         }
       }
   }
-  echo json_encode(array('spawns' => $spawns, 'point_string' => $point_string,
-            'sql' => $sql_spawn));
+  echo json_encode(array('spawns' => $spawns, 'sql' => $sql_spawn));
 }
 
 function getData($args) {
   global $db;
   $show_unknown_mod = ($args->show_unknownpois === true ? "name IS null AND " : "");
-  if ($args->show_gyms === true) {
 
-    $sql_gym = "SELECT id, lat, lon FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
-    if ($stmt = $db->prepare($sql_gym)) {
-      $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
+  $sql_gym = "SELECT id, lat, lon FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  if ($stmt = $db->prepare($sql_gym)) {
+    $stmt->bind_param("dddd", $args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng);
 
-      $stmt->execute();
-      $result = $stmt->get_result();
-      while ($data = $result->fetch_array()) {
-        $gyms[] = array(
-          'id' => $data['id'],
-          'lat' => $data['lat'],
-          'lon' => $data['lon']
-        );
-      }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($data = $result->fetch_array()) {
+      $gyms[] = array(
+        'id' => $data['id'],
+        'lat' => $data['lat'],
+        'lng' => $data['lon']
+      );
     }
   }
 
-  if ($args->show_pokestops === true) {
-    $sql_pokestop = "SELECT id, lat, lon FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
-    if ($stmt = $db->prepare($sql_pokestop)) {
-      $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
+  $sql_pokestop = "SELECT id, lat, lon FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  if ($stmt = $db->prepare($sql_pokestop)) {
+    $stmt->bind_param("dddd", $args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng);
 
-      $stmt->execute();
+    $stmt->execute();
 
-      $result = $stmt->get_result();
-      while ($data = $result->fetch_array()) {
-        $stops[] = array(
-          'id' => $data['id'],
-          'lat' => $data['lat'],
-          'lon' => $data['lon']
-        );
-      }
+    $result = $stmt->get_result();
+    while ($data = $result->fetch_array()) {
+      $stops[] = array(
+        'id' => $data['id'],
+        'lat' => $data['lat'],
+        'lng' => $data['lon']
+      );
     }
   }
 
-  if ($args->show_spawnpoints === true) {
-    $sql_spawnpoint = "SELECT id, lat, lon FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
-    if ($stmt = $db->prepare($sql_spawnpoint)) {
-      $stmt->bind_param("dddd", $args->min_lat, $args->min_lon, $args->max_lat, $args->max_lon);
+  $sql_spawnpoint = "SELECT id, lat, lon FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  if ($stmt = $db->prepare($sql_spawnpoint)) {
+    $stmt->bind_param("dddd", $args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng);
 
-      $stmt->execute();
+    $stmt->execute();
 
-      $result = $stmt->get_result();
-      while ($data = $result->fetch_array()) {
-        $spawns[] = array(
-          'id' => $data['id'],
-          'lat' => $data['lat'],
-          'lon' => $data['lon']
-        );
-      }
+    $result = $stmt->get_result();
+    while ($data = $result->fetch_array()) {
+      $spawns[] = array(
+        'id' => $data['id'],
+        'lat' => $data['lat'],
+        'lng' => $data['lon']
+      );
     }
   }
 
@@ -1560,83 +1614,41 @@ function getData($args) {
 
 function getOptimization($args) {
   global $db;
-
-  //optimization vars
-  $DELAY = 5;
-  $GYM_COUNT = 6;
-
-  //adapted from https://github.com/123FLO321/RealDeviceRaidMap/blob/master/Control/createRoute.php
   $points = $args->points;
-  $locationsBest = array();
-  $tryCount = 1;
-  foreach(range(1,$args->optimization_attempts) as $i) {
+  $best_attempt = array();
+
+  for($x=0; $x<$args->optimization_attempts;$x++) {
     shuffle($points);
-    $workGyms = $points;
-    $locations = array();
-    while (sizeof($workGyms) != 0) {
-      $gym = reset($workGyms);
-      $index = key($workGyms);
-      unset($workGyms[$index]);
-      $clossestGyms = array();
-      foreach ($workGyms as $index2 => $gym2) {
-        $gym2->index = $index2;
-        $dist = haversineGreatCircleDistance($gym->latitude, $gym->longitude, $gym2->latitude, $gym2->longitude);
-        if ($dist <= $args->circle_size) {
-          if (sizeof($clossestGyms) < $GYM_COUNT - 1) {
-            while (isset($clossestGyms[$dist])) {
-              $dist += 1;
-            }
-            $clossestGyms[$dist] = $gym2;
-          } else {
-            krsort($clossestGyms);
-            $keys = array_keys($clossestGyms);
-            $last = end($keys);
-            if ($dist <= $last) {
-              while (isset($clossestGyms[$dist])) {
-                $dist += 1;
-              }
-              array_pop($clossestGyms);
-              $clossestGyms[$dist] = $gym2;
-            }
-          }
+    $working_gyms = $points;
+    $attempt = array();
+    while(count($working_gyms) > 0) {
+      $gym1 = array_pop($working_gyms);
+      foreach ($working_gyms as $i => $gym2) {
+        $dist = haversine($gym1, $gym2);
+        if ($dist < $args->circle_size) {
+          unset($working_gyms[$i]);
         }
       }
-      foreach ($clossestGyms as $gym2) {
-        unset($workGyms[$gym2->index]);
-      }
-      $locations[] = array(
-        "latitude" => $gym->latitude,
-        "longitude" => $gym->longitude,
-      );
+      $attempt[] = $gym1;
     }
-    $tryCount++;
-    if (sizeof($locationsBest) == 0 || sizeof($locationsBest) > sizeof($locations)) {
-      $locationsBest = $locations;
+    if(count($best_attempt) == 0 || count($attempt) < count($best_attempt)) {
+      $best_attempt = $attempt;
     }
-  };
-  $return['circle_size'] = $args->circle_size;
-  $return['optimization_attempts'] = $args->optimization_attempts;
-  $return['old_points_count'] = count($points);
-  $return['new_points_count'] = count($locationsBest);
-  $return['efficiency'] = ($return['old_points_count']/$return['new_points_count']) / ($return['old_points_count']/($return['old_points_count']/$GYM_COUNT)) * 100;
-  foreach ($locationsBest as $location) {
-    $return['bestAttempt'][] = array("latitude"=>$location["latitude"], "longitude"=>$location["longitude"]);
   }
-  echo json_encode($return);
-
+  echo json_encode(array('bestAttempt' => $best_attempt));
 }
 
-function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
-  // convert from degrees to radians
-  $latFrom = deg2rad($latitudeFrom);
-  $lonFrom = deg2rad($longitudeFrom);
-  $latTo = deg2rad($latitudeTo);
-  $lonTo = deg2rad($longitudeTo);
+function haversine($gym1, $gym2) {
+  $r = 6371000;
+  $latFrom = ($gym1->lat * M_PI / 180);
+  $lngFrom = ($gym1->lng * M_PI / 180);
+  $latTo = ($gym2->lat * M_PI / 180);
+  $lngTo = ($gym2->lng * M_PI / 180);
   $latDelta = $latTo - $latFrom;
-  $lonDelta = $lonTo - $lonFrom;
-  $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
-      cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
-  return $angle * $earthRadius;
+  $lngDelta = $lngTo - $lngFrom;
+  $a = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+      cos($latFrom) * cos($latTo) * pow(sin($lngDelta / 2), 2)));
+  return $a * $r;
 }
 
 ?>
