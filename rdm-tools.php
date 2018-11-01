@@ -1181,20 +1181,21 @@ $(document).on("click", "#getAllNests", function() {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           } else {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">Spawn Report - Unnamed atg <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">Spawn Report - Unnamed at <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           }
           result.spawns.forEach(function(item) {
             $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
           });
         } else {
           if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong>  at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong>  at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
           } else {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small">Unnamed at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small">Unnamed at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
           }
         }
       }
     });
+    $('#modalSpawnReport  .modal-title').text('Nest Report - All Nests in View');
     $('#modalSettings').modal('hide');
     $('#modalSpawnReport').modal('show');
   });
@@ -1442,7 +1443,7 @@ function retrieveSetting(key) {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Nest Report - </h5>
+            <h5 class="modal-title"></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -1455,6 +1456,10 @@ function retrieveSetting(key) {
                   <th scope="col">Count</th>
                 </tr>
               </thead>
+              <tbody>
+              </tbody>
+            </table>
+            <table class="table table-sm" id="spawnReportTableMissed">
               <tbody>
               </tbody>
             </table>
