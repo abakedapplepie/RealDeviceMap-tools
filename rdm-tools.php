@@ -181,7 +181,7 @@ $(function(){
                        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
                        '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
                        layer._leaflet_id +
-                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
+                       ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>';
           return output;
         }).addTo(editableLayer);
       });
@@ -242,7 +242,10 @@ function initMap() {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
 
-  map = L.map('map').addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
+  map = L.map('map', {
+    zoomDelta: 0.25, 
+    zoomSnap: 0.25,
+    wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
 
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
@@ -565,7 +568,7 @@ function initMap() {
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
                    '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>';
       return output;
     }).addTo(editableLayer);
   });
@@ -996,7 +999,7 @@ function getNests() {
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
                   '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export as GeoJSON</span></div></div>';
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>';
           return output;
         });
       });
@@ -1093,6 +1096,16 @@ function loadData() {
 }
 
 $(document).ready(function() {
+  $('input[type=radio][name=exportPolygonDataType]').change(function() {
+    if (this.value == 'exportPolygonDataTypeCoordsList') {
+      $('#exportPolygonDataCoordsList').show();
+      $('#exportPolygonDataGeoJson').hide();
+    }
+    else if (this.value == 'exportPolygonDataTypeGeoJson') {
+      $('#exportPolygonDataCoordsList').hide();
+      $('#exportPolygonDataGeoJson').show();
+    }
+  });
   $('#getOutput').click(function() {
     $('#outputCircles').val('');
     var allCircles = circleLayer.getLayers();
@@ -1181,7 +1194,7 @@ $(document).on("click", "#getAllNests", function() {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           } else {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">Spawn Report - Unnamed at <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - Unnamed</strong> at <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           }
           result.spawns.forEach(function(item) {
             $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
@@ -1190,7 +1203,7 @@ $(document).on("click", "#getAllNests", function() {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong>  at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
           } else {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small">Unnamed at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>Unnamed</strong> at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
           }
         }
       }
@@ -1214,11 +1227,21 @@ $(document).on("click", ".exportLayer", function() {
       break;
   }
 
-  var poly = JSON.stringify(layer.toGeoJSON());
-  $('#exportPolygonData').val(poly);
+  var polyjson = JSON.stringify(layer.toGeoJSON());
+  $('#exportPolygonDataGeoJson').val(polyjson);
+  
+  var polycoords = '';
+  turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
+    polycoords += item[0] + ',' + item[1] + "\n";
+  });
+  
+  $('#exportPolygonDataCoordsList').val(polycoords);
 
+  $('#exportPolygonDataGeoJson').hide();
   $('#modalExportPolygon').modal('show');
 });
+
+
 
 function loadSettings() {
 
@@ -1427,9 +1450,25 @@ function retrieveSetting(key) {
             </button>
           </div>
           <div class="modal-body">
+          <label for="exportPolygonDataType">Polygon data type:</label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypeCoordsList" value="exportPolygonDataTypeCoordsList" checked>
+                <label class="form-check-label" for="exportPolygonDataTypeCoordsList">
+                  Coordinate list (latitude,longitude on each new line)
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypeGeoJson" value="exportPolygonDataTypeGeoJson">
+                <label class="form-check-label" for="exportPolygonDataTypeGeoJson">
+                  GeoJSON
+                </label>
+              </div>
             <label for="exportPolygonData">Polygon data:</label>
             <div class="input-group mb">
-              <textarea name="exportPolygonData" id="exportPolygonData" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
+              <textarea name="exportPolygonDataGeoJson" id="exportPolygonDataGeoJson" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
+            </div>
+            <div class="input-group mb">
+              <textarea name="exportPolygonDataCoords" id="exportPolygonDataCoordsList" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
             </div>
           </div>
           <div class="modal-footer">
