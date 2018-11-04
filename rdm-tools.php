@@ -138,7 +138,7 @@ $(function(){
     var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
 
      if (importType == 'importPolygonDataTypeCoordList') {
-      polygonData.push(csvtoarray($('#importPolygonData').val()));
+      polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
       importReady = true;
     } else if (importType == 'importPolygonDataTypeGeoJson') {
       var geoJson = JSON.parse($('#importPolygonData').val());
