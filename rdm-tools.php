@@ -1,5 +1,5 @@
 <?php 
-
+error_reporting(0); 
 define('DB_TYPE', "mysql");
 define('DB_HOST', "1.2.3.4");
 define('DB_USER', "rdmuser");
