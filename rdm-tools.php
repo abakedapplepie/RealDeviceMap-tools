@@ -69,6 +69,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     var pokemon = ["Bulbasaur","Ivysaur","Venusaur","Charmander","Charmeleon","Charizard","Squirtle","Wartortle","Blastoise","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Pidgey","Pidgeotto","Pidgeot","Rattata","Raticate","Spearow","Fearow","Ekans","Arbok","Pikachu","Raichu","Sandshrew","Sandslash","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Clefairy","Clefable","Vulpix","Ninetales","Jigglypuff","Wigglytuff","Zubat","Golbat","Oddish","Gloom","Vileplume","Paras","Parasect","Venonat","Venomoth","Diglett","Dugtrio","Meowth","Persian","Psyduck","Golduck","Mankey","Primeape","Growlithe","Arcanine","Poliwag","Poliwhirl","Poliwrath","Abra","Kadabra","Alakazam","Machop","Machoke","Machamp","Bellsprout","Weepinbell","Victreebel","Tentacool","Tentacruel","Geodude","Graveler","Golem","Ponyta","Rapidash","Slowpoke","Slowbro","Magnemite","Magneton","Farfetch’d","Doduo","Dodrio","Seel","Dewgong","Grimer","Muk","Shellder","Cloyster","Gastly","Haunter","Gengar","Onix","Drowzee","Hypno","Krabby","Kingler","Voltorb","Electrode","Exeggcute","Exeggutor","Cubone","Marowak","Hitmonlee","Hitmonchan","Lickitung","Koffing","Weezing","Rhyhorn","Rhydon","Chansey","Tangela","Kangaskhan","Horsea","Seadra","Goldeen","Seaking","Staryu","Starmie","Mr. Mime","Scyther","Jynx","Electabuzz","Magmar","Pinsir","Tauros","Magikarp","Gyarados","Lapras","Ditto","Eevee","Vaporeon","Jolteon","Flareon","Porygon","Omanyte","Omastar","Kabuto","Kabutops","Aerodactyl","Snorlax","Articuno","Zapdos","Moltres","Dratini","Dragonair","Dragonite","Mewtwo","Mew","Chikorita","Bayleef","Meganium","Cyndaquil","Quilava","Typhlosion","Totodile","Croconaw","Feraligatr","Sentret","Furret","Hoothoot","Noctowl","Ledyba","Ledian","Spinarak","Ariados","Crobat","Chinchou","Lanturn","Pichu","Cleffa","Igglybuff","Togepi","Togetic","Natu","Xatu","Mareep","Flaaffy","Ampharos","Bellossom","Marill","Azumarill","Sudowoodo","Politoed","Hoppip","Skiploom","Jumpluff","Aipom","Sunkern","Sunflora","Yanma","Wooper","Quagsire","Espeon","Umbreon","Murkrow","Slowking","Misdreavus","Unown","Wobbuffet","Girafarig","Pineco","Forretress","Dunsparce","Gligar","Steelix","Snubbull","Granbull","Qwilfish","Scizor","Shuckle","Heracross","Sneasel","Teddiursa","Ursaring","Slugma","Magcargo","Swinub","Piloswine","Corsola","Remoraid","Octillery","Delibird","Mantine","Skarmory","Houndour","Houndoom","Kingdra","Phanpy","Donphan","Porygon2","Stantler","Smeargle","Tyrogue","Hitmontop","Smoochum","Elekid","Magby","Miltank","Blissey","Raikou","Entei","Suicune","Larvitar","Pupitar","Tyranitar","Lugia","Ho-Oh","Celebi","Treecko","Grovyle","Sceptile","Torchic","Combusken","Blaziken","Mudkip","Marshtomp","Swampert","Poochyena","Mightyena","Zigzagoon","Linoone","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Lotad","Lombre","Ludicolo","Seedot","Nuzleaf","Shiftry","Taillow","Swellow","Wingull","Pelipper","Ralts","Kirlia","Gardevoir","Surskit","Masquerain","Shroomish","Breloom","Slakoth","Vigoroth","Slaking","Nincada","Ninjask","Shedinja","Whismur","Loudred","Exploud","Makuhita","Hariyama","Azurill","Nosepass","Skitty","Delcatty","Sableye","Mawile","Aron","Lairon","Aggron","Meditite","Medicham","Electrike","Manectric","Plusle","Minun","Volbeat","Illumise","Roselia","Gulpin","Swalot","Carvanha","Sharpedo","Wailmer","Wailord","Numel","Camerupt","Torkoal","Spoink","Grumpig","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Swablu","Altaria","Zangoose","Seviper","Lunatone","Solrock","Barboach","Whiscash","Corphish","Crawdaunt","Baltoy","Claydol","Lileep","Cradily","Anorith","Armaldo","Feebas","Milotic","Castform","Kecleon","Shuppet","Banette","Duskull","Dusclops","Tropius","Chimecho","Absol","Wynaut","Snorunt","Glalie","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Relicanth","Luvdisc","Bagon","Shelgon","Salamence","Beldum","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Turtwig","Grotle","Torterra","Chimchar","Monferno","Infernape","Piplup","Prinplup","Empoleon","Starly","Staravia","Staraptor","Bidoof","Bibarel","Kricketot","Kricketune","Shinx","Luxio","Luxray","Budew","Roserade","Cranidos","Rampardos","Shieldon","Bastiodon","Burmy","Wormadam","Mothim","Combee","Vespiquen","Pachirisu","Buizel","Floatzel","Cherubi","Cherrim","Shellos","Gastrodon","Ambipom","Drifloon","Drifblim","Buneary","Lopunny","Mismagius","Honchkrow","Glameow","Purugly","Chingling","Stunky","Skuntank","Bronzor","Bronzong","Bonsly","Mime Jr.","Happiny","Chatot","Spiritomb","Gible","Gabite","Garchomp","Munchlax","Riolu","Lucario","Hippopotas","Hippowdon","Skorupi","Drapion","Croagunk","Toxicroak","Carnivine","Finneon","Lumineon","Mantyke","Snover","Abomasnow","Weavile","Magnezone","Lickilicky","Rhyperior","Tangrowth","Electivire","Magmortar","Togekiss","Yanmega","Leafeon","Glaceon","Gliscor","Mamoswine","Porygon-Z","Gallade","Probopass","Dusknoir","Froslass","Rotom","Uxie","Mesprit","Azelf","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus"];
     </script>
 <script type="text/javascript">
+var debug = false;
 //map and control vars
 var map;
 
@@ -108,6 +109,7 @@ var settings = {
   circleSize: null,
   optimizationAttempts: null,
   nestMigrationDate: null,
+  spawnReportLimit: null,
   mapMode: null,
   mapCenter: null,
   mapZoom: null
@@ -198,6 +200,7 @@ $(function(){
 
   $('#modalSpawnReport').on('hidden.bs.modal', function(event) {
     $('#spawnReportTable > tbody').empty();
+    $('#spawnReportTableMissed > tbody').empty();
     $('#modalSpawnReport .modal-title').text();
   });
 
@@ -207,13 +210,15 @@ $(function(){
 
   $('#modalSettings').on('hidden.bs.modal', function(event) {
     var circleSize = $('#circleSize').val();
+    var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
 
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
-      nestMigrationDate: nestMigrationDate
+      nestMigrationDate: nestMigrationDate,
+	  spawnReportLimit: spawnReportLimit
     };
 
     Object.keys(newSettings).forEach(function(key) {
@@ -543,6 +548,11 @@ function initMap() {
         } else {
           $('#circleSize').val('500');
         }
+        if (settings.spawnReportLimit != null) {
+          $('#spawnReportLimit').val(settings.spawnReportLimit);
+        } else {
+          $('#spawnReportLimit').val('0');
+        }
 
         if (settings.optimizationAttempts != null) {
           $('#optimizationAttempts').val(settings.optimizationAttempts);
@@ -696,13 +706,16 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'get_instance_names': true,
     };
     const json = JSON.stringify(data);
-
+	
+	if (debug !== false) { console.log(json) }
+	
     $.ajax({
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
+		if (debug !== false) { console.log(result) }
         var select = $('#importInstanceName');
         select.empty();
         result.forEach(function(item) {
@@ -719,12 +732,14 @@ function getInstance(instanceName = null, color = '#1090fa') {
     };
     const json = JSON.stringify(data);
 
+	if (debug !== false) { console.log(json) }
     $.ajax({
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
+		if (debug !== false) { console.log(result) }
           points = result.area;
           if (points.length > 0 ) {
             points.forEach(function(item) {
@@ -796,6 +811,7 @@ function generateOptimizedRoute() {
     'points': points
   };
   const json = JSON.stringify(data);
+  if (debug !== false) { console.log(data) }
 
   var sent = points.length;
 
@@ -805,6 +821,7 @@ function generateOptimizedRoute() {
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
+	  if (debug !== false) { console.log(result) }
       var recieved = result.bestAttempt.length;
       console.log("sent: " + sent + ", recieved: " + recieved);
       result.bestAttempt.forEach(function(point) {
@@ -903,17 +920,21 @@ function getSpawnReport(layer) {
   const data = {
     'get_spawndata': true,
     'nest_migration_timestamp': settings.nestMigrationDate,
+	'spawn_report_limit': settings.spawnReportLimit,
     'stops': reportStops,
     'spawns': reportSpawns
   };
   const json = JSON.stringify(data);
 
+  if (debug !== false) { console.log(data) }
+  
   $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
+    if (debug !== false) { console.log(result) }
       if (result.spawns !== null) {
         result.spawns.forEach(function(item) {
           if (typeof layer.tags !== 'undefined') {
@@ -965,12 +986,15 @@ function getNests() {
 
   var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
 
+  if (debug !== false) { console.log(overPassQuery) }
+  
   $.ajax({
     url: overpassApiEndpoint,
     type: 'GET',
     dataType: 'json',
     data: {'data': overPassQuery},
     success: function (result) {
+      if (debug !== false) { console.log(result) }
       var geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
         feature = turf.flip(feature);
@@ -1031,12 +1055,16 @@ function loadData() {
     'show_unknownpois': settings.showUnknownPois
   };
   const json = JSON.stringify(data);
+  
+  if (debug !== false) { console.log(json) }
+  
   $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
+      if (debug !== false) { console.log(result) }
       pokestopLayer.clearLayers();
       gymLayer.clearLayers();
       spawnpointLayer.clearLayers();
@@ -1184,6 +1212,7 @@ $(document).on("click", "#getAllNests", function() {
       'spawns': reportSpawns
     };
     const json = JSON.stringify(data);
+    if (debug !== false) { console.log(json) }
 
     $.ajax({
       url: this.href,
@@ -1191,6 +1220,7 @@ $(document).on("click", "#getAllNests", function() {
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
+      if (debug !== false) { console.log(result) }
         if (result.spawns !== null) {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
@@ -1254,6 +1284,7 @@ function loadSettings() {
     circleSize: 500,
     optimizationAttempts: 100,
     nestMigrationDate: 1539201600,
+	spawnReportLimit: 0,
     mapMode: 'PoiViewer',
     mapCenter: [42.548197, -83.14684],
     mapZoom: 13
@@ -1300,16 +1331,6 @@ function retrieveSetting(key) {
           </div>
           <div class="modal-body">
 
-            <div class="input-group mb-3 date" id="nestMigrationDate" data-target-input="nearest">
-              <div class="input-group-prepend">
-                <span class="input-group-text">Last Nest Migration:</span>
-              </div>
-              <input type="text" class="form-control datetimepicker-input" data-target="#nestMigrationDate"/>
-              <div class="input-group-append" data-target="#nestMigrationDate" data-toggle="datetimepicker">
-                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-              </div>
-            </div>
-
             <div class="input-group mb-3">
               <div class="input-group-prepend">
                 <span class="input-group-text">Route Optimization Attempts:</span>
@@ -1329,6 +1350,28 @@ function retrieveSetting(key) {
                 <span class="input-group-text">Meters</span>
               </div>
             </div>
+
+            <div class="input-group mb-3 date" id="nestMigrationDate" data-target-input="nearest">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Last Nest Migration:</span>
+              </div>
+              <input type="text" class="form-control datetimepicker-input" data-target="#nestMigrationDate"/>
+              <div class="input-group-append" data-target="#nestMigrationDate" data-toggle="datetimepicker">
+                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+              </div>
+            </div>
+			
+
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Spawn Report Limit:</span>
+              </div>
+              <input id="spawnReportLimit" name="spawnReportLimit" type="text" class="form-control" aria-label="Spawn report limit">
+              <div class="input-group-append">
+                <span class="input-group-text">Pokemon (0 for unlimited)</span>
+              </div>
+            </div>
+			
             <div class="btn-toolbar">
               <div class="btn-group" role="group" aria-label="">
                 <button id="getAllNests" class="btn btn-primary float-left" type="button">Get all nest reports</button>
@@ -1528,40 +1571,67 @@ function retrieveSetting(key) {
 </html><?php
 }
 
+function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
+  $db = new mysqli($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT);
+  if ($db->connect_error != '') {
+    exit("Failed to connect to MySQL server!");
+  }
+  $db->set_charset('utf8');
+  return $db;
+}
+
 function map_helper_init() {
   global $db;
 
   $db = initDB(DB_HOST, DB_USER, DB_PSWD, DB_NAME, DB_PORT);
 
   $args = json_decode($_POST['data']);
-  if ($args->get_spawndata === true) { getSpawnData($args); }
-  if ($args->get_data === true) { getData($args); }
-  if ($args->get_optimization === true) { getOptimization($args); }
-  if ($args->get_instance_data === true) { getInstanceData($args); }
-  if ($args->get_instance_names === true) { getInstanceNames($args); }
+  if (isset($args->get_spawndata)) { 
+	if ($args->get_spawndata === true) { getSpawnData($args); }
+  }
+  if (isset($args->get_data)) { 
+	if ($args->get_data === true) { getData($args); }
+  }
+  if (isset($args->get_optimization)) { 
+	if ($args->get_optimization === true) { getOptimization($args); }
+  }
+  if (isset($args->get_instance_data)) { 
+	if ($args->get_instance_data === true) { getInstanceData($args); }
+  }
+  if (isset($args->get_instance_names)) {
+	if ($args->get_instance_names === true) { getInstanceNames($args); }
+  }
 
 }
 
 function getInstanceData($args) {
   global $db;
-  $sql_spawnpoint = "SELECT data FROM instance WHERE name = ?";
-  if ($stmt = $db->prepare($sql_spawnpoint)) {
-    $stmt->bind_param("s", $args->instance_name);
+  $sql_instancedata = "SELECT data FROM instance WHERE name = ?";
+  if (isset($args->instance_name)) {
+	  if ($stmt = $db->prepare($sql_instancedata)) {
+		$stmt->bind_param("s", $args->instance_name);
 
-    $stmt->execute();
+		$stmt->execute();
 
-    $result = $stmt->get_result();
-    while ($data = $result->fetch_array()) {
-      $instance = $data;
-    }
+		$result = $stmt->get_result();
+		while ($data = $result->fetch_array()) {
+		  $instance = $data;
+		}
+		echo $instance[0];
+	  } else {
+		echo json_encode(array('status'=>'Error: something happened'));
+		return;
+	  }
+  } else {
+	echo json_encode(array('status'=>'Error: something happened'));
+	return;
   }
-  echo $instance[0];
 }
 
 function getInstanceNames($args) {
   global $db;
-  $sql_spawnpoint = "SELECT name, type FROM instance";
-  if ($stmt = $db->prepare($sql_spawnpoint)) {
+  $sql_instances = "SELECT name, type FROM instance";
+  if ($stmt = $db->prepare($sql_instances)) {
 
     $stmt->execute();
 
@@ -1573,28 +1643,42 @@ function getInstanceNames($args) {
   echo json_encode($instances);
 }
 
-function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
-  $db = new mysqli($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT);
-  if ($db->connect_error != '') {
-    exit("Failed to connect to MySQL server!");
-  }
-  $db->set_charset('utf8');
-  return $db;
-}
-
 function getSpawnData($args) {
   global $db;
 
-  if ($args->spawns || $args->stops) {
-
-      $spawns_string = implode("','", $args->spawns);
-      $stops_string = implode("','", $args->stops);
+  if (isset($args->spawns) || isset($args->stops)) {
+	  
+	  if (isset($args->spawns)) {
+		  $spawns_string = implode("','", $args->spawns);
+	  }
+	  if (isset($args->stops)) {
+		$stops_string = implode("','", $args->stops);
+	  }
+	  
+	  if (strlen($stops_string) > 0 && strlen($spawns_string) > 0) {
+		  $points_string = "(pokestop_id IN ('" . $stops_string . "') OR spawn_id IN ('" . $spawns_string . "'))";
+	  } else if (strlen($stops_string) > 0) {
+		  $points_string = "pokestop_id IN ('" . $stops_string . "')";
+	  } else if (strlen($spawns_string) > 0) {
+		  $points_string = "spawn_id IN ('" . $spawns_string . "')";
+	  } else {
+		echo json_encode(array('status'=>'Error: something happened'));
+		return;
+	  }
 
       if (is_numeric($args->nest_migration_timestamp) && (int)$args->nest_migration_timestamp == $args->nest_migration_timestamp) {
         $ts = $args->nest_migration_timestamp;
       } else {
         $ts = 0;
-      }$sql_spawn = "SELECT pokemon_id, COUNT(pokemon_id) as count FROM rdmdb.pokemon WHERE (pokestop_id IN ('" . $stops_string . "') OR spawn_id IN ('" . $spawns_string . "')) AND first_seen_timestamp >= " . $ts . " GROUP BY pokemon_id ORDER BY count DESC";
+      }
+	  
+      if (is_numeric($args->spawn_report_limit) && (int)$args->spawn_report_limit == $args->spawn_report_limit && (int)$args->spawn_report_limit != 0) {
+        $limit = " LIMIT " . $args->spawn_report_limit;
+      } else {
+        $limit = '';
+      }
+	  
+	  $sql_spawn = "SELECT pokemon_id, COUNT(pokemon_id) as count FROM rdmdb.pokemon WHERE " . $points_string . " AND first_seen_timestamp >= " . $ts . " GROUP BY pokemon_id ORDER BY count DESC" . $limit;
       if ($stmt = $db->prepare($sql_spawn)) {
 
         $stmt->execute();
@@ -1668,7 +1752,12 @@ function getData($args) {
 
 function getOptimization($args) {
   global $db;
-  $points = $args->points;
+  if (isset($args->points)) {
+    $points = $args->points;
+  } else {
+    echo json_encode(array('status'=>'Error: no points'));
+    return;
+  }
   $best_attempt = array();
 
   for($x=0; $x<$args->optimization_attempts;$x++) {
