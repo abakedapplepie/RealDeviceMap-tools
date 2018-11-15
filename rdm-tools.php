@@ -69,7 +69,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     var pokemon = ["Bulbasaur","Ivysaur","Venusaur","Charmander","Charmeleon","Charizard","Squirtle","Wartortle","Blastoise","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Pidgey","Pidgeotto","Pidgeot","Rattata","Raticate","Spearow","Fearow","Ekans","Arbok","Pikachu","Raichu","Sandshrew","Sandslash","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Clefairy","Clefable","Vulpix","Ninetales","Jigglypuff","Wigglytuff","Zubat","Golbat","Oddish","Gloom","Vileplume","Paras","Parasect","Venonat","Venomoth","Diglett","Dugtrio","Meowth","Persian","Psyduck","Golduck","Mankey","Primeape","Growlithe","Arcanine","Poliwag","Poliwhirl","Poliwrath","Abra","Kadabra","Alakazam","Machop","Machoke","Machamp","Bellsprout","Weepinbell","Victreebel","Tentacool","Tentacruel","Geodude","Graveler","Golem","Ponyta","Rapidash","Slowpoke","Slowbro","Magnemite","Magneton","Farfetch’d","Doduo","Dodrio","Seel","Dewgong","Grimer","Muk","Shellder","Cloyster","Gastly","Haunter","Gengar","Onix","Drowzee","Hypno","Krabby","Kingler","Voltorb","Electrode","Exeggcute","Exeggutor","Cubone","Marowak","Hitmonlee","Hitmonchan","Lickitung","Koffing","Weezing","Rhyhorn","Rhydon","Chansey","Tangela","Kangaskhan","Horsea","Seadra","Goldeen","Seaking","Staryu","Starmie","Mr. Mime","Scyther","Jynx","Electabuzz","Magmar","Pinsir","Tauros","Magikarp","Gyarados","Lapras","Ditto","Eevee","Vaporeon","Jolteon","Flareon","Porygon","Omanyte","Omastar","Kabuto","Kabutops","Aerodactyl","Snorlax","Articuno","Zapdos","Moltres","Dratini","Dragonair","Dragonite","Mewtwo","Mew","Chikorita","Bayleef","Meganium","Cyndaquil","Quilava","Typhlosion","Totodile","Croconaw","Feraligatr","Sentret","Furret","Hoothoot","Noctowl","Ledyba","Ledian","Spinarak","Ariados","Crobat","Chinchou","Lanturn","Pichu","Cleffa","Igglybuff","Togepi","Togetic","Natu","Xatu","Mareep","Flaaffy","Ampharos","Bellossom","Marill","Azumarill","Sudowoodo","Politoed","Hoppip","Skiploom","Jumpluff","Aipom","Sunkern","Sunflora","Yanma","Wooper","Quagsire","Espeon","Umbreon","Murkrow","Slowking","Misdreavus","Unown","Wobbuffet","Girafarig","Pineco","Forretress","Dunsparce","Gligar","Steelix","Snubbull","Granbull","Qwilfish","Scizor","Shuckle","Heracross","Sneasel","Teddiursa","Ursaring","Slugma","Magcargo","Swinub","Piloswine","Corsola","Remoraid","Octillery","Delibird","Mantine","Skarmory","Houndour","Houndoom","Kingdra","Phanpy","Donphan","Porygon2","Stantler","Smeargle","Tyrogue","Hitmontop","Smoochum","Elekid","Magby","Miltank","Blissey","Raikou","Entei","Suicune","Larvitar","Pupitar","Tyranitar","Lugia","Ho-Oh","Celebi","Treecko","Grovyle","Sceptile","Torchic","Combusken","Blaziken","Mudkip","Marshtomp","Swampert","Poochyena","Mightyena","Zigzagoon","Linoone","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Lotad","Lombre","Ludicolo","Seedot","Nuzleaf","Shiftry","Taillow","Swellow","Wingull","Pelipper","Ralts","Kirlia","Gardevoir","Surskit","Masquerain","Shroomish","Breloom","Slakoth","Vigoroth","Slaking","Nincada","Ninjask","Shedinja","Whismur","Loudred","Exploud","Makuhita","Hariyama","Azurill","Nosepass","Skitty","Delcatty","Sableye","Mawile","Aron","Lairon","Aggron","Meditite","Medicham","Electrike","Manectric","Plusle","Minun","Volbeat","Illumise","Roselia","Gulpin","Swalot","Carvanha","Sharpedo","Wailmer","Wailord","Numel","Camerupt","Torkoal","Spoink","Grumpig","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Swablu","Altaria","Zangoose","Seviper","Lunatone","Solrock","Barboach","Whiscash","Corphish","Crawdaunt","Baltoy","Claydol","Lileep","Cradily","Anorith","Armaldo","Feebas","Milotic","Castform","Kecleon","Shuppet","Banette","Duskull","Dusclops","Tropius","Chimecho","Absol","Wynaut","Snorunt","Glalie","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Relicanth","Luvdisc","Bagon","Shelgon","Salamence","Beldum","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Turtwig","Grotle","Torterra","Chimchar","Monferno","Infernape","Piplup","Prinplup","Empoleon","Starly","Staravia","Staraptor","Bidoof","Bibarel","Kricketot","Kricketune","Shinx","Luxio","Luxray","Budew","Roserade","Cranidos","Rampardos","Shieldon","Bastiodon","Burmy","Wormadam","Mothim","Combee","Vespiquen","Pachirisu","Buizel","Floatzel","Cherubi","Cherrim","Shellos","Gastrodon","Ambipom","Drifloon","Drifblim","Buneary","Lopunny","Mismagius","Honchkrow","Glameow","Purugly","Chingling","Stunky","Skuntank","Bronzor","Bronzong","Bonsly","Mime Jr.","Happiny","Chatot","Spiritomb","Gible","Gabite","Garchomp","Munchlax","Riolu","Lucario","Hippopotas","Hippowdon","Skorupi","Drapion","Croagunk","Toxicroak","Carnivine","Finneon","Lumineon","Mantyke","Snover","Abomasnow","Weavile","Magnezone","Lickilicky","Rhyperior","Tangrowth","Electivire","Magmortar","Togekiss","Yanmega","Leafeon","Glaceon","Gliscor","Mamoswine","Porygon-Z","Gallade","Probopass","Dusknoir","Froslass","Rotom","Uxie","Mesprit","Azelf","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus"];
     </script>
 <script type="text/javascript">
-var debug = false;
+var debug = true;
 //map and control vars
 var map;
 
@@ -128,7 +128,7 @@ $(function(){
   initMap();
   setMapMode();
   setShowMode();
-
+		
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
 
   $('#savePolygon').on('click', function(event) {
@@ -218,7 +218,7 @@ $(function(){
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
       nestMigrationDate: nestMigrationDate,
-	  spawnReportLimit: spawnReportLimit
+	    spawnReportLimit: spawnReportLimit
     };
 
     Object.keys(newSettings).forEach(function(key) {
@@ -816,6 +816,9 @@ function generateOptimizedRoute() {
   var sent = points.length;
 
   $.ajax({
+		beforeSend: function() {
+			$("#modalLoading").modal('show');
+		},
     url: this.href,
     type: 'POST',
     dataType: 'json',
@@ -834,7 +837,10 @@ function generateOptimizedRoute() {
           return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
         }).addTo(circleLayer);
       });
-    }
+    },
+		complete: function() {
+			$("#modalLoading").modal('hide');
+		}
   });
 }
 
@@ -920,7 +926,7 @@ function getSpawnReport(layer) {
   const data = {
     'get_spawndata': true,
     'nest_migration_timestamp': settings.nestMigrationDate,
-	'spawn_report_limit': settings.spawnReportLimit,
+	  'spawn_report_limit': settings.spawnReportLimit,
     'stops': reportStops,
     'spawns': reportSpawns
   };
@@ -929,6 +935,9 @@ function getSpawnReport(layer) {
   if (debug !== false) { console.log(data) }
   
   $.ajax({
+		beforeSend: function() {
+			$("#modalLoading").modal('show');
+		},
     url: this.href,
     type: 'POST',
     dataType: 'json',
@@ -941,17 +950,19 @@ function getSpawnReport(layer) {
             $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
           }
           $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
-          $('#modalSpawnReport').modal('show');
         });
       } else {
           if (typeof layer.tags !== 'undefined') {
           $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
         }
         $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">No data available.</td></tr>');
-        $('#modalSpawnReport').modal('show');
 
       }
-    }
+    },
+		complete: function() {
+			$("#modalLoading").modal('hide');
+      $('#modalSpawnReport').modal('show');
+		}
   });
 }
 
@@ -989,6 +1000,9 @@ function getNests() {
   if (debug !== false) { console.log(overPassQuery) }
   
   $.ajax({
+		beforeSend: function() {
+			$("#modalLoading").modal('show');
+		},
     url: overpassApiEndpoint,
     type: 'GET',
     dataType: 'json',
@@ -1028,7 +1042,10 @@ function getNests() {
           return output;
         });
       });
-    }
+    },
+		complete: function() {
+			$("#modalLoading").modal('hide');
+		}
   });
 }
 
@@ -1182,6 +1199,21 @@ $(document).on("click", ".getSpawnReport", function() {
 });
 
 $(document).on("click", "#getAllNests", function() {
+	var spawnReportLimit = $('#spawnReportLimit').val();
+	var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+
+	const newSettings = {
+		nestMigrationDate: nestMigrationDate,
+		spawnReportLimit: spawnReportLimit
+	};
+
+	Object.keys(newSettings).forEach(function(key) {
+		if (settings[key] != newSettings[key]) {
+			settings[key] = newSettings[key];
+			storeSetting(key);
+		}
+	});
+	
   var missedCount = 0;
   nestLayer.eachLayer(function(layer) {
     var reportStops = [],
@@ -1208,6 +1240,7 @@ $(document).on("click", "#getAllNests", function() {
     const data = {
       'get_spawndata': true,
       'nest_migration_timestamp': settings.nestMigrationDate,
+	    'spawn_report_limit': settings.spawnReportLimit,
       'stops': reportStops,
       'spawns': reportSpawns
     };
@@ -1215,12 +1248,15 @@ $(document).on("click", "#getAllNests", function() {
     if (debug !== false) { console.log(json) }
 
     $.ajax({
+			beforeSend: function() {
+				$("#modalLoading").modal('show');
+			},
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-      if (debug !== false) { console.log(result) }
+				if (debug !== false) { console.log(result) }
         if (result.spawns !== null) {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
@@ -1237,11 +1273,14 @@ $(document).on("click", "#getAllNests", function() {
             $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>Unnamed</strong> at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
           }
         }
-      }
+      },
+			complete: function() {
+				$("#modalLoading").modal('hide');
+				$('#modalSpawnReport  .modal-title').text('Nest Report - All Nests in View');
+				$('#modalSettings').modal('hide');
+				$('#modalSpawnReport').modal('show');
+			}
     });
-    $('#modalSpawnReport  .modal-title').text('Nest Report - All Nests in View');
-    $('#modalSettings').modal('hide');
-    $('#modalSpawnReport').modal('show');
   });
 });
 
@@ -1662,7 +1701,7 @@ function getSpawnData($args) {
 	  } else if (strlen($spawns_string) > 0) {
 		  $points_string = "spawn_id IN ('" . $spawns_string . "')";
 	  } else {
-		echo json_encode(array('status'=>'Error: something happened'));
+		echo json_encode(array('spawns' => null, 'status'=>'Error: something happened'));
 		return;
 	  }
 
