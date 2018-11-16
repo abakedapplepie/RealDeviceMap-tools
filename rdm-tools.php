@@ -242,10 +242,10 @@ $(function(){
 })
 
 function initMap() {
-  var attrOsm = 'Map data &copy; <a href="http://openstreetmap.org/">OpenStreetMap</a> contributors';
-  var attrOverpass = 'POI via <a href="http://www.overpass-api.de/">Overpass API</a>';
+  var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
+  var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
   var osm = new L.TileLayer(
-  'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
 
@@ -972,7 +972,7 @@ function getNests() {
   nestLayer.clearLayers();
 
   const bounds = map.getBounds();
-  const overpassApiEndpoint = 'http://overpass-api.de/api/interpreter';
+  const overpassApiEndpoint = 'https://overpass-api.de/api/interpreter';
 
   var queryBbox = [ // s, e, n, w
     bounds.getSouthWest().lat,
