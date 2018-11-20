@@ -1,6 +1,5 @@
 <?php 
 error_reporting(0); 
-define('DB_TYPE', "mysql");
 define('DB_HOST', "1.2.3.4");
 define('DB_USER', "rdmuser");
 define('DB_PSWD', "password");
@@ -42,7 +41,6 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
       .easy-button-container.disabled, .easy-button-button.disabled {
         display: none;
       }
-      .showPokestopCells, showGymCells, showSpawnpointCells
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -97,10 +95,7 @@ var drawControl,
   buttonShowSpawnpoints,
   buttonShowUnknownPois,
   buttonSettingsModal,
-  buttonShowCells,
-  buttonShowGymCells,
-  buttonShowPokestopCells,
-  buttonShowSpawnpointCells;
+  buttonViewCells;
 
 //data vars
 var gyms = [],
@@ -120,10 +115,7 @@ var settings = {
   mapMode: null,
   mapCenter: null,
   mapZoom: null,
-  showCells: null,
-  showGymCells: null,
-  showPokestopCells: null,
-  showSpawnpointCells: null
+  viewCells: null
 };
 
 //map layer vars
@@ -133,9 +125,7 @@ var gymLayer,
   editableLayer,
   circleLayer,
   nestLayer,
-  gymCellLayer,
-  pokestopCellLayer,
-  spawnpointCellLayer;
+  viewCellLayer;
 
 $(function(){
   loadSettings();
@@ -293,8 +283,8 @@ function initMap() {
   spawnpointLayer = new L.LayerGroup();
   spawnpointLayer.addTo(map);
 
-  gymCellLayer = new L.LayerGroup();
-  gymCellLayer.addTo(map);
+  viewCellLayer = new L.LayerGroup();
+  viewCellLayer.addTo(map);
 
   pokestopCellLayer = new L.LayerGroup();
   pokestopCellLayer.addTo(map);
@@ -428,100 +418,30 @@ function initMap() {
   })
 
   var barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
-  
-  buttonShowCells = L.easyButton({
-    id: 'showCells',
-    states:[{
-      stateName: 'enableShowCells',
-      icon: 'far fa-square',
-      title: 'Show S2 cells',
-      onClick: function (btn) {
-        settings.showCells = false;
-        storeSetting('showCells');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowCells',
-      icon: 'far fa-square',
-      title: 'Show S2 cells',
-      onClick: function (btn) {
-        settings.showCells = true;
-        storeSetting('showCells');
-        setShowMode();
-      }
-    }]
-  })
-  
-  buttonShowGymCells = L.easyButton({
-    id: 'showGymCells',
+    
+  buttonViewCells = L.easyButton({
+    id: 'viewCells', 
+		position: 'topright',
     states: [{
-      stateName: 'enableShowGymCells',
-      icon: 'fas fa-dumbbell',
-      title: 'Hide gym cells',
+      stateName: 'enableViewCells',
+      icon: 'far fa-square',
+      title: 'Hide viewing cells',
       onClick: function (btn) {
-        settings.showGymCells = false;
-        storeSetting('showGymCells');
+        settings.viewCells = false;
+        storeSetting('viewCells');
         setShowMode();
         }
     }, {
-      stateName: 'disableShowGymCells',
-      icon: 'fas fa-dumbbell',
-      title: 'Show gym cells',
+      stateName: 'disableViewCells',
+      icon: 'far fa-square',
+      title: 'Show viewing cells',
       onClick: function (btn) {
-        settings.showGymCells = true;
-        storeSetting('showGymCells');
+        settings.viewCells = true;
+        storeSetting('viewCells');
         setShowMode();
       }
     }]
-  })
-
-  buttonShowPokestopCells = L.easyButton({
-    id: 'showPokestopCells',
-    states: [{
-      stateName: 'enableShowPokestopCells',
-      icon: 'fas fa-map-pin',
-      title: 'Hide pokestop cells',
-      onClick: function (btn) {
-        settings.showPokestopCells = false;
-        storeSetting('showPokestopCells');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowPokestopCells',
-      icon: 'fas fa-map-pin',
-      title: 'Show pokestop cells',
-      onClick: function (btn) {
-        settings.showPokestopCells = true;
-        storeSetting('showPokestopCells');
-        setShowMode();
-      }
-    }]
-  })
-/* 
-  buttonShowSpawnpointCells = L.easyButton({
-    id: 'showSpawnpointCells',
-    states:[{
-      stateName: 'enableShowSpawnpointCells',
-      icon: 'fas fa-paw',
-      title: 'Hide spawnpoint cells',
-      onClick: function (btn) {
-        settings.showSpawnpointCells = false;
-        storeSetting('showSpawnpointCells');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowSpawnpointCells',
-      icon: 'fas fa-paw',
-      title: 'Show spawnpoint cells',
-      onClick: function (btn) {
-        settings.showSpawnpointCells = true;
-        storeSetting('showSpawnpointCells');
-        setShowMode();
-      }
-    }]
-  }) */
-
-  var barShowCells = L.easyBar([buttonShowCells, buttonShowGymCells, buttonShowPokestopCells/* , buttonShowSpawnpointCells */], { position: 'topright' }).addTo(map);
+  }).addTo(map)
 
   drawControl = new L.Control.Draw({
     position: 'topleft',
@@ -785,51 +705,13 @@ function setShowMode() {
     buttonShowSpawnpoints.button.style.backgroundColor = '#E9B7B7';
   }
 
-  if (settings.showCells !== false) {
-    buttonShowGymCells.enable();
-    buttonShowPokestopCells.enable();
-    //buttonShowSpawnpointCells.enable();
-    buttonShowCells.state('enableShowCells');
-    buttonShowCells.button.style.backgroundColor = '#B7E9B7';
+  if (settings.viewCells !== false) {
+    buttonViewCells.state('enableViewCells');
+    buttonViewCells.button.style.backgroundColor = '#B7E9B7';
   } else {
-    buttonShowGymCells.disable();
-    buttonShowPokestopCells.disable();
-    //buttonShowSpawnpointCells.disable();
-    buttonShowCells.state('disableShowCells');
-    buttonShowGymCells.state('disableShowGymCells');
-    buttonShowPokestopCells.state('disableShowPokestopCells');
-    //buttonShowSpawnpointCells.state('disableShowSpawnpointCells');
-    settings.showGymCells = false;
-    settings.showPokestopCells = false;
-    //settings.showSpawnpointCells = false;
-    storeSetting('showGymCells');
-    storeSetting('showPokestopCells');
-    //storeSetting('showSpawnpointCells');
-    buttonShowCells.button.style.backgroundColor = '#E9B7B7';
+    buttonViewCells.state('disableViewCells');
+    buttonViewCells.button.style.backgroundColor = '#E9B7B7';
   }
-    if (settings.showGymCells !== false) {
-    buttonShowGymCells.state('enableShowGymCells');
-    buttonShowGymCells.button.style.backgroundColor = '#B7E9B7';
-  } else {
-    buttonShowGymCells.state('disableShowGymCells');
-    buttonShowGymCells.button.style.backgroundColor = '#E9B7B7';
-  }
-
-  if (settings.showPokestopCells !== false) {
-    buttonShowPokestopCells.state('enableShowPokestopCells');
-    buttonShowPokestopCells.button.style.backgroundColor = '#B7E9B7';
-  } else {
-    buttonShowPokestopCells.state('disableShowPokestopCells');
-    buttonShowPokestopCells.button.style.backgroundColor = '#E9B7B7';
-  }/* 
-
-  if (settings.showSpawnpointCells !== false) {
-    buttonShowSpawnpointCells.state('enableShowSpawnpointCells');
-    buttonShowSpawnpointCells.button.style.backgroundColor = '#B7E9B7';
-  } else {
-    buttonShowSpawnpointCells.state('disableShowSpawnpointCells');
-    buttonShowSpawnpointCells.button.style.backgroundColor = '#E9B7B7';
-  } */
   loadData();
 }
 
@@ -1592,10 +1474,7 @@ function loadSettings() {
     mapMode: 'PoiViewer',
     mapCenter: [42.548197, -83.14684],
     mapZoom: 13,
-    showCells: false,
-    showGymCells: false,
-    showPokestopCells: false,
-    showSpawnpointCells: false
+    viewCells: false
   }
 
   Object.keys(settings).forEach(function(key) {
@@ -1633,13 +1512,9 @@ function showS2Cells(level, style) {
     const vertices = cell.getCornerLatLngs()
     const poly = L.polygon(vertices,
       Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
-    if (cell.level === 14) {
-      gymCellLayer.addLayer(poly)
-    } else if (cell.level === 17) {
-      pokestopCellLayer.addLayer(poly)
-    } /* else if (cell.level === 20) {
-      spawnpointCellLayer.addLayer(poly)
-    } */
+    if (cell.level === 15) {
+      viewCellLayer.addLayer(poly)
+    } 
   }
 
   // add cells spiraling outward
@@ -1662,42 +1537,18 @@ function showS2Cells(level, style) {
 
 function updateS2Overlay() {
   console.log(map.getZoom())
-    if (settings.showCells) {
-        if (settings.showGymCells && (map.getZoom() >= 13)) {
-            gymCellLayer.clearLayers()
-            showS2Cells(14, {color: 'DarkOrange', weight: 2})
-        } else if (settings.showGymCells && (map.getZoom() < 13)) {
-            gymCellLayer.clearLayers()
-            console.log('Gym cells are currently hidden, zoom in')
-        } else {
-            gymCellLayer.clearLayers()
-        }
-        if (settings.showPokestopCells && (map.getZoom() >= 16)) {
-            pokestopCellLayer.clearLayers()
-            showS2Cells(17, {color: 'DarkOliveGreen'})
-        } else if (settings.showPokestopCells && (map.getZoom() < 16)) {
-            pokestopCellLayer.clearLayers()
-            console.log('Stop cells are currently hidden, zoom in')
-        } else {
-            pokestopCellLayer.clearLayers()
-        }
-/*         if (settings.showSpawnpointCells && (map.getZoom() > 18)) {
-            spawnpointCellLayer.clearLayers()
-            showS2Cells(20, {color: 'DarkMagenta'})
-        } else if (settings.showSpawnpointCells && (map.getZoom() <= 18)) {
-            spawnpointCellLayer.clearLayers()
-            console.log('Spawn cells are currently hidden, zoom in')
-        } else {
-            spawnpointCellLayer.clearLayers()
-        } */
-    } else {
-      gymCellLayer.clearLayers()
-      pokestopCellLayer.clearLayers()
-      spawnpointCellLayer.clearLayers()
-    }
-		editableLayer.removeFrom(map).addTo(map);
-		nestLayer.removeFrom(map).addTo(map);
-		circleLayer.removeFrom(map).addTo(map);
+		if (settings.viewCells && (map.getZoom() >= 13.5)) {
+				viewCellLayer.clearLayers()
+				showS2Cells(15, {color: 'DarkOrange', weight: 2})
+				editableLayer.removeFrom(map).addTo(map);
+				nestLayer.removeFrom(map).addTo(map);
+				circleLayer.removeFrom(map).addTo(map);
+		} else if (settings.viewCells && (map.getZoom() < 13.5)) {
+				viewCellLayer.clearLayers()
+				console.log('Gym cells are currently hidden, zoom in')
+		} else {
+				viewCellLayer.clearLayers()
+		}
 }
 
 </script>
