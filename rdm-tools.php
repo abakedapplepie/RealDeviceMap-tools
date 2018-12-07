@@ -867,7 +867,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       });
     }
     if (optimizeForPokestops == true) {
-      stops.forEach(function(item) {
+      pokestops.forEach(function(item) {
         var workingLatLng = L.latLng(item.lat, item.lng);
         var distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
@@ -876,7 +876,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       });
     }
     if (optimizeForSpawnpoints == true) {
-      spawns.forEach(function(item) {
+      spawnpoints.forEach(function(item) {
         var workingLatLng = L.latLng(item.lat, item.lng);
         var distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
@@ -1054,13 +1054,13 @@ function getSpawnReport(layer) {
   var poly = layer.toGeoJSON();
   var line = turf.polygonToLine(poly);
 
-  stops.forEach(function(item) {
+  pokestops.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
     if (turf.inside(point, poly)) {
       reportStops.push(item.id);
     }
   });
-  spawns.forEach(function(item) {
+  spawnpoints.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
     if (turf.inside(point, poly)) {
       reportSpawns.push(item.id);
@@ -1232,8 +1232,8 @@ function loadData() {
       spawnpointLayer.clearLayers();
 
       gyms = [];
-      stops = [];
-      spawns = [];
+      pokestops = [];
+      spawnpoints = [];
 
       if (result.gyms != null) {
         result.gyms.forEach(function(item) {
@@ -1253,7 +1253,7 @@ function loadData() {
 
       if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
-          stops.push(item);
+          pokestops.push(item);
           if (settings.showPokestops === true) {
             var marker = L.circleMarker([item.lat, item.lng], {
               color: 'green',
@@ -1269,7 +1269,7 @@ function loadData() {
 
       if (result.spawnpoints != null) {
         result.spawnpoints.forEach(function(item) {
-          spawns.push(item);
+          spawnpoints.push(item);
           if (settings.showSpawnpoints === true) {
             var marker = L.circleMarker([item.lat, item.lng], {
               color: 'blue',
@@ -1371,13 +1371,13 @@ $(document).on("click", "#getAllNests", function() {
     var poly = layer.toGeoJSON();
     var line = turf.polygonToLine(poly);
 
-    stops.forEach(function(item) {
+    pokestops.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
         reportStops.push(item.id);
       }
     });
-    spawns.forEach(function(item) {
+    spawnpoints.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
         reportSpawns.push(item.id);
