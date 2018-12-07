@@ -832,7 +832,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       });
     }
     if (optimizeForPokestops == true) {
-      stops.forEach(function(item) {
+      pokestops.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           points.push(item)
@@ -840,7 +840,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       });
     }
     if (optimizeForSpawnpoints == true) {
-      spawns.forEach(function(item) {
+      spawnpoints.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           points.push(item)
