@@ -1484,7 +1484,7 @@ $(document).on("click", ".countPoints", function() {
 			}
 		});
 	}
-	if (settings.showSpawnoints == true) {
+	if (settings.showSpawnpoints == true) {
 		spawnpoints.forEach(function(item) {
 			point = turf.point([item.lng, item.lat]);
 			if (turf.inside(point, poly)) {
