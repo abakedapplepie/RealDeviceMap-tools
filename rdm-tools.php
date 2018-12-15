@@ -66,11 +66,12 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/2.5.3/js/bootstrap-colorpicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/s2-geometry@1.2.10/src/s2geometry.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/leaflet.path.drag@0.0.6/src/Path.Drag.min.js"></script>
     <script type="text/javascript">
     var pokemon = ["Bulbasaur","Ivysaur","Venusaur","Charmander","Charmeleon","Charizard","Squirtle","Wartortle","Blastoise","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Pidgey","Pidgeotto","Pidgeot","Rattata","Raticate","Spearow","Fearow","Ekans","Arbok","Pikachu","Raichu","Sandshrew","Sandslash","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Clefairy","Clefable","Vulpix","Ninetales","Jigglypuff","Wigglytuff","Zubat","Golbat","Oddish","Gloom","Vileplume","Paras","Parasect","Venonat","Venomoth","Diglett","Dugtrio","Meowth","Persian","Psyduck","Golduck","Mankey","Primeape","Growlithe","Arcanine","Poliwag","Poliwhirl","Poliwrath","Abra","Kadabra","Alakazam","Machop","Machoke","Machamp","Bellsprout","Weepinbell","Victreebel","Tentacool","Tentacruel","Geodude","Graveler","Golem","Ponyta","Rapidash","Slowpoke","Slowbro","Magnemite","Magneton","Farfetch’d","Doduo","Dodrio","Seel","Dewgong","Grimer","Muk","Shellder","Cloyster","Gastly","Haunter","Gengar","Onix","Drowzee","Hypno","Krabby","Kingler","Voltorb","Electrode","Exeggcute","Exeggutor","Cubone","Marowak","Hitmonlee","Hitmonchan","Lickitung","Koffing","Weezing","Rhyhorn","Rhydon","Chansey","Tangela","Kangaskhan","Horsea","Seadra","Goldeen","Seaking","Staryu","Starmie","Mr. Mime","Scyther","Jynx","Electabuzz","Magmar","Pinsir","Tauros","Magikarp","Gyarados","Lapras","Ditto","Eevee","Vaporeon","Jolteon","Flareon","Porygon","Omanyte","Omastar","Kabuto","Kabutops","Aerodactyl","Snorlax","Articuno","Zapdos","Moltres","Dratini","Dragonair","Dragonite","Mewtwo","Mew","Chikorita","Bayleef","Meganium","Cyndaquil","Quilava","Typhlosion","Totodile","Croconaw","Feraligatr","Sentret","Furret","Hoothoot","Noctowl","Ledyba","Ledian","Spinarak","Ariados","Crobat","Chinchou","Lanturn","Pichu","Cleffa","Igglybuff","Togepi","Togetic","Natu","Xatu","Mareep","Flaaffy","Ampharos","Bellossom","Marill","Azumarill","Sudowoodo","Politoed","Hoppip","Skiploom","Jumpluff","Aipom","Sunkern","Sunflora","Yanma","Wooper","Quagsire","Espeon","Umbreon","Murkrow","Slowking","Misdreavus","Unown","Wobbuffet","Girafarig","Pineco","Forretress","Dunsparce","Gligar","Steelix","Snubbull","Granbull","Qwilfish","Scizor","Shuckle","Heracross","Sneasel","Teddiursa","Ursaring","Slugma","Magcargo","Swinub","Piloswine","Corsola","Remoraid","Octillery","Delibird","Mantine","Skarmory","Houndour","Houndoom","Kingdra","Phanpy","Donphan","Porygon2","Stantler","Smeargle","Tyrogue","Hitmontop","Smoochum","Elekid","Magby","Miltank","Blissey","Raikou","Entei","Suicune","Larvitar","Pupitar","Tyranitar","Lugia","Ho-Oh","Celebi","Treecko","Grovyle","Sceptile","Torchic","Combusken","Blaziken","Mudkip","Marshtomp","Swampert","Poochyena","Mightyena","Zigzagoon","Linoone","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Lotad","Lombre","Ludicolo","Seedot","Nuzleaf","Shiftry","Taillow","Swellow","Wingull","Pelipper","Ralts","Kirlia","Gardevoir","Surskit","Masquerain","Shroomish","Breloom","Slakoth","Vigoroth","Slaking","Nincada","Ninjask","Shedinja","Whismur","Loudred","Exploud","Makuhita","Hariyama","Azurill","Nosepass","Skitty","Delcatty","Sableye","Mawile","Aron","Lairon","Aggron","Meditite","Medicham","Electrike","Manectric","Plusle","Minun","Volbeat","Illumise","Roselia","Gulpin","Swalot","Carvanha","Sharpedo","Wailmer","Wailord","Numel","Camerupt","Torkoal","Spoink","Grumpig","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Swablu","Altaria","Zangoose","Seviper","Lunatone","Solrock","Barboach","Whiscash","Corphish","Crawdaunt","Baltoy","Claydol","Lileep","Cradily","Anorith","Armaldo","Feebas","Milotic","Castform","Kecleon","Shuppet","Banette","Duskull","Dusclops","Tropius","Chimecho","Absol","Wynaut","Snorunt","Glalie","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Relicanth","Luvdisc","Bagon","Shelgon","Salamence","Beldum","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Turtwig","Grotle","Torterra","Chimchar","Monferno","Infernape","Piplup","Prinplup","Empoleon","Starly","Staravia","Staraptor","Bidoof","Bibarel","Kricketot","Kricketune","Shinx","Luxio","Luxray","Budew","Roserade","Cranidos","Rampardos","Shieldon","Bastiodon","Burmy","Wormadam","Mothim","Combee","Vespiquen","Pachirisu","Buizel","Floatzel","Cherubi","Cherrim","Shellos","Gastrodon","Ambipom","Drifloon","Drifblim","Buneary","Lopunny","Mismagius","Honchkrow","Glameow","Purugly","Chingling","Stunky","Skuntank","Bronzor","Bronzong","Bonsly","Mime Jr.","Happiny","Chatot","Spiritomb","Gible","Gabite","Garchomp","Munchlax","Riolu","Lucario","Hippopotas","Hippowdon","Skorupi","Drapion","Croagunk","Toxicroak","Carnivine","Finneon","Lumineon","Mantyke","Snover","Abomasnow","Weavile","Magnezone","Lickilicky","Rhyperior","Tangrowth","Electivire","Magmortar","Togekiss","Yanmega","Leafeon","Glaceon","Gliscor","Mamoswine","Porygon-Z","Gallade","Probopass","Dusknoir","Froslass","Rotom","Uxie","Mesprit","Azelf","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus"];
     </script>
 <script type="text/javascript">
-var debug = true;
+var debug = false;
 //map and control vars
 var map;
 
@@ -178,22 +179,7 @@ $(function(){
         weight: 4
       };
       polygonData.forEach(function(polygon) {
-        var newPolygon = L.polygon(polygon, polygonOptions).bindPopup(function (layer) {
-					var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
-											 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
-											 layer._leaflet_id +
-											 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
-											 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
-											 layer._leaflet_id +
-											 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
-											 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
-											 layer._leaflet_id +
-											 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
-											 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
-											 layer._leaflet_id +
-											 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
-          return output;
-        }).addTo(editableLayer);
+        var newPolygon = L.polygon(polygon, polygonOptions).addTo(editableLayer);
       });
     }
     $('#modalImport').modal('hide');
@@ -618,32 +604,67 @@ function initMap() {
     }]
   }).addTo(map);
 
-  map.on('draw:created', function (e) {
-    var layer = e.layer;
-    layer.bindPopup(function (layer) {
-      var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
-                   layer._leaflet_id +
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
-                   layer._leaflet_id +
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
-                   layer._leaflet_id +
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
-                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
-                   layer._leaflet_id +
-                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
-      return output;
-    }).addTo(editableLayer);
-  });
-
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
 
   });
-
+	
+	map.on('draw:created', function (e) {
+    var layer = e.layer;
+    layer.addTo(editableLayer);
+	});
+	
+	nestLayer.on('layeradd', function(e) {
+		var layer = e.layer;
+		layer.bindPopup(function (layer) {
+			if (typeof layer.tags.name !== 'undefined') {
+				var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Nest: ' + layer.tags.name + '</span></div>';
+			}
+			var output = name +
+			  '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
+			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
+			  layer._leaflet_id +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
+			  layer._leaflet_id +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
+			  layer._leaflet_id +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
+			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="nestLayer" data-layer-id=' +
+			  layer._leaflet_id +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Visible Points (CSV)</span></div></div>' +
+			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="nestLayer" data-layer-id=' +
+			  layer._leaflet_id +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
+			return output;
+		});		
+	});
+	
+	editableLayer.on('layeradd', function(e) {
+		var layer = e.layer;
+		layer.bindPopup(function (layer) {
+			var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
+									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
+									 layer._leaflet_id +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+									 layer._leaflet_id +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+									 layer._leaflet_id +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
+									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
+									 layer._leaflet_id +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Visible Points (CSV)</span></div></div>' +
+									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
+									 layer._leaflet_id +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
+			return output;
+		});		
+	});
+	
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -674,6 +695,7 @@ function initMap() {
         color: 'red',
         fillColor: '#f03',
         fillOpacity: 0.5,
+				draggable: true,
         radius: settings.circleSize
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
@@ -818,28 +840,14 @@ function getInstance(instanceName = null, color = '#1090fa') {
 							newCircle = L.circle(item, {
 								color: color,
 								fillOpacity: 0.5,
+								draggable: true,
 								radius: settings.circleSize
 							}).bindPopup(function (layer) {
 								return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
 							}).addTo(circleLayer);
 						});
 					} else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
-						var newPolygon = L.polygon(points, polygonOptions).bindPopup(function (layer) {
-							var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
-													 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
-													 layer._leaflet_id +
-													 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
-													 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
-													 layer._leaflet_id +
-													 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
-													 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
-													 layer._leaflet_id +
-													 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
-													 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
-													 layer._leaflet_id +
-													 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
-							return output;
-						}).addTo(editableLayer);
+						var newPolygon = L.polygon(points, polygonOptions).addTo(editableLayer);
 					}
 				}
       }
@@ -952,6 +960,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
             color: 'red',
             fillColor: '#f03',
             fillOpacity: 0.5,
+						draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
@@ -1012,6 +1021,7 @@ function generateRoute() {
             color: 'red',
             fillColor: '#f03',
             fillOpacity: 0.5,
+						draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
@@ -1366,13 +1376,13 @@ $(document).on("click", "#getAllNests", function() {
     var poly = layer.toGeoJSON();
     var line = turf.polygonToLine(poly);
 
-    stops.forEach(function(item) {
+    pokestops.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
         reportStops.push(item.id);
       }
     });
-    spawns.forEach(function(item) {
+    spawnpoints.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
         reportSpawns.push(item.id);
@@ -1453,6 +1463,58 @@ $(document).on("click", ".exportLayer", function() {
   $('#modalExportPolygon').modal('show');
 });
 
+$(document).on("click", ".exportPoints", function() {
+  var id = $(this).attr('data-layer-id');
+  var layer;
+  var container = $(this).attr('data-layer-container');
+  switch (container) {
+    case 'editableLayer':
+      layer = editableLayer.getLayer(parseInt(id));
+      break;
+    case 'nestLayer':
+      layer = nestLayer.getLayer(parseInt(id));
+      break;
+  }
+	var poly = layer.toGeoJSON();
+	var line = turf.polygonToLine(poly);
+  var gymcoords = '';
+  var stopcoords = '';
+  var spawncoords = '';
+	if (settings.showGyms == true) {
+		gyms.forEach(function(item) {
+			point = turf.point([item.lng, item.lat]);
+			if (turf.inside(point, poly)) {
+				gymcoords += item.lat + ',' + item.lng + "\n";
+			}
+		});
+	}
+	if (settings.showPokestops == true) {
+		pokestops.forEach(function(item) {
+			point = turf.point([item.lng, item.lat]);
+			if (turf.inside(point, poly)) {
+				stopcoords += item.lat + ',' + item.lng + "\n";
+			}
+		});
+	}
+	if (settings.showSpawnoints == true) {
+		spawnpoints.forEach(function(item) {
+			point = turf.point([item.lng, item.lat]);
+			if (turf.inside(point, poly)) {
+				spawncoords += item.lat + ',' + item.lng + "\n";
+			}
+		});
+	}
+	
+	
+  $('#exportPolygonPointsGyms').val('');
+  $('#exportPolygonPointsPokestops').val('');
+  $('#exportPolygonPointsSpawnpoints').val('');
+  $('#exportPolygonPointsGyms').val(gymcoords);
+  $('#exportPolygonPointsPokestops').val(stopcoords);
+  $('#exportPolygonPointsSpawnpoints').val(spawncoords);
+  $('#modalExportPolygonPoints').modal('show');
+});
+
 $(document).on("click", ".countPoints", function() {
   var id = $(this).attr('data-layer-id');
   var layer;
@@ -1484,7 +1546,7 @@ $(document).on("click", ".countPoints", function() {
 			}
 		});
 	}
-	if (settings.showSpawnpoints == true) {
+	if (settings.showSpawnoints == true) {
 		spawnpoints.forEach(function(item) {
 			point = turf.point([item.lng, item.lat]);
 			if (turf.inside(point, poly)) {
@@ -1793,6 +1855,36 @@ function updateS2Overlay() {
           </div>
           <div class="modal-footer">
             <button type="button" id="exportPolygonClose" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modalExportPolygonPoints" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Export Polygon Points (CSV)</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <label for="exportPolygonData">Gym points:</label>
+            <div class="input-group mb">
+              <textarea name="exportPolygonPointsGyms" id="exportPolygonPointsGyms" style="height:200px;" class="form-control" aria-label="Gym data"></textarea>
+            </div>
+            <label for="exportPolygonData">Pokestop points:</label>
+            <div class="input-group mb">
+              <textarea name="exportPolygonPointsPokestops" id="exportPolygonPointsPokestops" style="height:200px;" class="form-control" aria-label="Pokestop data"></textarea>
+            </div>
+            <label for="exportPolygonData">Spawnpoint points:</label>
+            <div class="input-group mb">
+              <textarea name="exportPolygonPointsPokestops" id="exportPolygonPointsSpawnpoints" style="height:200px;" class="form-control" aria-label="Spawnpoint data"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="exportPolygonPointsClose" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
