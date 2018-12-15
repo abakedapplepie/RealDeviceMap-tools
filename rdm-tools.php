@@ -66,12 +66,12 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/2.5.3/js/bootstrap-colorpicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/s2-geometry@1.2.10/src/s2geometry.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/leaflet.path.drag@0.0.6/src/Path.Drag.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
     <script type="text/javascript">
     var pokemon = ["Bulbasaur","Ivysaur","Venusaur","Charmander","Charmeleon","Charizard","Squirtle","Wartortle","Blastoise","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Pidgey","Pidgeotto","Pidgeot","Rattata","Raticate","Spearow","Fearow","Ekans","Arbok","Pikachu","Raichu","Sandshrew","Sandslash","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Clefairy","Clefable","Vulpix","Ninetales","Jigglypuff","Wigglytuff","Zubat","Golbat","Oddish","Gloom","Vileplume","Paras","Parasect","Venonat","Venomoth","Diglett","Dugtrio","Meowth","Persian","Psyduck","Golduck","Mankey","Primeape","Growlithe","Arcanine","Poliwag","Poliwhirl","Poliwrath","Abra","Kadabra","Alakazam","Machop","Machoke","Machamp","Bellsprout","Weepinbell","Victreebel","Tentacool","Tentacruel","Geodude","Graveler","Golem","Ponyta","Rapidash","Slowpoke","Slowbro","Magnemite","Magneton","Farfetch’d","Doduo","Dodrio","Seel","Dewgong","Grimer","Muk","Shellder","Cloyster","Gastly","Haunter","Gengar","Onix","Drowzee","Hypno","Krabby","Kingler","Voltorb","Electrode","Exeggcute","Exeggutor","Cubone","Marowak","Hitmonlee","Hitmonchan","Lickitung","Koffing","Weezing","Rhyhorn","Rhydon","Chansey","Tangela","Kangaskhan","Horsea","Seadra","Goldeen","Seaking","Staryu","Starmie","Mr. Mime","Scyther","Jynx","Electabuzz","Magmar","Pinsir","Tauros","Magikarp","Gyarados","Lapras","Ditto","Eevee","Vaporeon","Jolteon","Flareon","Porygon","Omanyte","Omastar","Kabuto","Kabutops","Aerodactyl","Snorlax","Articuno","Zapdos","Moltres","Dratini","Dragonair","Dragonite","Mewtwo","Mew","Chikorita","Bayleef","Meganium","Cyndaquil","Quilava","Typhlosion","Totodile","Croconaw","Feraligatr","Sentret","Furret","Hoothoot","Noctowl","Ledyba","Ledian","Spinarak","Ariados","Crobat","Chinchou","Lanturn","Pichu","Cleffa","Igglybuff","Togepi","Togetic","Natu","Xatu","Mareep","Flaaffy","Ampharos","Bellossom","Marill","Azumarill","Sudowoodo","Politoed","Hoppip","Skiploom","Jumpluff","Aipom","Sunkern","Sunflora","Yanma","Wooper","Quagsire","Espeon","Umbreon","Murkrow","Slowking","Misdreavus","Unown","Wobbuffet","Girafarig","Pineco","Forretress","Dunsparce","Gligar","Steelix","Snubbull","Granbull","Qwilfish","Scizor","Shuckle","Heracross","Sneasel","Teddiursa","Ursaring","Slugma","Magcargo","Swinub","Piloswine","Corsola","Remoraid","Octillery","Delibird","Mantine","Skarmory","Houndour","Houndoom","Kingdra","Phanpy","Donphan","Porygon2","Stantler","Smeargle","Tyrogue","Hitmontop","Smoochum","Elekid","Magby","Miltank","Blissey","Raikou","Entei","Suicune","Larvitar","Pupitar","Tyranitar","Lugia","Ho-Oh","Celebi","Treecko","Grovyle","Sceptile","Torchic","Combusken","Blaziken","Mudkip","Marshtomp","Swampert","Poochyena","Mightyena","Zigzagoon","Linoone","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Lotad","Lombre","Ludicolo","Seedot","Nuzleaf","Shiftry","Taillow","Swellow","Wingull","Pelipper","Ralts","Kirlia","Gardevoir","Surskit","Masquerain","Shroomish","Breloom","Slakoth","Vigoroth","Slaking","Nincada","Ninjask","Shedinja","Whismur","Loudred","Exploud","Makuhita","Hariyama","Azurill","Nosepass","Skitty","Delcatty","Sableye","Mawile","Aron","Lairon","Aggron","Meditite","Medicham","Electrike","Manectric","Plusle","Minun","Volbeat","Illumise","Roselia","Gulpin","Swalot","Carvanha","Sharpedo","Wailmer","Wailord","Numel","Camerupt","Torkoal","Spoink","Grumpig","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Swablu","Altaria","Zangoose","Seviper","Lunatone","Solrock","Barboach","Whiscash","Corphish","Crawdaunt","Baltoy","Claydol","Lileep","Cradily","Anorith","Armaldo","Feebas","Milotic","Castform","Kecleon","Shuppet","Banette","Duskull","Dusclops","Tropius","Chimecho","Absol","Wynaut","Snorunt","Glalie","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Relicanth","Luvdisc","Bagon","Shelgon","Salamence","Beldum","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Turtwig","Grotle","Torterra","Chimchar","Monferno","Infernape","Piplup","Prinplup","Empoleon","Starly","Staravia","Staraptor","Bidoof","Bibarel","Kricketot","Kricketune","Shinx","Luxio","Luxray","Budew","Roserade","Cranidos","Rampardos","Shieldon","Bastiodon","Burmy","Wormadam","Mothim","Combee","Vespiquen","Pachirisu","Buizel","Floatzel","Cherubi","Cherrim","Shellos","Gastrodon","Ambipom","Drifloon","Drifblim","Buneary","Lopunny","Mismagius","Honchkrow","Glameow","Purugly","Chingling","Stunky","Skuntank","Bronzor","Bronzong","Bonsly","Mime Jr.","Happiny","Chatot","Spiritomb","Gible","Gabite","Garchomp","Munchlax","Riolu","Lucario","Hippopotas","Hippowdon","Skorupi","Drapion","Croagunk","Toxicroak","Carnivine","Finneon","Lumineon","Mantyke","Snover","Abomasnow","Weavile","Magnezone","Lickilicky","Rhyperior","Tangrowth","Electivire","Magmortar","Togekiss","Yanmega","Leafeon","Glaceon","Gliscor","Mamoswine","Porygon-Z","Gallade","Probopass","Dusknoir","Froslass","Rotom","Uxie","Mesprit","Azelf","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus"];
     </script>
 <script type="text/javascript">
-var debug = true;
+var debug = false;
 //map and control vars
 var map;
 
@@ -124,6 +124,7 @@ var gymLayer,
   pokestopLayer,
   spawnpointLayer,
   editableLayer,
+	circleS2Layer,
   circleLayer,
   nestLayer,
   viewCellLayer;
@@ -262,6 +263,9 @@ function initMap() {
 
   editableLayer = new L.FeatureGroup();
   editableLayer.addTo(map);
+	
+  circleS2Layer = new L.FeatureGroup();
+  circleS2Layer.addTo(map);
 
   gymLayer = new L.LayerGroup();
   gymLayer.addTo(map);
@@ -665,6 +669,25 @@ function initMap() {
 		});		
 	});
 	
+	
+	circleLayer.on('layerremove', function(e) {
+		var layer = e.layer;
+		layer.s2cells.forEach(function(item) {
+			circleS2Layer.removeLayer(parseInt(item));
+		});
+	});
+	
+circleLayer.on('layeradd', function(e) {
+	drawCircleS2Cells(e.layer);	
+	circleLayer.removeFrom(map).addTo(map);
+	e.layer.on('drag', function() {
+		drawCircleS2Cells(e.layer)
+	})
+	e.layer.on('drag', function() {
+	circleLayer.removeFrom(map).addTo(map);
+	})
+});
+	
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -702,6 +725,49 @@ function initMap() {
       }).addTo(circleLayer);
     }
   });
+}
+function drawCircleS2Cells(layer) {	
+  if (typeof layer.s2cells !== 'undefined') {
+		layer.s2cells.forEach(function(item) {
+			circleS2Layer.removeLayer(parseInt(item));
+		});
+	}
+	var center = layer.getLatLng()
+	var radius = layer.getRadius();
+	layer.s2cells = [];
+	function addPoly(cell) {
+		const vertices = cell.getCornerLatLngs()
+		const poly = L.polygon(vertices,{
+			color: 'blue', 
+			opacity: 0.5, 
+			weight: 2, 
+			fillOpacity: 0.0
+		});
+		var line = turf.polygonToLine(poly.toGeoJSON());
+		var point = turf.point([center.lng, center.lat]);
+		var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+		if (distance <= radius) {
+			circleS2Layer.addLayer(poly);
+			layer.s2cells.push(poly._leaflet_id);
+		}
+	}
+	
+	if (radius < 600 && radius > 400) {
+		var count = 10;
+		let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
+		let steps = 1
+		let direction = 0
+		do {
+				for (let i = 0; i < 2; i++) {
+						for (let i = 0; i < steps; i++) {
+								addPoly(cell)
+								cell = cell.getNeighbors()[direction % 4]
+						}
+						direction++
+				}
+				steps++
+		} while (steps < count)
+	}
 }
 
 function setShowMode() {
@@ -1556,6 +1622,7 @@ $(document).on("click", ".countPoints", function() {
 	}
 	alert('Count: ' + points);
 });
+
 
 function loadSettings() {
 
