@@ -752,7 +752,7 @@ function drawCircleS2Cells(layer) {
 		}
 	}
 	
-	if (radius < 600 && radius > 400) {
+	if (radius < 1000 && radius > 200) {
 		var count = 10;
 		let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
 		let steps = 1
