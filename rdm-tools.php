@@ -1197,7 +1197,7 @@ function getNests() {
     bounds.getNorthEast().lng
   ].join(',');
 
-  var queryDate = "2018-04-09T01:32:00Z";
+  var queryDate = "2019-01-22T00:00:00Z";
 
   var queryOptions = [
     '[out:json]',
