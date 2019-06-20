@@ -246,10 +246,10 @@ $(function(){
 })
 
 function initMap() {
-  var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
+  var attrOsm = 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.';
   var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
   var osm = new L.TileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
 
