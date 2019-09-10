@@ -2244,7 +2244,7 @@ function getData($args) {
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $sql_spawnpoint = "SELECT id, lat, lon as lng, CONCAT('X:', ( ( despawn_sec - ( despawn_sec % 60) ) / 60 ), ':', (test % 60)) as despawn_sec FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_spawnpoint = "SELECT id, lat, lon as lng, CONCAT('X:', ( ( despawn_sec - ( despawn_sec % 60) ) / 60 ), ':', (despawn_sec % 60)) as despawn_sec FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_spawnpoint);
   
   $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
