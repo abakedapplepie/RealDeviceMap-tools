@@ -15,11 +15,11 @@ Tools for managing RealDeviceMap data
 * Optionally show only unknown gyms/stops
 * Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
   * [date:"2019-04-09T01:32:00Z"]
-    'way["leisure"="park"];',
-    'way["leisure"="recreation_ground"];',
-    'way["landuse"="recreation_ground"];',
-	   'way[leisure=playground];',
-    'way[landuse=meadow];'
+  * way["leisure"="park"]
+  * way["leisure"="recreation_ground"]
+  * way["landuse"="recreation_ground"]
+  * way[leisure=playground]
+  * way[landuse=meadow]
 * CSV and GeoJSON polygon import
 * GeoJSON polygon export
 * Coordinate generation - blanket fill polygons with route points
