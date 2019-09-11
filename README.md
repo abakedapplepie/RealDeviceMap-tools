@@ -4,24 +4,29 @@ Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
 ### Changes
-* Now you can report on all nests at once!
-* You don't have to have spawns/stops visible on map to perform reporting anymore.
-* Revised optimization function - same super simple algorithm, might be better performing though
-* Changes to data storage, functions no longer loop through map objects, coordinates for gyms/stops/spawns are stored separately. Should help with performance
+* spawnpoint color is different for verified despawn time
+* changed charset for db to utf8mb4
+* adjusted date of last change of osm nest data
+* lighter tileset for better performance
+* included names for new gens, german names available
 
 ### Features
 * View/hide known gyms, stops, and spawnpoints
 * Optionally show only unknown gyms/stops
 * Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
-  * [date:"2018-04-09T01:32:00Z"]
-  * way["leisure"="park"]
-  * way["leisure"="recreation_ground"]
-  * way["landuse"="recreation_ground"]
+  * [date:"2019-04-09T01:32:00Z"]
+    'way["leisure"="park"];',
+    'way["leisure"="recreation_ground"];',
+    'way["landuse"="recreation_ground"];',
+	   'way[leisure=playground];',
+    'way[landuse=meadow];'
 * CSV and GeoJSON polygon import
 * GeoJSON polygon export
 * Coordinate generation - blanket fill polygons with route points
 * Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
+* GeoJSON polygon import as Nest allows to maintain an own list of nests
+* Show 70m range around stops
 
 ### Installation
 Simply upload rdm-tools.php to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
@@ -43,12 +48,13 @@ The map has a variety of control buttons for performing different functions:
 * ![View Mode - Gyms](assets/map-view-gyms.png?raw=true) Enables/disables viewing gyms as red dots on the map.
 * ![View Mode - Pokestops](assets/map-view-stops.png?raw=true) Enables/disables viewing pokestops as green dots on the map.
 * ![View Mode - Spawnpoints](assets/map-view-spawns.png?raw=true) Enables/disables viewing spawnpoints as blue dots on the map.
+* ![View Mode - Stop range](assets/map-view-range.png?raw=true) Enables/disables viewing of 70m range around pokestops as light green circles.
 
 #### Routing and Drawing
 * ![Draw Polygon](assets/map-draw-polygon.png?raw=true) Enables drawing of polygons on the map.
 * ![Manual route placement](assets/map-place-circle.png?raw=true) Enables/disables manual placement of route points. Click on the map to drop a route point in the routing layer based on view radius setting.
 * ![Import Nests](assets/map-import-nests.png?raw=true) Pulls nest data from OSM and places polygons in the current map bounds covering all parks.
-* ![Import Polygon](assets/map-import-polygon.png?raw=true) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually.
+* ![Import Polygon](assets/map-import-polygon.png?raw=true) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually. Choose wether to import as editable polygon(s) or nest(s).
 * ![Import Instance](assets/map-import-instance.png?raw=true) Imports an instance from your RDM DB and places the route points in the routing layer based on view radius setting.
 * ![Clear Routing Layer](assets/map-clear-routing-layer.png?raw=true) Clears the current route from the map, leaving polygons behind
 * ![Clear All Layers](assets/map-clear-all-layers.png?raw=true) Clears all route points and polygons from map.
