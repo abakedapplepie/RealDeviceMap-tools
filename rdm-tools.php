@@ -1302,7 +1302,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
             }
             else{
 				var marker = L.circleMarker([item.lat, item.lng], {
@@ -1312,7 +1312,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
 			}
           }
         });
@@ -1328,7 +1328,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(pokestopLayer);
           }
         });
       }
@@ -2211,13 +2211,13 @@ function getData($args) {
     $show_unknown_mod = "name IS ? AND ";
     $binds[] = null;
   }
-  $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_gym);
 
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $sql_pokestop = "SELECT id, lat, lon as lng FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_pokestop = "SELECT id, lat, lon as lng, name FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_pokestop);
 
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
