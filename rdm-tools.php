@@ -1359,7 +1359,9 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " despawn_sec: " + item.despawn_sec).addTo(spawnpointLayer);
+            var despawn_minute = Math.floor(item.despawn_sec/60);
+            var despawn_second = item.despawn_sec%60;
+            marker.bindPopup("<span>ID: " + item.id + "</span>" + " Despawn time: hh:" + despawn_minute +":"+ despawn_second).addTo(spawnpointLayer);
             }
             else{
             var marker = L.circleMarker([item.lat, item.lng], {
