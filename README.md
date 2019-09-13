@@ -4,11 +4,11 @@ Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
 ### Changes
-* spawnpoint color is different for verified despawn time
-* changed charset for db to utf8mb4
-* adjusted date of last change of osm nest data
-* lighter tileset for better performance
-* included names for new gens, german names available
+* Spawnpoint color is different for verified despawn time
+* Changed charset for db to utf8mb4
+* Adjusted date of last change of osm nest data
+* Lighter tileset for better performance
+* Included names for new gens, german names available
 
 ### Features
 * View/hide known gyms, stops, and spawnpoints
@@ -54,7 +54,7 @@ The map has a variety of control buttons for performing different functions:
 * ![Draw Polygon](assets/map-draw-polygon.png?raw=true) Enables drawing of polygons on the map.
 * ![Manual route placement](assets/map-place-circle.png?raw=true) Enables/disables manual placement of route points. Click on the map to drop a route point in the routing layer based on view radius setting.
 * ![Import Nests](assets/map-import-nests.png?raw=true) Pulls nest data from OSM and places polygons in the current map bounds covering all parks.
-* ![Import Polygon](assets/map-import-polygon.png?raw=true) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually. Choose wether to import as editable polygon(s) or nest(s).
+* ![Import Polygon](assets/map-import-polygon.png?raw=true) Import CSV or GeoJSON polygon data. GeoJSON can contain multiple polygons, each one will be placed individually. Choose whether to import as editable polygon(s) or nest(s).
 * ![Import Instance](assets/map-import-instance.png?raw=true) Imports an instance from your RDM DB and places the route points in the routing layer based on view radius setting.
 * ![Clear Routing Layer](assets/map-clear-routing-layer.png?raw=true) Clears the current route from the map, leaving polygons behind
 * ![Clear All Layers](assets/map-clear-all-layers.png?raw=true) Clears all route points and polygons from map.
@@ -73,8 +73,8 @@ To generate a spawn report, keep in mind the Nest Migration Date setting. The qu
 
 Example spawn report for a local nest.
 
-#### New feature - generate a spawn report for all nests
-In the settings menu, a new button is available to create a report for all nests in your current map bounds. Make sure you import nest polygons first!
+#### Generate a spawn report for all nests
+In the settings menu, a button is available to create a report for all nests in your current map bounds. Make sure you import nest polygons first!
 
 ![Example spawn report](assets/example-all-nests-report.png?raw=true)
 
