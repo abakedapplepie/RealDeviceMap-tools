@@ -1350,9 +1350,8 @@ function loadData() {
       if (result.spawnpoints != null) {
         result.spawnpoints.forEach(function(item) {
           spawnpoints.push(item);
-          if (item.despawn_sec != null){
-
-          if (settings.showSpawnpoints === true) {
+          if (settings.showSpawnpoints === true){
+            if (item.despawn_sec != null){
             var marker = L.circleMarker([item.lat, item.lng], {
               color: 'blue',
               radius: 1,
@@ -1361,11 +1360,8 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "</span>" + " despawn_sec: " + item.despawn_sec).addTo(spawnpointLayer);
-          }
-        }
-        if (item.despawn_sec == null){
-
-          if (settings.showSpawnpoints === true) {
+            }
+            else{
             var marker = L.circleMarker([item.lat, item.lng], {
               color: 'red',
               radius: 1,
@@ -1373,7 +1369,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " despawn_sec: " + item.despawn_sec).addTo(spawnpointLayer);
+            marker.bindPopup("<span>ID: " + item.id + "</span>" + " despawn_sec: unknown").addTo(spawnpointLayer);
           }
         }});
       }
