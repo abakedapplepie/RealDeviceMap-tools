@@ -115,7 +115,10 @@ var settings = {
   mapMode: null,
   mapCenter: null,
   mapZoom: null,
-  viewCells: null
+  viewCells: null,
+  cellsLevel0: null,
+  cellsLevel1: null,
+  cellsLevel2: null
 };
 //map layer vars
 var gymLayer,
@@ -250,10 +253,16 @@ $(function(){
     var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
+    var cellsLevel0 = $('#cellsLevel0').val();
+    var cellsLevel1 = $('#cellsLevel1').val();
+    var cellsLevel2 = $('#cellsLevel2').val();
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
+      cellsLevel0: cellsLevel0,
+      cellsLevel1: cellsLevel1,
+      cellsLevel2: cellsLevel2,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit
     };
@@ -277,7 +286,7 @@ function initMap() {
   var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors, Tiles by carto';
   var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
   var osm = new L.TileLayer(
-  // 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
@@ -619,6 +628,21 @@ function initMap() {
           $('#optimizationAttempts').val(settings.optimizationAttempts);
         } else {
           $('#optimizationAttempts').val('100');
+        }
+        if (settings.cellsLevel0 != null) {
+          $('#cellsLevel0').val(settings.cellsLevel0);
+        } else {
+          $('#cellsLevel0').val();
+        }
+        if (settings.cellsLevel1 != null) {
+          $('#cellsLevel1').val(settings.cellsLevel1);
+        } else {
+          $('#cellsLevel1').val();
+        }
+        if (settings.cellsLevel2 != null) {
+          $('#cellsLevel2').val(settings.cellsLevel2);
+        } else {
+          $('#cellsLevel2').val();
         }
         if (settings.nestMigrationDate != null) {
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
@@ -1371,7 +1395,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " despawn_sec: unknown").addTo(spawnpointLayer);
+            marker.bindPopup("<span>ID: " + item.id + "</span>" + " unknown despawn time ").addTo(spawnpointLayer);
           }
         }});
       }
@@ -1666,7 +1690,7 @@ function retrieveSetting(key) {
   }
   return value;
 }
-function showS2Cells(level, style) {
+function showS2Cells0(level, style) {
   // Credit goes to the PMSF project
   const bounds = map.getBounds()
   const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
@@ -1675,7 +1699,7 @@ function showS2Cells(level, style) {
     const vertices = cell.getCornerLatLngs()
     const poly = L.polygon(vertices,
       Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
-    if (cell.level === 15) {
+    if (cell.level === settings.cellsLevel0) {
       viewCellLayer.addLayer(poly)
     }
   }
@@ -1696,10 +1720,75 @@ function showS2Cells(level, style) {
     steps++
   } while (steps < count)
 }
+
+function showS2Cells1(level, style) {
+    // Credit goes to the PMSF project
+    const bounds = map.getBounds()
+    const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
+    const count = 2 ** level * size >> 11
+    function addPoly(cell) {
+        const vertices = cell.getCornerLatLngs()
+        const poly = L.polygon(vertices,
+                               Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
+        if (cell.level === settings.cellsLevel1) {
+            viewCellLayer.addLayer(poly)
+        }
+    }
+    // add cells spiraling outward
+    let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
+    let steps = 1
+    let direction = 0
+    do {
+        for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < steps; i++) {
+                //if (bounds.contains(cell.getLatLng())) {
+                addPoly(cell)
+                //}
+                cell = cell.getNeighbors()[direction % 4]
+            }
+            direction++
+        }
+        steps++
+    } while (steps < count)
+}
+
+function showS2Cells2(level, style) {
+    // Credit goes to the PMSF project
+    const bounds = map.getBounds()
+    const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
+    const count = 2 ** level * size >> 11
+    function addPoly(cell) {
+        const vertices = cell.getCornerLatLngs()
+        const poly = L.polygon(vertices,
+                               Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
+        if (cell.level === settings.cellsLevel2) {
+            viewCellLayer.addLayer(poly)
+        }
+    }
+    // add cells spiraling outward
+    let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
+    let steps = 1
+    let direction = 0
+    do {
+        for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < steps; i++) {
+                //if (bounds.contains(cell.getLatLng())) {
+                addPoly(cell)
+                //}
+                cell = cell.getNeighbors()[direction % 4]
+            }
+            direction++
+        }
+        steps++
+    } while (steps < count)
+}
+
 function updateS2Overlay() {
 		if (settings.viewCells && (map.getZoom() >= 13.5)) {
 				viewCellLayer.clearLayers()
-				showS2Cells(15, {color: 'DarkOrange', weight: 2})
+        showS2Cells0(settings.cellsLevel0, {color: 'Orange', weight: 1})
+        showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
+        showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
 				editableLayer.removeFrom(map).addTo(map);
 				nestLayer.removeFrom(map).addTo(map);
 				circleLayer.removeFrom(map).addTo(map);
@@ -1733,6 +1822,36 @@ function updateS2Overlay() {
               <input id="optimizationAttempts" name="optimizationAttempts" type="text" class="form-control" aria-label="Optimization attempts">
               <div class="input-group-append">
                 <span class="input-group-text">Tries</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">S2cells (orange) level:</span>
+              </div>
+              <input id="cellsLevel0" name="cellsLevel0" type="text" class="form-control" aria-label="cells Level 0">
+              <div class="input-group-append">
+                <span class="input-group-text">(empty = off)</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">S2cells (blue, 14) level:</span>
+              </div>
+              <input id="cellsLevel1" name="cellsLevel1" type="text" class="form-control" aria-label="cells level 1">
+              <div class="input-group-append">
+                <span class="input-group-text">(empty = off)</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text">S2cells (green, 17) level:</span>
+              </div>
+              <input id="cellsLevel2" name="cellsLevel2" type="text" class="form-control" aria-label="cells level 2">
+              <div class="input-group-append">
+                <span class="input-group-text">(empty = off)</span>
               </div>
             </div>
 
