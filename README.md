@@ -9,12 +9,13 @@ Tools for managing RealDeviceMap data
 * Adjusted date of last change of osm nest data
 * Lighter tileset for better performance
 * Included names for new gens, german names available
+* Showing name of stops/gyms
 
 ### Features
-* View/hide known gyms, stops, and spawnpoints
-* Optionally show only unknown gyms/stops
+* View/hide gyms, stops, and spawnpoints
+* Optionally show only unknown gyms/stops/spawnpoints
 * Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
-  * [date:"2019-04-09T01:32:00Z"]
+  * [date:"2019-01-22T00:00:00Z"]
   * way["leisure"="park"]
   * way["leisure"="recreation_ground"]
   * way["landuse"="recreation_ground"]
@@ -27,6 +28,7 @@ Tools for managing RealDeviceMap data
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
 * GeoJSON polygon import as Nest allows to maintain an own list of nests
 * Show 70m range around stops
+* Show different level of s2 cells
 
 ### Installation
 Simply upload rdm-tools.php to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.

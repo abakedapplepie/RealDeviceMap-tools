@@ -100,6 +100,7 @@ var drawControl,
 //data vars
 var gyms = [],
   pokestops = [],
+  pokestoprange = [];
   spawnpoints = [];
 //options vars
 var settings = {
@@ -1313,6 +1314,7 @@ function loadData() {
       spawnpointLayer.clearLayers();
       gyms = [];
       pokestops = [];
+      pokestoprange = [];
       spawnpoints = [];
       if (result.gyms != null) {
         result.gyms.forEach(function(item) {
@@ -1358,7 +1360,7 @@ function loadData() {
       }
 	  if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
-          pokestops.push(item);
+          pokestoprange.push(item);
           if (settings.showPokestopsRange === true) {
             var marker = L.circle([item.lat, item.lng], {
               color: 'green',
@@ -1642,7 +1644,7 @@ $(document).on("click", ".countPoints", function() {
 			}
 		});
 	}
-	if (settings.showSpawnoints == true) {
+	if (settings.showSpawnpoints == true) {
 		spawnpoints.forEach(function(item) {
 			point = turf.point([item.lng, item.lat]);
 			if (turf.inside(point, poly)) {
