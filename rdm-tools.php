@@ -8,7 +8,7 @@ define('DB_PORT', 3306);
 if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 <html>
   <head>
-    <title>RealDeviceMap Toolbox</title>
+    <title>RDM-Tools</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style>
@@ -136,7 +136,6 @@ $(function(){
   initMap();
   setMapMode();
   setShowMode();
-
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
   $('#savePolygon').on('click', function(event) {
     var polygonData = [];
@@ -232,7 +231,6 @@ $(function(){
      var color = $("#instanceColor" ).val();
      getInstance(name,color);
    });
-
   $('#getOptimizedRoute').on('click', function(event) {
     var optimizeForGyms = $('#optimizeForGyms').parent().hasClass('active');
     var optimizeForPokestops = $('#optimizeForPokestops').parent().hasClass('active');
@@ -292,7 +290,6 @@ function initMap() {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
   map = L.map('map', {
-    preferCanvas: true,
     zoomDelta: 0.25,
     zoomSnap: 0.25,
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
@@ -300,7 +297,6 @@ function initMap() {
   circleLayer.addTo(map);
   editableLayer = new L.FeatureGroup();
   editableLayer.addTo(map);
-
   circleS2Layer = new L.FeatureGroup();
   circleS2Layer.addTo(map);
   gymLayer = new L.LayerGroup();
@@ -457,7 +453,6 @@ function initMap() {
     }]
   })
   var barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
-
   buttonViewCells = L.easyButton({
     id: 'viewCells',
 		position: 'topright',
@@ -656,12 +651,10 @@ function initMap() {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
   });
-
 	map.on('draw:created', function (e) {
     var layer = e.layer;
     layer.addTo(editableLayer);
 	});
-
 	nestLayer.on('layeradd', function(e) {
 		var layer = e.layer;
 		layer.bindPopup(function (layer) {
@@ -688,7 +681,6 @@ function initMap() {
 			return output;
 		});
 	});
-
 	editableLayer.on('layeradd', function(e) {
 		var layer = e.layer;
 		layer.bindPopup(function (layer) {
@@ -711,15 +703,12 @@ function initMap() {
 			return output;
 		});
 	});
-
-
 	circleLayer.on('layerremove', function(e) {
 		var layer = e.layer;
 		layer.s2cells.forEach(function(item) {
 			circleS2Layer.removeLayer(parseInt(item));
 		});
 	});
-
 circleLayer.on('layeradd', function(e) {
 	drawCircleS2Cells(e.layer);
 	circleLayer.removeFrom(map).addTo(map);
@@ -730,7 +719,6 @@ circleLayer.on('layeradd', function(e) {
 	circleLayer.removeFrom(map).addTo(map);
 	})
 });
-
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -738,32 +726,30 @@ circleLayer.on('layeradd', function(e) {
     storeSetting('mapZoom');
     loadData();
   });
-/*   map.on('zoomend', function() {
-    settings.mapCenter = map.getCenter();
-    storeSetting('mapCenter');
-    settings.mapZoom = map.getZoom();
-    storeSetting('mapZoom');
-    loadData();
-  }); */
-/*
-  map.on('dragend', function() {
-    settings.mapCenter = map.getCenter();
-    storeSetting('mapCenter');
-    settings.mapZoom = map.getZoom();
-    storeSetting('mapZoom');
-    loadData();
-  }); */
   map.on('click', function(e) {
     if (manualCircle === true) {
+      if(settings.circleSize != 70){
       var newCircle = new L.circle(e.latlng, {
         color: 'red',
         fillColor: '#f03',
-        fillOpacity: 0.5,
+        fillOpacity: 0.4,
 				draggable: true,
         radius: settings.circleSize
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
       }).addTo(circleLayer);
+      }else{
+      var newCircle = new L.circle(e.latlng, {
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.2,
+        draggable: true,
+        radius: 70
+      }).bindPopup(function (layer) {
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+      }).addTo(circleLayer);
+    }
+    
     }
   });
 }
@@ -792,7 +778,6 @@ function drawCircleS2Cells(layer) {
 			layer.s2cells.push(poly._leaflet_id);
 		}
 	}
-
 	if (radius < 1000 && radius > 200) {
 		var count = 10;
 		let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
@@ -891,9 +876,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'get_instance_names': true,
     };
     const json = JSON.stringify(data);
-
   if (debug !== false) { console.log(json) }
-
     $.ajax({
       url: this.href,
       type: 'POST',
@@ -915,7 +898,6 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'instance_name': instanceName
     };
     const json = JSON.stringify(data);
-
 		var polygonOptions = {
 			clickable: false,
 			color: "#3388ff",
@@ -957,13 +939,10 @@ function getInstance(instanceName = null, color = '#1090fa') {
 }
 function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
   $("#modalLoading").modal('show');
-
   var newCircle,
     currentLatLng,
     point;
-
   var pointsOut = [];
-
   var data = {
     'get_optimization': true,
     'circle_size': settings.circleSize,
@@ -1003,7 +982,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       getRoute(points);
     }
   }
-
   var routeCircles = function(layer) {
     var points = []
     var radius = layer.getRadius();
@@ -1040,7 +1018,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       return points;
     }
   }
-
   var getRoute = function(points) {
     data.points = _.uniq(points);
     const json = JSON.stringify(data);
@@ -1070,7 +1047,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       complete: function() { }
     });
   }
-
   if (optimizePolygons == true) {
     editableLayer.eachLayer(function (layer) {
        routeLayers(layer);
@@ -1081,7 +1057,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
        routeLayers(layer);
     });
   }
-
   if (optimizeCircles == true) {
     circleLayer.eachLayer(function (layer) {
       pointsOut = pointsOut.concat(routeCircles(layer));
@@ -1167,7 +1142,6 @@ function getSpawnReport(layer) {
   };
   const json = JSON.stringify(data);
   if (debug !== false) { console.log(json) }
-
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -1226,7 +1200,6 @@ function getNests() {
   ].join('');
   var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
   if (debug !== false) { console.log(overPassQuery) }
-
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -1298,9 +1271,7 @@ function loadData() {
     'show_unknownpois': settings.showUnknownPois
   };
   const json = JSON.stringify(data);
-
   if (debug !== false) { console.log(json) }
-
   $.ajax({
     url: this.href,
     type: 'POST',
@@ -1319,22 +1290,30 @@ function loadData() {
       if (result.gyms != null) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
+          var radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           if (settings.showGyms === true) {
             if(item.ex == 1){
               var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'maroon',
-              radius: 2,
-              opacity: 0.6
+              color: 'black',
+              fillColor: 'maroon',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + " (ex-eligible)</span>").addTo(gymLayer);
             }
             else{
-				var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'red',
-              radius: 2,
-              opacity: 0.6
+				      var marker = L.circleMarker([item.lat, item.lng], {
+              color: 'black',
+              fillColor: 'orange',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
@@ -1346,11 +1325,16 @@ function loadData() {
       if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
           pokestops.push(item);
+          var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           if (settings.showPokestops === true) {
             var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'green',
-              radius: 2,
-              opacity: 0.6
+              color: 'black',
+              fillColor: 'green',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
@@ -1376,12 +1360,17 @@ function loadData() {
       if (result.spawnpoints != null) {
         result.spawnpoints.forEach(function(item) {
           spawnpoints.push(item);
+          var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           if (settings.showSpawnpoints === true){
             if (item.despawn_sec != null){
             var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'blue',
-              radius: 1,
-              opacity: 0.6
+              color: 'black',
+              fillColor: 'blue',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
@@ -1391,9 +1380,12 @@ function loadData() {
             }
             else{
             var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'red',
-              radius: 1,
-              opacity: 0.6
+              color: 'black',
+              fillColor: 'red',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
@@ -1403,7 +1395,6 @@ function loadData() {
       }
     }
   });
-
   updateS2Overlay()
 }
 $(document).ready(function() {
@@ -1460,6 +1451,56 @@ $(document).on("click", ".getSpawnReport", function() {
   }
   getSpawnReport(layer);
 });
+
+$(document).on("click", "#getCirclesCount", function() {
+  // Count all available points we have on layers.
+  var count = 0;
+  var txt = '';
+  var includedGyms = [];
+  var includedStops = [];
+  var includedSpawnpoints = [];
+    circleLayer.eachLayer(function(layer){
+    //Get the Center for each Circle on the Map.
+    var radius = layer.getRadius();
+    var circleCenter = layer.getLatLng();
+    
+    //Gym Counting
+    if (settings.showGyms == true) {
+      gyms.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedGyms.indexOf(item) === -1){
+          count++;
+          includedGyms.push(item);
+        }
+      });
+    }
+    // Stop Counting
+    if (settings.showPokestops == true) {
+      pokestops.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedStops.indexOf(item) === -1){
+          count++;
+          includedStops.push(item);
+        }
+      });
+    }
+    //Spawnpoint Counting
+    if (settings.showSpawnpoints == true) {
+      spawnpoints.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedSpawnpoints.indexOf(item) === -1){
+          count++;
+          includedSpawnpoints.push(item);
+        }
+      });
+    }
+    
+  });
+  
+  //Output the amount
+  alert('Count Total: ' + count + '\nCount Gyms: ' + includedGyms.length + '\nCount Stops: ' + includedStops.length + '\nCount Spawnpoints: ' + includedSpawnpoints.length);
+});          
+
 $(document).on("click", "#getAllNests", function() {
   var spawnReportLimit = $('#spawnReportLimit').val();
   var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
@@ -1473,7 +1514,6 @@ $(document).on("click", "#getAllNests", function() {
       storeSetting(key);
     }
   });
-
   var missedCount = 0;
   nestLayer.eachLayer(function(layer) {
     var reportStops = [],
@@ -1552,12 +1592,10 @@ $(document).on("click", ".exportLayer", function() {
   }
   var polyjson = JSON.stringify(layer.toGeoJSON());
   $('#exportPolygonDataGeoJson').val(polyjson);
-
   var polycoords = '';
   turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
     polycoords += item[0] + ',' + item[1] + "\n";
   });
-
   $('#exportPolygonDataCoordsList').val(polycoords);
   $('#exportPolygonDataGeoJson').hide();
   $('#modalExportPolygon').modal('show');
@@ -1603,8 +1641,6 @@ $(document).on("click", ".exportPoints", function() {
 			}
 		});
 	}
-
-
   $('#exportPolygonPointsGyms').val('');
   $('#exportPolygonPointsPokestops').val('');
   $('#exportPolygonPointsSpawnpoints').val('');
@@ -1722,7 +1758,6 @@ function showS2Cells0(level, style) {
     steps++
   } while (steps < count)
 }
-
 function showS2Cells1(level, style) {
     // Credit goes to the PMSF project
     const bounds = map.getBounds()
@@ -1753,7 +1788,6 @@ function showS2Cells1(level, style) {
         steps++
     } while (steps < count)
 }
-
 function showS2Cells2(level, style) {
     // Credit goes to the PMSF project
     const bounds = map.getBounds()
@@ -1784,7 +1818,6 @@ function showS2Cells2(level, style) {
         steps++
     } while (steps < count)
 }
-
 function updateS2Overlay() {
 		if (settings.viewCells && (map.getZoom() >= 13.5)) {
 				viewCellLayer.clearLayers()
@@ -1887,13 +1920,6 @@ function updateS2Overlay() {
                 <span class="input-group-text">Pokemon (0 for unlimited)</span>
               </div>
             </div>
-
-            <div class="btn-toolbar">
-              <div class="btn-group" role="group" aria-label="">
-                <button id="getAllNests" class="btn btn-primary float-left" type="button">Get all nest reports</button>
-              </div>
-            </div>
-
           </div>
           <div class="modal-footer">
             <button type="button" id="saveSettings" class="btn btn-primary" data-dismiss="modal">Close</button>
@@ -1914,7 +1940,7 @@ function updateS2Overlay() {
           <div class="modal-body">
             <label for="mapMode">Generated route:</label>
             <div class="input-group mb-3">
-              <textarea id="outputCircles" style="height:400px;" class="form-control" aria-label="Route output"></textarea>
+              <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
             </div>
             <div class="btn-toolbar">
               <div class="btn-group mr-2" role="group" aria-label="">
@@ -1922,6 +1948,14 @@ function updateS2Overlay() {
               </div>
               <div class="btn-group" role="group" aria-label="">
                 <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button">Copy to clipboard</button>
+              </div>
+            </div>
+            <div class="btn-toolbar" style='margin-top: 10px;'>
+              <div class="btn-group" role="group" aria-label="">
+                <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 5px;'>Get all nest reports</button>
+              </div>
+              <div class="btn-group" role="group" aria-label="">
+                <button id="getCirclesCount" class="btn btn-primary float-right" type="button">Count points in Circles</button>
               </div>
             </div>
           </div>
@@ -2055,17 +2089,17 @@ function updateS2Overlay() {
             </button>
           </div>
           <div class="modal-body">
-            <label for="exportPolygonData">Gym points:</label>
+            <label for="exportPolygonData">Gyms:</label>
             <div class="input-group mb">
               <textarea name="exportPolygonPointsGyms" id="exportPolygonPointsGyms" style="height:200px;" class="form-control" aria-label="Gym data"></textarea>
             </div>
-            <label for="exportPolygonData">Pokestop points:</label>
+            <label for="exportPolygonData">Pokestops:</label>
             <div class="input-group mb">
               <textarea name="exportPolygonPointsPokestops" id="exportPolygonPointsPokestops" style="height:200px;" class="form-control" aria-label="Pokestop data"></textarea>
             </div>
-            <label for="exportPolygonData">Spawnpoint points:</label>
+            <label for="exportPolygonData">Spawnpoints:</label>
             <div class="input-group mb">
-              <textarea name="exportPolygonPointsPokestops" id="exportPolygonPointsSpawnpoints" style="height:200px;" class="form-control" aria-label="Spawnpoint data"></textarea>
+              <textarea name="exportPolygonPointsSpawnpoints" id="exportPolygonPointsSpawnpoints" style="height:200px;" class="form-control" aria-label="Spawnpoint data"></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -2216,7 +2250,6 @@ function updateS2Overlay() {
 </html><?php
 }
 function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
-
   $dsn = "mysql:host=$DB_HOST;dbname=$DB_NAME;port=$DB_PORT;charset=utf8mb4";
   $options = [
       PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -2265,15 +2298,12 @@ function getInstanceNames($args) {
   global $db;
   $sql_instances = "SELECT name, type FROM instance";
   $result = $db->query($sql_instances)->fetchAll(PDO::FETCH_ASSOC);
-
   echo json_encode($result);
 }
 function getSpawnData($args) {
   global $db;
   $binds = array();
-
   if (isset($args->spawns) || isset($args->stops)) {
-
     if (isset($args->spawns) && count($args->spawns) > 0) {
       $spawns_in  = str_repeat('?,', count($args->spawns) - 1) . '?';
       $binds = array_merge($binds, $args->spawns);
@@ -2282,7 +2312,6 @@ function getSpawnData($args) {
       $stops_in  = str_repeat('?,', count($args->stops) - 1) . '?';
       $binds = array_merge($binds, $args->stops);
     }
-
     if ($stops_in && $spawns_in) {
       $points_string = "(pokestop_id IN (" . $stops_in . ") OR spawn_id IN (" . $spawns_in . "))";
     } else if ($stops_in) {
@@ -2299,16 +2328,12 @@ function getSpawnData($args) {
       $ts = 0;
     }
     $binds[] = $ts;
-
-
     if (is_numeric($args->spawn_report_limit) && (int)$args->spawn_report_limit == $args->spawn_report_limit && (int)$args->spawn_report_limit != 0) {
       $limit = " LIMIT " . $args->spawn_report_limit;
     } else {
       $limit = '';
     }
-
     $sql_spawn = "SELECT pokemon_id, COUNT(pokemon_id) as count FROM pokemon WHERE " . $points_string . " AND first_seen_timestamp >= ? GROUP BY pokemon_id ORDER BY count DESC" . $limit;
-
     $stmt = $db->prepare($sql_spawn);
     try {
      $stmt->execute($binds);
@@ -2318,7 +2343,6 @@ function getSpawnData($args) {
       var_dump(array('binds_count' => count($binds), 'stop_count' => count($args->stops), 'spawn_count' => count($args->spawns)));
       var_dump($args);
     }
-
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
   echo json_encode(array('spawns' => $result, 'sql' => $sql_spawn));
@@ -2333,22 +2357,16 @@ function getData($args) {
   }
   $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_gym);
-
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
   $sql_pokestop = "SELECT id, lat, lon as lng, name FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_pokestop);
-
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
   $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng FROM spawnpoint WHERE " . $show_unknown_mod_sp . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_spawnpoint);
-
   $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
   $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
   echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'spawnpoints' => $spawns, 'sql_gym' => $sql_gym, 'sql_pokestop' => $sql_pokestop, 'sql_spawnpoint' => $sql_spawnpoint ));
 }
 function getOptimization($args) {
