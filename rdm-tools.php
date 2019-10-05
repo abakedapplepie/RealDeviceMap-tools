@@ -76,6 +76,7 @@ var debug = false;
 //map and control vars
 var map;
 var manualCircle = false;
+var tlChoice = null;
 var drawControl,
   buttonManualCircle,
   buttonImportNests,
@@ -119,7 +120,8 @@ var settings = {
   viewCells: null,
   cellsLevel0: null,
   cellsLevel1: null,
-  cellsLevel2: null
+  cellsLevel2: null,
+  tlLink: null
 };
 //map layer vars
 var gymLayer,
@@ -248,6 +250,12 @@ $(function(){
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
   });
+  $('#tlChoice0').on('click', function(event) {
+    tlChoice = $('#tlChoice0').val();
+  });
+  $('#tlChoice1').on('click', function(event) {
+    tlChoice = $('#tlChoice1').val();
+  });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
     var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
@@ -256,12 +264,18 @@ $(function(){
     var cellsLevel1 = $('#cellsLevel1').val();
     var cellsLevel2 = $('#cellsLevel2').val();
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+    if (tlChoice == 'carto') {
+      tlChoice = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
+    } else if (tlChoice == 'osm') {
+      tlChoice = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    }
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
       cellsLevel0: cellsLevel0,
       cellsLevel1: cellsLevel1,
       cellsLevel2: cellsLevel2,
+      tlLink: tlChoice,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit
     };
@@ -271,6 +285,9 @@ $(function(){
         storeSetting(key);
       }
     });
+    if (settings.tlLink != null && settings.tlLink == newSettings.tlLink) {
+      location.reload();
+    }
   });
   $('#cancelSettings').on('click', function(event) {
     processSettings(true);
@@ -282,11 +299,10 @@ $(function(){
   });
 })
 function initMap() {
-  var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors, Tiles by carto';
+  var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
   var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
   var osm = new L.TileLayer(
-  //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+  settings.tlLink, {  
     attribution: [attrOsm, attrOverpass].join(', ')
   });
   map = L.map('map', {
@@ -1704,7 +1720,8 @@ function loadSettings() {
     mapMode: 'PoiViewer',
     mapCenter: [42.548197, -83.14684],
     mapZoom: 13,
-    viewCells: false
+    viewCells: false,
+    tlLink: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
   }
   Object.keys(settings).forEach(function(key) {
     storedSetting = retrieveSetting(key);
@@ -1910,7 +1927,6 @@ function updateS2Overlay() {
               </div>
             </div>
 
-
             <div class="input-group mb-3">
               <div class="input-group-prepend">
                 <span class="input-group-text">Spawn Report Limit:</span>
@@ -1920,6 +1936,19 @@ function updateS2Overlay() {
                 <span class="input-group-text">Pokemon (0 for unlimited)</span>
               </div>
             </div>
+
+            <div class="btn-toolbar" style="margin-bottom: 10px;">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Choose Tileset:</span>
+              </div>
+              <div class="btn-group mr-2" role="group" aria-label="">
+                <button id="tlChoice0" class="btn btn-primary float-left" type="button" value="osm" style="margin-left: 10px;">Standard</button>
+              </div>
+              <div class="btn-group" role="group" aria-label="">
+                <button id="tlChoice1" class="btn btn-secondary float-right" type="button" value="carto">Lite</button>
+              </div>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" id="saveSettings" class="btn btn-primary" data-dismiss="modal">Close</button>
