@@ -249,6 +249,7 @@ $(function(){
   });
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
+    $(document.getElementById('selectAllAndCopy')).text("Copy to clipboard");
   });
   $('#tlChoice0').on('click', function(event) {
     tlChoice = $('#tlChoice0').val();
@@ -293,7 +294,7 @@ $(function(){
     processSettings(true);
   });
   $("#selectAllAndCopy").click(function () {
-    $(this).parents("#output-body").children("#outputCircles").select();
+    document.getElementById('outputCircles').select();
     document.execCommand('copy');
     $(this).text("Copied!");
   });
