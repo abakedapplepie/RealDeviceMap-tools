@@ -1391,9 +1391,8 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            var despawn_minute = Math.floor(item.despawn_sec/60);
-            var despawn_second = item.despawn_sec%60;
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " Despawn time: hh:" + despawn_minute +":"+ despawn_second).addTo(spawnpointLayer);
+            var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
+            marker.bindPopup("<span>ID: " + item.id + "</span>" + " Despawn time: " + despawn_time).addTo(spawnpointLayer);
             }
             else{
             var marker = L.circleMarker([item.lat, item.lng], {
