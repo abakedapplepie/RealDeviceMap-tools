@@ -4,15 +4,16 @@ Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
 ### Changes
-* Spawnpoint color is different for verified despawn time
-* Changed charset for db to utf8mb4
-* Adjusted date of last change of osm nest data
-* Lighter tileset for better performance
-* Included names for new gens, german names available
-* Showing name of stops/gyms
+* Button to go to your actual location
+* Multilanguage support
+* Select language and tileset in settings
+* Fixed copy to clipboard
+* Count of points in circles
+* Better contrast for POIs and circles, cosmetic changes
+
 
 ### Features
-* View/hide gyms, stops, and spawnpoints
+* View/hide gyms, stops, range around stops and spawnpoints
 * Optionally show only unknown gyms/stops/spawnpoints
 * Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
   * [date:"2019-01-22T00:00:00Z"]
@@ -21,17 +22,17 @@ Tools for managing RealDeviceMap data
   * way["landuse"="recreation_ground"]
   * way[leisure=playground]
   * way[landuse=meadow]
-* CSV and GeoJSON polygon import
-* GeoJSON polygon export
+* CSV and GeoJSON polygon import and export
+* GeoJSON import as Nest allows to maintain an own list of nests
 * Coordinate generation - blanket fill polygons with route points
 * Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
-* GeoJSON polygon import as Nest allows to maintain an own list of nests
-* Show 70m range around stops
-* Show different level of s2 cells
+* Show different and choosable level of s2 cells
+* Multilanguage Support
+* Choose between Tilesets
 
 ### Installation
-Simply upload rdm-tools.php to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
+Upload rdm-tools.php and language files to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
 
 ### Usage
 The map has a variety of control buttons for performing different functions: 
@@ -44,7 +45,7 @@ The map has a variety of control buttons for performing different functions:
 
 #### Map mode
 * ![Map Mode - Routing](assets/map-routing.png?raw=true) Enables full functionality including polygon and routing functions.
-* ![Map Mode - Viewing](assets/map-viewing.png?raw=true) For viewing points of interest and spawnpoints only. Enables the option to filter unknown points of interest.
+* ![Map Mode - Viewing](assets/map-viewing.png?raw=true) For viewing points of interest and spawnpoints only.
 
 #### View mode
 * ![View Mode - Gyms](assets/map-view-gyms.png?raw=true) Enables/disables viewing gyms as red dots on the map.
@@ -107,3 +108,7 @@ Example optimization covering all nests in map bounds, for finding new spawnpoin
 ![Example optimized nest route](assets/example-optimized-route-nests.png?raw=true)
 
 Example optimization covering known spawnpoints in multiple nests. Note that you can remove overlapping circles by clicking on them and choosing delete - the optimization routine still needs some work.
+
+### Thanks
+* Credit to [abakedapplepie](https://github.com/abakedapplepie) and his creditors for the base
+* Credit to [xxleevo](https://github.com/xxleevo), [un1matr1x](https://github.com/Un1matr1x) und Alex for their contributions
