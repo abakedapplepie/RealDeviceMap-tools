@@ -1,5 +1,5 @@
 <?php
-error_reporting(1);
+error_reporting(0);
 define('DB_HOST', "127.0.0.1");
 define('DB_USER', "rdmuser");
 define('DB_PSWD', "password");
@@ -65,19 +65,17 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdn.jsdelivr.net/npm/s2-geometry@1.2.10/src/s2geometry.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
-    <script type="text/javascript">
-    // english names
-    var enPokemon = ["Bulbasaur","Ivysaur","Venusaur","Charmander","Charmeleon","Charizard","Squirtle","Wartortle","Blastoise","Caterpie","Metapod","Butterfree","Weedle","Kakuna","Beedrill","Pidgey","Pidgeotto","Pidgeot","Rattata","Raticate","Spearow","Fearow","Ekans","Arbok","Pikachu","Raichu","Sandshrew","Sandslash","Nidoran\u2640","Nidorina","Nidoqueen","Nidoran\u2642","Nidorino","Nidoking","Clefairy","Clefable","Vulpix","Ninetales","Jigglypuff","Wigglytuff","Zubat","Golbat","Oddish","Gloom","Vileplume","Paras","Parasect","Venonat","Venomoth","Diglett","Dugtrio","Meowth","Persian","Psyduck","Golduck","Mankey","Primeape","Growlithe","Arcanine","Poliwag","Poliwhirl","Poliwrath","Abra","Kadabra","Alakazam","Machop","Machoke","Machamp","Bellsprout","Weepinbell","Victreebel","Tentacool","Tentacruel","Geodude","Graveler","Golem","Ponyta","Rapidash","Slowpoke","Slowbro","Magnemite","Magneton","Farfetch\u2019d","Doduo","Dodrio","Seel","Dewgong","Grimer","Muk","Shellder","Cloyster","Gastly","Haunter","Gengar","Onix","Drowzee","Hypno","Krabby","Kingler","Voltorb","Electrode","Exeggcute","Exeggutor","Cubone","Marowak","Hitmonlee","Hitmonchan","Lickitung","Koffing","Weezing","Rhyhorn","Rhydon","Chansey","Tangela","Kangaskhan","Horsea","Seadra","Goldeen","Seaking","Staryu","Starmie","Mr. Mime","Scyther","Jynx","Electabuzz","Magmar","Pinsir","Tauros","Magikarp","Gyarados","Lapras","Ditto","Eevee","Vaporeon","Jolteon","Flareon","Porygon","Omanyte","Omastar","Kabuto","Kabutops","Aerodactyl","Snorlax","Articuno","Zapdos","Moltres","Dratini","Dragonair","Dragonite","Mewtwo","Mew","Chikorita","Bayleef","Meganium","Cyndaquil","Quilava","Typhlosion","Totodile","Croconaw","Feraligatr","Sentret","Furret","Hoothoot","Noctowl","Ledyba","Ledian","Spinarak","Ariados","Crobat","Chinchou","Lanturn","Pichu","Cleffa","Igglybuff","Togepi","Togetic","Natu","Xatu","Mareep","Flaaffy","Ampharos","Bellossom","Marill","Azumarill","Sudowoodo","Politoed","Hoppip","Skiploom","Jumpluff","Aipom","Sunkern","Sunflora","Yanma","Wooper","Quagsire","Espeon","Umbreon","Murkrow","Slowking","Misdreavus","Unown","Wobbuffet","Girafarig","Pineco","Forretress","Dunsparce","Gligar","Steelix","Snubbull","Granbull","Qwilfish","Scizor","Shuckle","Heracross","Sneasel","Teddiursa","Ursaring","Slugma","Magcargo","Swinub","Piloswine","Corsola","Remoraid","Octillery","Delibird","Mantine","Skarmory","Houndour","Houndoom","Kingdra","Phanpy","Donphan","Porygon2","Stantler","Smeargle","Tyrogue","Hitmontop","Smoochum","Elekid","Magby","Miltank","Blissey","Raikou","Entei","Suicune","Larvitar","Pupitar","Tyranitar","Lugia","Ho-Oh","Celebi","Treecko","Grovyle","Sceptile","Torchic","Combusken","Blaziken","Mudkip","Marshtomp","Swampert","Poochyena","Mightyena","Zigzagoon","Linoone","Wurmple","Silcoon","Beautifly","Cascoon","Dustox","Lotad","Lombre","Ludicolo","Seedot","Nuzleaf","Shiftry","Taillow","Swellow","Wingull","Pelipper","Ralts","Kirlia","Gardevoir","Surskit","Masquerain","Shroomish","Breloom","Slakoth","Vigoroth","Slaking","Nincada","Ninjask","Shedinja","Whismur","Loudred","Exploud","Makuhita","Hariyama","Azurill","Nosepass","Skitty","Delcatty","Sableye","Mawile","Aron","Lairon","Aggron","Meditite","Medicham","Electrike","Manectric","Plusle","Minun","Volbeat","Illumise","Roselia","Gulpin","Swalot","Carvanha","Sharpedo","Wailmer","Wailord","Numel","Camerupt","Torkoal","Spoink","Grumpig","Spinda","Trapinch","Vibrava","Flygon","Cacnea","Cacturne","Swablu","Altaria","Zangoose","Seviper","Lunatone","Solrock","Barboach","Whiscash","Corphish","Crawdaunt","Baltoy","Claydol","Lileep","Cradily","Anorith","Armaldo","Feebas","Milotic","Castform","Kecleon","Shuppet","Banette","Duskull","Dusclops","Tropius","Chimecho","Absol","Wynaut","Snorunt","Glalie","Spheal","Sealeo","Walrein","Clamperl","Huntail","Gorebyss","Relicanth","Luvdisc","Bagon","Shelgon","Salamence","Beldum","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Turtwig","Grotle","Torterra","Chimchar","Monferno","Infernape","Piplup","Prinplup","Empoleon","Starly","Staravia","Staraptor","Bidoof","Bibarel","Kricketot","Kricketune","Shinx","Luxio","Luxray","Budew","Roserade","Cranidos","Rampardos","Shieldon","Bastiodon","Burmy","Wormadam","Mothim","Combee","Vespiquen","Pachirisu","Buizel","Floatzel","Cherubi","Cherrim","Shellos","Gastrodon","Ambipom","Drifloon","Drifblim","Buneary","Lopunny","Mismagius","Honchkrow","Glameow","Purugly","Chingling","Stunky","Skuntank","Bronzor","Bronzong","Bonsly","Mime Jr.","Happiny","Chatot","Spiritomb","Gible","Gabite","Garchomp","Munchlax","Riolu","Lucario","Hippopotas","Hippowdon","Skorupi","Drapion","Croagunk","Toxicroak","Carnivine","Finneon","Lumineon","Mantyke","Snover","Abomasnow","Weavile","Magnezone","Lickilicky","Rhyperior","Tangrowth","Electivire","Magmortar","Togekiss","Yanmega","Leafeon","Glaceon","Gliscor","Mamoswine","Porygon-Z","Gallade","Probopass","Dusknoir","Froslass","Rotom","Uxie","Mesprit","Azelf","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus","Victini","Snivy","Servine","Serperior","Tepig","Pignite","Emboar","Oshawott","Dewott","Samurott","Patrat","Watchog","Lillipup","Herdier","Stoutland","Purrloin","Liepard","Pansage","Simisage","Pansear","Simisear","Panpour","Simipour","Munna","Musharna","Pidove","Tranquill","Unfezant","Blitzle","Zebstrika","Roggenrola","Boldore","Gigalith","Woobat","Swoobat","Drilbur","Excadrill","Audino","Timburr","Gurdurr","Conkeldurr","Tympole","Palpitoad","Seismitoad","Throh","Sawk","Sewaddle","Swadloon","Leavanny","Venipede","Whirlipede","Scolipede","Cottonee","Whimsicott","Petilil","Lilligant","Basculin","Sandile","Krokorok","Krookodile","Darumaka","Darmanitan","Maractus","Dwebble","Crustle","Scraggy","Scrafty","Sigilyph","Yamask","Cofagrigus","Tirtouga","Carracosta","Archen","Archeops","Trubbish","Garbodor","Zorua","Zoroark","Minccino","Cinccino","Gothita","Gothorita","Gothitelle","Solosis","Duosion","Reuniclus","Ducklett","Swanna","Vanillite","Vanillish","Vanilluxe","Deerling","Sawsbuck","Emolga","Karrablast","Escavalier","Foongus","Amoonguss","Frillish","Jellicent","Alomomola","Joltik","Galvantula","Ferroseed","Ferrothorn","Klink","Klang","Klinklang","Tynamo","Eelektrik","Eelektross","Elgyem","Beheeyem","Litwick","Lampent","Chandelure","Axew","Fraxure","Haxorus","Cubchoo","Beartic","Cryogonal","Shelmet","Accelgor","Stunfisk","Mienfoo","Mienshao","Druddigon","Golett","Golurk","Pawniard","Bisharp","Bouffalant","Rufflet","Braviary","Vullaby","Mandibuzz","Heatmor","Durant","Deino","Zweilous","Hydreigon","Larvesta","Volcarona","Cobalion","Terrakion","Virizion","Tornadus","Thundurus","Reshiram","Zekrom","Landorus","Kyurem","Keldeo","Meloetta","Genesect","Chespin","Quilladin","Chesnaught","Fennekin","Braixen","Delphox","Froakie","Frogadier","Greninja","Bunnelby","Diggersby","Fletchling","Fletchinder","Talonflame","Scatterbug","Spewpa","Vivillon","Litleo","Pyroar","Flabébé","Floette","Florges","Skiddo","Gogoat","Pancham","Pangoro","Furfrou","Espurr","Meowstic","Honedge","Doublade","Aegislash","Spritzee","Aromatisse","Swirlix","Slurpuff","Inkay","Malamar","Binacle","Barbaracle","Skrelp","Dragalge","Clauncher","Clawitzer","Helioptile","Heliolisk","Tyrunt","Tyrantrum","Amaura","Aurorus","Sylveon","Hawlucha","Dedenne","Carbink","Goomy","Sliggoo","Goodra","Klefki","Phantump","Trevenant","Pumpkaboo","Gourgeist","Bergmite","Avalugg","Noibat","Noivern","Xerneas","Yveltal","Zygarde","Diancie","Hoopa","Volcanion","Rowlet","Dartrix","Decidueye","Litten","Torracat","Incineroar","Popplio","Brionne","Primarina","Pikipek","Trumbeak","Toucannon","Yungoos","Gumshoos","Grubbin","Charjabug","Vikavolt","Crabrawler","Crabominable","Oricorio","Cutiefly","Ribombee","Rockruff","Lycanroc","Wishiwashi","Mareanie","Toxapex","Mudbray","Mudsdale","Dewpider","Araquanid","Fomantis","Lurantis","Morelull","Shiinotic","Salandit","Salazzle","Stufful","Bewear","Bounsweet","Steenee","Tsareena","Comfey","Oranguru","Passimian","Wimpod","Golisopod","Sandygast","Palossand","Pyukumuku","Type: Null","Silvally","Minior","Komala","Turtonator","Togedemaru","Mimikyu","Bruxish","Drampa","Dhelmise","Jangmo-o","Hakamo-o","Kommo-o","Tapu Koko","Tapu Lele","Tapu Bulu","Tapu Fini","Cosmog","Cosmoem","Solgaleo","Lunala","Nihilego","Buzzwole","Pheromosa","Xurkitree","Celesteela","Kartana","Guzzlord","Necrozma","Magearna","Marshadow"];
-    // german names
-    var dePokemon = ["Bisasam","Bisaknosp","Bisaflor","Glumanda","Glutexo","Glurak","Schiggy","Schillok","Turtok","Raupy","Safcon","Smettbo","Hornliu","Kokuna","Bibor","Taubsi","Tauboga","Tauboss","Rattfratz","Rattikarl","Habitak","Ibitak","Rettan","Arbok","Pikachu","Raichu","Sandan","Sandamer","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Piepi","Pixi","Vulpix","Vulnona","Pummeluff","Knuddeluff","Zubat","Golbat","Myrapla","Duflor","Giflor","Paras","Parasek","Bluzuk","Omot","Digda","Digdri","Mauzi","Snobilikat","Enton","Entoron","Menki","Rasaff","Fukano","Arkani","Quapsel","Quaputzi","Quappo","Abra","Kadabra","Simsala","Machollo","Maschock","Machomei","Knofensa","Ultrigaria","Sarzenia","Tentacha","Tentoxa","Kleinstein","Georok","Geowaz","Ponita","Gallopa","Flegmon","Lahmus","Magnetilo","Magneton","Porenta","Dodu","Dodri","Jurob","Jugong","Sleima","Sleimok","Muschas","Austos","Nebulak","Alpollo","Gengar","Onix","Traumato","Hypno","Krabby","Kingler","Voltobal","Lektrobal","Owei","Kokowei","Tragosso","Knogga","Kicklee","Nockchan","Schlurp","Smogon","Smogmog","Rihorn","Rizeros","Chaneira","Tangela","Kangama","Seeper","Seemon","Goldini","Golking","Sterndu","Starmie","Pantimos","Sichlor","Rossana","Elektek","Magmar","Pinsir","Tauros","Karpador","Garados","Lapras","Ditto","Evoli","Aquana","Blitza","Flamara","Porygon","Amonitas","Amoroso","Kabuto","Kabutops","Aerodactyl","Relaxo","Arktos","Zapdos","Lavados","Dratini","Dragonir","Dragoran","Mewtu","Mew","Endivie","Lorblatt","Meganie","Feurigel","Igelavar","Tornupto","Karnimani","Tyracroc","Impergator","Wiesor","Wiesenior","Hoothoot","Noctuh","Ledyba","Ledian","Webarak","Ariados","Iksbat","Lampi","Lanturn","Pichu","Pii","Fluffeluff","Togepi","Togetic","Natu","Xatu","Voltilamm","Waaty","Ampharos","Blubella","Marill","Azumarill","Mogelbaum","Quaxo","Hoppspross","Hubelupf","Papungha","Griffel","Sonnkern","Sonnflora","Yanma","Felino","Morlord","Psiana","Nachtara","Kramurx","Laschoking","Traunfugil","Icognito","Woingenau","Girafarig","Tannza","Forstellka","Dummisel","Skorgla","Stahlos","Snubbull","Granbull","Baldorfish","Scherox","Pottrott","Skaraborn","Sniebel","Teddiursa","Ursaring","Schneckmag","Magcargo","Quiekel","Keifel","Corasonn","Remoraid","Octillery","Botogel","Mantax","Panzaeron","Hunduster","Hundemon","Seedraking","Phanpy","Donphan","Porygon2","Damhirplex","Farbeagle","Rabauz","Kapoera","Kussilla","Elekid","Magby","Miltank","Heiteira","Raikou","Entei","Suicune","Larvitar","Pupitar","Despotar","Lugia","Ho-Oh","Celebi","Geckarbor","Reptain","Gewaldro","Flemmli","Jungglut","Lohgock","Hydropi","Moorabbel","Sumpex","Fiffyen","Magnayen","Zigzachs","Geradaks","Waumpel","Schaloko","Papinella","Panekon","Pudox","Loturzel","Lombrero","Kappalores","Samurzel","Blanas","Tengulist","Schwalbini","Schwalboss","Wingull","Pelipper","Trasla","Kirlia","Guardevoir","Gehweiher","Maskeregen","Knilz","Kapilz","Bummelz","Muntier","Letarking","Nincada","Ninjask","Ninjatom","Flurmel","Krakeelo","Krawumms","Makuhita","Hariyama","Azurill","Nasgnet","Eneco","Enekoro","Zobiris","Flunkifer","Stollunior","Stollrak","Stolloss","Meditie","Meditalis","Frizelbliz","Voltenso","Plusle","Minun","Volbeat","Illumise","Roselia","Schluppuck","Schlukwech","Kanivanha","Tohaido","Wailmer","Wailord","Camaub","Camerupt","Qurtel","Spoink","Groink","Pandir","Knacklion","Vibrava","Libelldra","Tuska","Noktuska","Wablu","Altaria","Sengo","Vipitis","Lunastein","Sonnfel","Schmerbe","Welsar","Krebscorps","Krebutack","Puppance","Lepumentas","Liliep","Wielie","Anorith","Armaldo","Barschwa","Milotic","Formeo","Kecleon","Shuppet","Banette","Zwirrlicht","Zwirrklop","Tropius","Palimpalim","Absol","Isso","Schneppke","Firnontor","Seemops","Seejong","Walraisa","Perlu","Aalabyss","Saganabyss","Relicanth","Liebiskus","Kindwurm","Draschel","Brutalanda","Tanhel","Metang","Metagross","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Chelast","Chelcarain","Chelterrar","Panflam","Panpyro","Panferno","Plinfa","Pliprin","Impoleon","Staralili","Staravia","Staraptor","Bidiza","Bidifas","Zirpurze","Zirpeise","Sheinux","Luxio","Luxtra","Knospi","Roserade","Koknodon","Rameidon","Schilterus","Bollterus","Burmy","Burmadame","Moterpel","Wadribie","Honweisel","Pachirisu","Bamelin","Bojelin","Kikugi","Kinoso","Schalellos","Gastrodon","Ambidiffel","Driftlon","Drifzepeli","Haspiror","Schlapor","Traunmagil","Kramshef","Charmian","Shnurgarst","Klingplim","Skunkapuh","Skuntank","Bronzel","Bronzong","Mobai","Pantimimi","Wonneira","Plaudagei","Kryppuk","Kaumalat","Knarksel","Knakrack","Mampfaxo","Riolu","Lucario","Hippopotas","Hippoterus","Pionskora","Piondragi","Glibunkel","Toxiquak","Venuflibis","Finneon","Lumineon","Mantirps","Shnebedeck","Rexblisar","Snibunna","Magnezone","Schlurplek","Rihornior","Tangoloss","Elevoltek","Magbrant","Togekiss","Yanmega","Folipurba","Glaziola","Skorgro","Mamutel","Porygon-Z","Galagladi","Voluminas","Zwirrfinst","Frosdedje","Rotom","Selfe","Vesprit","Tobutz","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus","Victini","Serpifeu","Efoserp","Serpiroyal","Floink","Ferkokel","Flambirex","Ottaro","Zwottronin","Admurai","Nagelotz","Kukmarda","Yorkleff","Terribark","Bissbark","Felilou","Kleoparda","Vegimak","Vegichita","Grillmak","Grillchita","Sodamak","Sodachita","Somniam","Somnivora","Dusselgurr","Navitaub","Fasasnob","Elezeba","Zebritz","Kiesling","Sedimantur","Brockoloss","Fleknoil","Fletiamo","Rotomurf","Stalobor","Ohrdoch","Praktibalk","Strepoli","Meistagrif","Schallquap","Mebrana","Branawarz","Jiutesto","Karadonis","Strawickl","Folikon","Matrifol","Toxiped","Rollum","Cerapendra","Waumboll","Elfun","Lilminip","Dressella","Barschuft","Ganovil","Rokkaiman","Rabigator","Flampion","Flampivian","Maracamba","Lithomith","Castellith","Zurrokex","Irokex","Symvolara","Makabaja","Echnatoll","Galapaflos","Karippas","Flapteryx","Aeropteryx","Unratütox","Deponitox","Zorua","Zoroark","Picochilla","Chillabell","Mollimorba","Hypnomorba","Morbitesse","Monozyto","Mitodos","Zytomega","Piccolente","Swaroness","Gelatini","Gelatroppo","Gelatwino","Sesokitz","Kronjuwild","Emolga","Laukaps","Cavalanzas","Tarnpignon","Hutsassa","Quabbel","Apoquallyp","Mamolida","Wattzapf","Voltula","Kastadur","Tentantel","Klikk","Kliklak","Klikdiklak","Zapplardin","Zapplalek","Zapplarang","Pygraulon","Megalon","Lichtel","Laternecto","Skelabra","Milza","Sharfax","Maxax","Petznief","Siberio","Frigometri","Schnuthelm","Hydragil","Flunschlik","Lin-Fu","Wie-Shu","Shardrago","Golbit","Golgantes","Gladiantri","Caesurio","Bisofank","Geronimatz","Washakwil","Skallyk","Grypheldis","Furnifraß","Fermicula","Kapuno","Duodino","Trikephalo","Ignivor","Ramoth","Kobalium","Terrakium","Viridium","Boreos","Voltolos","Reshiram","Zekrom","Demeteros","Kyurem","Keldeo","Meloetta","Genesect","Igamaro","Igastarnish","Brigaron","Fynx","Rutena","Fennexis","Froxy","Amphizel","Quajutsu","Scoppel","Grebbit","Dartiri","Dartignis","Fiaro","Purmel","Puponcho","Vivillon","Leufeo","Pyroleo","Flabébé","Floette","Florges","Mähikel","Chevrumm","Pam-Pam","Pandagro","Coiffwaff","Psiau","Psiaugon","Gramokles","Duokles","Durengard","Parfi","Parfinesse","Flauschling","Sabbaione","Iscalar","Calamanero","Bithora","Thanathora","Algitt","Tandrak","Scampisto","Wummer","Eguana","Elezard","Balgoras","Monargoras","Amarino","Amagarga","Feelinara","Resladero","Dedenne","Rocara","Viscora","Viscargot","Viscogon","Clavion","Paragoni","Trombork","Irrbis","Pumpdjinn","Arktip","Arktilas","eF-eM","UHaFnir","Xerneas","Yveltal","Zygarde","Diancie","Hoopa","Volcanion","Bauz","Arboretoss","Silvarro","Flamiau","Miezunder","Fuegro","Robball","Marikeck","Primarene","Peppeck","Trompeck","Tukanon","Mangunior","Manguspektor","Mabula","Akkup","Donarion","Krabbox","Krawell","Choreogel","Wommel","Bandelby","Wuffels","Wolwerock","Lusardin","Garstella","Aggrostella","Pampuli","Pampross","Araqua","Aranestro","Imantis","Mantidea","Bubungus","Lamellux","Molunk","Amfira","Velursi","Kosturso","Frubberl","Frubaila","Fruyal","Curelei","Kommandutan","Quartermak","Reißlaus","Tectass","Sankabuh","Colossand","Gufa","Typ:Null","Amigento","Meteno","Koalelu","Tortunator","Togedemaru","Mimigma","Knirfish","Sen-Long","Moruda","Miniras","Mediras","Grandiras","Kapu-Riki","Kapu-Fala","Kapu-Toro","Kapu-Kime","Cosmog","Cosmovum","Solgaleo","Lunala","Anego","Masskito","Schabelle","Voltriant","Kaguron","Katagami","Schlingking","Necrozma","Magearna","Marshadow"];
-    var frPokemon = ["Bulbizarre","Herbizarre","Florizarre","Salamèche","Reptincel","Dracaufeu","Carapuce","Carabaffe","Tortank","Chenipan","Chrysacier","Papilusion","Aspicot","Coconfort","Dardargnan","Roucool","Roucoups","Roucarnage","Rattata","Rattatac","Piafabec","Rapasdepic","Abo","Arbok","Pikachu","Raichu","Sabelette","Sablaireau","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂","Nidorino","Nidoking","Mélofée","Mélodelfe","Goupix","Feunard","Rondoudou","Grodoudou","Nosferapti","Nosferalto","Mystherbe","Ortide","Rafflésia","Paras","Parasect","Mimitoss","Aéromite","Taupiqueur","Triopikeur","Miaouss","Persian","Psykokwak","Akwakwak","Férosinge","Colossinge","Caninos","Arcanin","Ptitard","Têtarte","Tartard","Abra","Kadabra","Alakazam","Machoc","Machopeur","Mackogneur","Chétiflor","Boustiflor","Empiflor","Tentacool","Tentacruel","Racaillou","Gravalanch","Grolem","Ponyta","Galopa","Ramoloss","Flagadoss","Magnéti","Magnéton","Canarticho","Doduo","Dodrio","Otaria","Lamantine","Tadmorv","Grotadmorv","Kokiyas","Crustabri","Fantominus","Spectrum","Ectoplasma","Onix","Soporifik","Hypnomade","Krabby","Krabboss","Voltorbe","Électrode","Nœunœuf","Noadkoko","Osselait","Ossatueur","Kicklee","Tygnon","Excelangue","Smogo","Smogogo","Rhinocorne","Rhinoféros","Leveinard","Saquedeneu","Kangourex","Hypotrempe","Hypocéan","Poissirène","Poissoroy","Stari","Staross","M. Mime","Insécateur","Lippoutou","Élektek","Magmar","Scarabrute","Tauros","Magicarpe","Léviator","Lokhlass","Métamorph","Évoli","Aquali","Voltali","Pyroli","Porygon","Amonita","Amonistar","Kabuto","Kabutops","Ptéra","Ronflex","Artikodin","Électhor","Sulfura","Minidraco","Draco","Dracolosse","Mewtwo","Mew","Germignon","Macronium","Méganium","Héricendre","Feurisson","Typhlosion","Kaiminus","Crocrodil","Aligatueur","Fouinette","Fouinar","Hoothoot","Noarfang","Coxy","Coxyclaque","Mimigal","Migalos","Nostenfer","Loupio","Lanturn","Pichu","Mélo","Toudoudou","Togepi","Togetic","Natu","Xatu","Wattouat","Lainergie","Pharamp","Joliflor","Marill","Azumarill","Simularbre","Tarpaud","Granivol","Floravol","Cotovol","Capumain","Tournegrin","Héliatronc","Yanma","Axoloto","Maraiste","Mentali","Noctali","Cornèbre","Roigada","Feuforêve","Zarbi","Qulbutoké","Girafarig","Pomdepik","Foretress","Insolourdo","Scorplane","Steelix","Snubbull","Granbull","Qwilfish","Cizayox","Caratroc","Scarhino","Farfuret","Teddiursa","Ursaring","Limagma","Volcaropod","Marcacrin","Cochignon","Corayon","Rémoraid","Octillery","Cadoizo","Démanta","Airmure","Malosse","Démolosse","Hyporoi","Phanpy","Donphan","Porygon2","Cerfrousse","Queulorior","Debugant","Kapoera","Lippouti","Élekid","Magby","Écrémeuh","Leuphorie","Raikou","Entei","Suicune","Embrylex","Ymphect","Tyranocif","Lugia","Ho-Oh","Celebi","Arcko","Massko","Jungko","Poussifeu","Galifeu","Braségali","Gobou","Flobio","Laggron","Medhyèna","Grahyèna","Zigzaton","Linéon","Chenipotte","Armulys","Charmillon","Blindalys","Papinox","Nénupiot","Lombre","Ludicolo","Grainipiot","Pifeuil","Tengalice","Nirondelle","Hélédelle","Goélise","Bekipan","Tarsal","Kirlia","Gardevoir","Arakdo","Maskadra","Balignon","Chapignon","Parécool","Vigoroth","Monaflèmit","Ningale","Ninjask","Munja","Chuchmur","Ramboum","Brouhabam","Makuhita","Hariyama","Azurill","Tarinor","Skitty","Delcatty","Ténéfix","Mysdibule","Galekid","Galegon","Galeking","Méditikka","Charmina","Dynavolt","Élecsprint","Posipi","Négapi","Muciole","Lumivole","Rosélia","Gloupti","Avaltout","Carvanha","Sharpedo","Wailmer","Wailord","Chamallot","Camérupt","Chartor","Spoink","Groret","Spinda","Kraknoix","Vibraninf","Libégon","Cacnea","Cacturne","Tylton","Altaria","Mangriff","Séviper","Séléroc","Solaroc","Barloche","Barbicha","Écrapince","Colhomard","Balbuto","Kaorine","Lilia","Vacilys","Anorith","Armaldo","Barpau","Milobellus","Morphéo","Kecleon","Polichombr","Branette","Skelénox","Téraclope","Tropius","Éoko","Absol","Okéoké","Stalgamin","Oniglali","Obalie","Phogleur","Kaimorse","Coquiperl","Serpang","Rosabyss","Relicanth","Lovdisc","Draby","Drackhaus","Drattak","Terhal","Métang","Métalosse","Regirock","Regice","Registeel","Latias","Latios","Kyogre","Groudon","Rayquaza","Jirachi","Deoxys","Tortipouss","Boskara","Torterra","Ouisticram","Chimpenfeu","Simiabraz","Tiplouf","Prinplouf","Pingoléon","Étourmi","Étourvol","Étouraptor","Keunotor","Castorno","Crikzik","Mélokrik","Lixy","Luxio","Luxray","Rozbouton","Roserade","Kranidos","Charkos","Dinoclier","Bastiodon","Cheniti","Cheniselle","Papilord","Apitrini","Apireine","Pachirisu","Mustébouée","Mustéflott","Ceribou","Ceriflor","Sancoki","Tritosor","Capidextre","Baudrive","Grodrive","Laporeille","Lockpin","Magirêve","Corboss","Chaglam","Chaffreux","Korillon","Moufouette","Moufflair","Archéomire","Archéodong","Manzaï","Mime Jr.","Ptiravi","Pijako","Spiritomb","Griknot","Carmache","Carchacrok","Goinfrex","Riolu","Lucario","Hippopotas","Hippodocus","Rapion","Drascore","Cradopaud","Coatox","Vortente","Écayon","Luminéon","Babimanta","Blizzi","Blizzaroi","Dimoret","Magnézone","Coudlangue","Rhinastoc","Bouldeneu","Élekable","Maganon","Togekiss","Yanmega","Phyllali","Givrali","Scorvol","Mammochon","Porygon-Z","Gallame","Tarinorme","Noctunoir","Momartik","Motisma","Créhelf","Créfollet","Créfadet","Dialga","Palkia","Heatran","Regigigas","Giratina","Cresselia","Phione","Manaphy","Darkrai","Shaymin","Arceus","Victini","Vipélierre","Lianaja","Majaspic","Gruikui","Grotichon","Roitiflam","Moustillon","Mateloutre","Clamiral","Ratentif","Miradar","Ponchiot","Ponchien","Mastouffe","Chacripan","Léopardus","Feuillajou","Feuiloutan","Flamajou","Flamoutan","Flotajou","Flotoutan","Munna","Mushana","Poichigeon","Colombeau","Déflaisan","Zébibron","Zéblitz","Nodulithe","Géolithe","Gigalithe","Chovsourir","Rhinolove","Rototaupe","Minotaupe","Nanméouïe","Charpenti","Ouvrifier","Bétochef","Tritonde","Batracné","Crapustule","Judokrak","Karaclée","Larveyette","Couverdure","Manternel","Venipatte","Scobolide","Brutapode","Doudouvet","Farfaduvet","Chlorobule","Fragilady","Bargantua","Mascaïman","Escroco","Crocorible","Darumarond","Darumacho","Maracachi","Crabicoque","Crabaraque","Baggiguane","Baggaïd","Cryptéro","Tutafeh","Tutankafer","Carapagos","Mégapagos","Arkéapti","Aéroptéryx","Miamiasme","Miasmax","Zorua","Zoroark","Chinchidou","Pashmilla","Scrutella","Mesmérella","Sidérella","Nucléos","Méios","Symbios","Couaneton","Lakmécygne","Sorbébé","Sorboul","Sorbouboul","Vivaldaim","Haydaim","Emolga","Carabing","Lançargot","Trompignon","Gaulet","Viskuse","Moyade","Mamanbo","Statitik","Mygavolt","Grindur","Noacier","Tic","Clic","Cliticlic","Anchwatt","Lampéroie","Ohmassacre","Lewsor","Neitram","Funécire","Mélancolux","Lugulabre","Coupenotte","Incisache","Tranchodon","Polarhume","Polagriffe","Hexagel","Escargaume","Limaspeed","Limonde","Kungfouine","Shaofouine","Drakkarmin","Gringolem","Golemastoc","Scalpion","Scalproie","Frison","Furaiglon","Gueriaigle","Vostourno","Vaututrice","Aflamanoir","Fermite","Solochi","Diamat","Trioxhydre","Pyronille","Pyrax","Cobaltium","Terrakium","Viridium","Boréas","Fulguris","Reshiram","Zekrom","Démétéros","Kyurem","Keldeo","Meloetta","Genesect","Marisson","Boguérisse","Blindépique","Feunnec","Roussil","Goupelin","Grenousse","Croâporal","Amphinobi","Sapereau","Excavarenne","Passerouge","Braisillon","Flambusard","Lépidonille","Pérégrain","Prismillon","Hélionceau","Némélios","Flabébé","Floette","Florges","Cabriolaine","Chevroum","Pandespiègle","Pandarbare","Couafarel","Psystigri","Mistigrix","Monorpale","Dimoclès","Exagide","Fluvetin","Cocotine","Sucroquin","Cupcanaille","Sepiatop","Sepiatroce","Opermine","Golgopathe","Venalgue","Kravarech","Flingouste","Gamblast","Galvaran","Iguolta","Ptyranidur","Rexillius","Amagara","Dragmara","Nymphali","Brutalibré","Dedenne","Strassie","Mucuscule","Colimucus","Muplodocus","Trousselin","Brocélôme","Desséliande","Pitrouille","Banshitrouye","Grelaçon","Séracrawl","Sonistrelle","Bruyverne","Xerneas","Yveltal","Zygarde","Diancie","Hoopa","Volcanion","Brindibou","Efflèche","Archéduc","Flamiaou","Matoufeu","Félinferno","Otaquin","Otarlette","Oratoria","Picassaut","Piclairon","Bazoucan","Manglouton","Argouste","Larvibule","Chrysapile","Lucanon","Crabagarre","Crabominable","Plumeline","Bombydou","Rubombelle","Rocabot","Lougaroc","Froussardine","Vorastérie","Prédastérie","Tiboudet","Bourrinos","Araqua","Tarenbulle","Mimantis","Floramantis","Spododo","Lampignon","Tritox","Malamandre","Nounourson","Chelours","Croquine","Candine","Sucreine","Guérilande","Gouroutan","Quartermac","Sovkipou","Sarmuraï","Bacabouh","Trépassable","Concombaffe","Type:0","Silvallié","Météno","Dodoala","Boumata","Togedemaru","Mimiqui","Denticrisse","Draïeul","Sinistrail","Bébécaille","Écaïd","Ékaïser","Tokorico","Tokotoro","Tokopiyon","Tokopisco","Cosmog","Cosmovum","Solgaleo","Lunala","Zéroïd","Mouscoto","Cancrelove","Câblifère","Bamboiselle","Katagami","Engloutyran","Necrozma","Magearna","Marshadow","Vémini","Mandrillon","Ama-Ama","Pierroteknik","Zeraora"];
-    </script>
+    <script type="text/javascript" src="./en.js"></script>
+    <script type="text/javascript" src="./de.js"></script>
+    <script type="text/javascript" src="./fr.js"></script>
+
 <script type="text/javascript">
 var debug = false;
 //map and control vars
 var map;
 var manualCircle = false;
 var tlChoice = null;
+var subs = enSubs;
 var drawControl,
   buttonManualCircle,
   buttonImportNests,
@@ -123,9 +121,8 @@ var settings = {
   cellsLevel1: null,
   cellsLevel2: null,
   tlLink: null,
-  monLanguage: null
+  language: null
 };
-var pokemon = null;
 //map layer vars
 var gymLayer,
   pokestopLayer,
@@ -138,6 +135,7 @@ var gymLayer,
   viewCellLayer;
 $(function(){
   loadSettings();
+  getLanguage();
   initMap();
   setMapMode();
   setShowMode();
@@ -212,18 +210,18 @@ $(function(){
           polygon.addTo(nestLayer);
           polygon.bindPopup(function (layer) {
           if (typeof layer.tags.name !== 'undefined') {
-            var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Nest: ' + layer.tags.name + '</span></div>';
+            var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
           }
           var output = name +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
                   '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>';
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>';
           return output;
           });
         });
@@ -252,7 +250,7 @@ $(function(){
   });
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
-    $(document.getElementById('selectAllAndCopy')).text("Copy to clipboard");
+    $(document.getElementById('selectAllAndCopy')).text(subs.copyClipboard);
   });
   $('#tlChoice0').on('click', function(event) {
     tlChoice = $('#tlChoice0').val();
@@ -273,7 +271,8 @@ $(function(){
     } else if (tlChoice == 'osm') {
       tlChoice = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     }
-    var monLanguage = $('#monLanguage').val();
+    var oldLang = settings.language;
+    var language = $('#language').val();
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
@@ -283,7 +282,7 @@ $(function(){
       tlLink: tlChoice,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit,
-      monLanguage: monLanguage
+      language: language
     };
     Object.keys(newSettings).forEach(function(key) {
       if (settings[key] != newSettings[key]) {
@@ -291,12 +290,13 @@ $(function(){
         storeSetting(key);
       }
     });
-    if (settings.tlLink != null && settings.tlLink == newSettings.tlLink) {
+    if (settings.language != oldLang) {
+      getLanguage();
       location.reload();
     }
-    if (settings.monLanguage != null && settings.monLanguage == newSettings.monLanguage) {
-      changeMonLanguage();
-    }
+    if (settings.tlLink != null && settings.tlLink == newSettings.tlLink) {
+      location.reload();
+    } 
   });
   $('#cancelSettings').on('click', function(event) {
     processSettings(true);
@@ -304,7 +304,7 @@ $(function(){
   $("#selectAllAndCopy").click(function () {
     document.getElementById('outputCircles').select();
     document.execCommand('copy');
-    $(this).text("Copied!");
+    $(this).text(subs.copied);
   });
 })
 function initMap() {
@@ -345,7 +345,7 @@ function initMap() {
     states: [{
       stateName: 'enableMapModePoiViewer',
       icon: 'fas fa-binoculars',
-      title: 'POI Viewer',
+      title: subs.poiViewer,
       onClick: function (btn) {
         settings.mapMode = 'PoiViewer';
         storeSetting('mapMode');
@@ -358,7 +358,7 @@ function initMap() {
     states: [{
       stateName: 'enableMapModeRouteGenerator',
       icon: 'fas fa-route',
-      title: 'Route Generator',
+      title: subs.routeGenerator,
       onClick: function (btn) {
         settings.mapMode = 'RouteGenerator';
         storeSetting('mapMode');
@@ -372,7 +372,7 @@ function initMap() {
     states: [{
       stateName: 'enableShowGyms',
       icon: 'fas fa-dumbbell',
-      title: 'Hide gyms',
+      title: subs.hideGyms,
       onClick: function (btn) {
         settings.showGyms = false;
         storeSetting('showGyms');
@@ -381,7 +381,7 @@ function initMap() {
     }, {
       stateName: 'disableShowGyms',
       icon: 'fas fa-dumbbell',
-      title: 'Show gyms',
+      title: subs.showGyms,
       onClick: function (btn) {
         settings.showGyms = true;
         storeSetting('showGyms');
@@ -394,7 +394,7 @@ function initMap() {
     states: [{
       stateName: 'enableShowPokestops',
       icon: 'fas fa-map-pin',
-      title: 'Hide pokestops',
+      title: subs.hidePokestops,
       onClick: function (btn) {
         settings.showPokestops = false;
         storeSetting('showPokestops');
@@ -403,7 +403,7 @@ function initMap() {
     }, {
       stateName: 'disableShowPokestops',
       icon: 'fas fa-map-pin',
-      title: 'Show pokestops',
+      title: subs.showPokestops,
       onClick: function (btn) {
         settings.showPokestops = true;
         storeSetting('showPokestops');
@@ -416,7 +416,7 @@ function initMap() {
     states: [{
       stateName: 'enableShowPokestopsRange',
       icon: 'fas fa-layer-group',
-      title: 'Hide pokestop range',
+      title: subs.hidePokestopRange,
       onClick: function (btn) {
         settings.showPokestopsRange = false;
         storeSetting('showPokestopsRange');
@@ -425,7 +425,7 @@ function initMap() {
     }, {
       stateName: 'disableShowPokestopsRange',
       icon: 'fas fa-layer-group',
-      title: 'Show pokestop range',
+      title: subs.showPokestopRange,
       onClick: function (btn) {
         settings.showPokestopsRange = true;
         storeSetting('showPokestopsRange');
@@ -438,7 +438,7 @@ function initMap() {
     states:[{
       stateName: 'enableShowSpawnpoints',
       icon: 'fas fa-paw',
-      title: 'Hide spawnpoints',
+      title: subs.hideSpawnpoints,
       onClick: function (btn) {
         settings.showSpawnpoints = false;
         storeSetting('showSpawnpoints');
@@ -447,7 +447,7 @@ function initMap() {
     }, {
       stateName: 'disableShowSpawnpoints',
       icon: 'fas fa-paw',
-      title: 'Show spawnpoints',
+      title: subs.showSpawnpoints,
       onClick: function (btn) {
         settings.showSpawnpoints = true;
         storeSetting('showSpawnpoints');
@@ -460,7 +460,7 @@ function initMap() {
     states:[{
       stateName: 'enableShowUnknownPois',
       icon: 'fas fa-question-circle',
-      title: 'Show all POIs',
+      title: subs.showAllPOIS,
       onClick: function (btn) {
         settings.showUnknownPois = false;
         storeSetting('showUnknownPois');
@@ -469,7 +469,7 @@ function initMap() {
     }, {
       stateName: 'disableShowUnknownPois',
       icon: 'fas fa-question-circle',
-      title: 'Show unknown POIs only',
+      title: subs.showUnknownPOIS,
       onClick: function (btn) {
         settings.showUnknownPois = true;
         storeSetting('showUnknownPois');
@@ -484,7 +484,7 @@ function initMap() {
     states: [{
       stateName: 'enableViewCells',
       icon: 'far fa-square',
-      title: 'Hide viewing cells',
+      title: subs.hideViewingCells,
       onClick: function (btn) {
         settings.viewCells = false;
         storeSetting('viewCells');
@@ -493,7 +493,7 @@ function initMap() {
     }, {
       stateName: 'disableViewCells',
       icon: 'far fa-square',
-      title: 'Show viewing cells',
+      title: subs.showViewingCells,
       onClick: function (btn) {
         settings.viewCells = true;
         storeSetting('viewCells');
@@ -526,7 +526,7 @@ function initMap() {
     states: [{
       stateName: 'enableManualCircle',
       icon: 'far fa-circle',
-      title: 'Enable manual circle mode',
+      title: subs.enableManualCircle,
       onClick: function (btn) {
         manualCircle = true;
         btn.state('disableManualCircle');
@@ -534,7 +534,7 @@ function initMap() {
     }, {
       stateName: 'disableManualCircle',
       icon: 'fas fa-circle',
-      title: 'Disable manual circle mode',
+      title: subs.disableManualCircle,
       onClick: function (btn) {
         manualCircle = false;
         btn.state('enableManualCircle');
@@ -545,7 +545,7 @@ function initMap() {
     states: [{
       stateName: 'openImportPolygonModal',
       icon: 'fas fa-tree',
-      title: 'Import nests from OSM',
+      title: subs.importOSM,
       onClick: function (control){
         getNests();
       }
@@ -555,7 +555,7 @@ function initMap() {
     states: [{
       stateName: 'openImportPolygonModal',
       icon: 'fas fa-draw-polygon',
-      title: 'Import polygon',
+      title: subs.importPolygon,
       onClick: function (control){
         $('#modalImportPolygon').modal('show');
       }
@@ -565,7 +565,7 @@ function initMap() {
     states: [{
       stateName: 'openImportInstanceModal',
       icon: 'fas fa-truck-loading',
-      title: 'Import instance',
+      title: subs.importInstance,
       onClick: function (control){
         getInstance();
         $('#modalImportInstance').modal('show');
@@ -576,7 +576,7 @@ function initMap() {
     states: [{
       stateName: 'clearMapRoute',
       icon: 'fas fa-times-circle',
-      title: 'Clear route',
+      title: subs.clearRoute,
       onClick: function (control){
         circleLayer.clearLayers();
       }
@@ -586,7 +586,7 @@ function initMap() {
     states: [{
       stateName: 'clearMap',
       icon: 'fas fa-trash',
-      title: 'Clear all shapes',
+      title: subs.clearShapes,
       onClick: function (control){
         circleLayer.clearLayers();
         editableLayer.clearLayers();
@@ -600,7 +600,7 @@ function initMap() {
     states:[{
       stateName: 'generateRoute',
       icon: 'fas fa-cookie',
-      title: 'Generate route',
+      title: subs.generateRoute,
       onClick: function (btn) {
         generateRoute();
       }
@@ -611,7 +611,7 @@ function initMap() {
     states:[{
       stateName: 'optimizeRoute',
       icon: 'fas fa-cookie-bite',
-      title: 'Generate optimized route',
+      title: subs.generateOptimizedRoute,
       onClick: function (btn) {
         $('#modalOptimize').modal('show');
       }
@@ -621,19 +621,19 @@ function initMap() {
   buttonModalOutput = L.easyButton({
     states: [{
       stateName: 'openOutputModal',
-      icon: '<strong>GO</strong>',
-      title: 'Get output',
+      icon: 'far fa-clipboard',
+      title: subs.getOutput,
       onClick: function (control){
         $('#modalOutput').modal('show');
       }
     }]
   }).addTo(map);
   buttonModalSettings = L.easyButton({
-    position: 'bottomleft',
+    position: 'topright',
     states: [{
       stateName: 'openSettingsModal',
       icon: 'fas fa-cog',
-      title: 'Open settings',
+      title: subs.openSettings,
       onClick: function (control){
         if (settings.circleSize != null) {
           $('#circleSize').val(settings.circleSize);
@@ -668,15 +668,16 @@ function initMap() {
         if (settings.nestMigrationDate != null) {
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
         }
-        if (settings.monLanguage != null) {
-          $('#monLanguage').val(settings.monLanguage);
+        if (settings.language != null) {
+          $('#language').val(settings.language);
         } else {
-          $('#monLanguage').val('en');
+          $('#language').val('en');
         }
         $('#modalSettings').modal('show');
       }
     }]
   }).addTo(map);
+  buttonModalSettings.button.style.backgroundColor = '#B7E9B7';
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
@@ -689,47 +690,47 @@ function initMap() {
 		var layer = e.layer;
 		layer.bindPopup(function (layer) {
 			if (typeof layer.tags.name !== 'undefined') {
-				var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Nest: ' + layer.tags.name + '</span></div>';
+				var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
 			}
 			var output = name +
-			  '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
+			  '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
 			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
 			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
 			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
 			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
 			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
 			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
 			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="nestLayer" data-layer-id=' +
 			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Visible Points (CSV)</span></div></div>' +
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
 			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="nestLayer" data-layer-id=' +
 			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
+			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
 			return output;
 		});
 	});
 	editableLayer.on('layeradd', function(e) {
 		var layer = e.layer;
 		layer.bindPopup(function (layer) {
-			var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Polygon</span></div>' +
+			var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
 									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
 									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
 									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
 									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
 									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
 									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>' +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
 									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
 									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Visible Points (CSV)</span></div></div>' +
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
 									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
 									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Count Visible Points</span></div></div>';
+									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
 			return output;
 		});
 	});
@@ -766,7 +767,7 @@ circleLayer.on('layeradd', function(e) {
 				draggable: true,
         radius: settings.circleSize
       }).bindPopup(function (layer) {
-        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
       }).addTo(circleLayer);
       }else{
       var newCircle = new L.circle(e.latlng, {
@@ -776,7 +777,7 @@ circleLayer.on('layeradd', function(e) {
         draggable: true,
         radius: 70
       }).bindPopup(function (layer) {
-        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
       }).addTo(circleLayer);
     }
     
@@ -880,7 +881,7 @@ function setMapMode(){
       buttonMapModePoiViewer.button.style.backgroundColor = '#E9B7B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#B7E9B7';
       $('.leaflet-draw').show();
-      buttonShowUnknownPois.disable();
+      buttonShowUnknownPois.enable();
       barShowPolyOpts.enable();
       barRoute.enable();
       buttonModalOutput.enable();
@@ -956,7 +957,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
 								draggable: true,
 								radius: settings.circleSize
 							}).bindPopup(function (layer) {
-								return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+								return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
 							}).addTo(circleLayer);
 						});
 					} else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
@@ -1070,7 +1071,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
 						draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
         });
       },
@@ -1122,7 +1123,7 @@ function generateRoute() {
 						draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">Delete</button></div>';
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
         }
         currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*settings.circleSize*2));
@@ -1186,15 +1187,15 @@ function getSpawnReport(layer) {
       if (result.spawns !== null) {
         result.spawns.forEach(function(item) {
           if (typeof layer.tags !== 'undefined') {
-            $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
+            $('#modalSpawnReport  .modal-title').text(subs.spawnReport + layer.tags.name);
           }
-          $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
+          $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
         });
       } else {
           if (typeof layer.tags !== 'undefined') {
-          $('#modalSpawnReport  .modal-title').text('Spawn Report - ' + layer.tags.name);
+          $('#modalSpawnReport  .modal-title').text(subs.spawnReport + layer.tags.name);
         }
-        $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">No data available.</td></tr>');
+        $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">' + subs.noData + '</td></tr>');
       }
     },
     complete: function() {
@@ -1225,7 +1226,7 @@ function getNests() {
     'way["leisure"="park"];',
     'way["leisure"="recreation_ground"];',
     'way["landuse"="recreation_ground"];',
-	'way[leisure=playground];',
+	  'way[leisure=playground];',
     'way[landuse=meadow];'
   ].join('');
   var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
@@ -1258,18 +1259,18 @@ function getNests() {
         polygon.addTo(nestLayer);
         polygon.bindPopup(function (layer) {
           if (typeof layer.tags.name !== 'undefined') {
-            var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">Nest: ' + layer.tags.name + '</span></div>';
+            var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
           }
           var output = name +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Get spawn report</span></div></div>' +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Remove from map</span></div></div>' +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
                   '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
-                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">Export Polygon</span></div></div>';
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>';
           return output;
         });
       });
@@ -1334,7 +1335,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + " (ex-eligible)</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "</span>").addTo(gymLayer);
             }
             else{
 				      var marker = L.circleMarker([item.lat, item.lng], {
@@ -1405,7 +1406,7 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " Despawn time: " + despawn_time).addTo(spawnpointLayer);
+            marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
             }
             else{
             var marker = L.circleMarker([item.lat, item.lng], {
@@ -1418,7 +1419,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>" + " unknown despawn time ").addTo(spawnpointLayer);
+            marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
           }
         }});
       }
@@ -1527,9 +1528,9 @@ $(document).on("click", "#getCirclesCount", function() {
   });
   
   //Output the amount
-  alert('Count Total: ' + count + '\nCount Gyms: ' + includedGyms.length + '\nCount Stops: ' + includedStops.length + '\nCount Spawnpoints: ' + includedSpawnpoints.length);
+  alert(subs.countTotal + count + '\n' + subs.countGyms + includedGyms.length + '\n' + subs.countStops + includedStops.length + '\n' + subs.countSpawnpoints + includedSpawnpoints.length);
 });          
-
+$(document).load("#modalContent", getLanguage(), console.log(subs));
 $(document).on("click", "#getAllNests", function() {
   var spawnReportLimit = $('#spawnReportLimit').val();
   var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
@@ -1583,24 +1584,24 @@ $(document).on("click", "#getAllNests", function() {
         if (debug !== false) { console.log(result) }
         if (result.spawns !== null) {
           if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - ' + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           } else {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>Spawn Report - Unnamed</strong> at <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           }
           result.spawns.forEach(function(item) {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td>' +pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
           });
         } else {
           if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong>  at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + sub.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           } else {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>Unnamed</strong> at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + ' skipped, no data</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + sub.unnamed + '</strong> ' + sub.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           }
         }
       },
       complete: function() {
         $("#modalLoading").modal('hide');
-        $('#modalSpawnReport  .modal-title').text('Nest Report - All Nests in View');
+        $('#modalSpawnReport  .modal-title').text(subs.nestReport);
         $('#modalSettings').modal('hide');
         $('#modalSpawnReport').modal('show');
       }
@@ -1717,10 +1718,10 @@ $(document).on("click", ".countPoints", function() {
 			}
 		});
 	}
-	alert('Count: ' + points);
+	alert(subs.count + points);
 });
 function loadSettings() {
-   const defaultSettings = {
+  const defaultSettings = {
     showGyms: true,
     showPokestops: false,
 	  showPokestopsRange: false,
@@ -1735,7 +1736,7 @@ function loadSettings() {
     mapZoom: 13,
     viewCells: false,
     tlLink: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    monLanguage: 'en'
+    language: 'en'
   }
   Object.keys(settings).forEach(function(key) {
     storedSetting = retrieveSetting(key);
@@ -1746,14 +1747,19 @@ function loadSettings() {
       storeSetting(key)
     }
   });
-  changeMonLanguage();
 }
-function changeMonLanguage() {
-  if (settings.monLanguage == 'de') {
+function getLanguage() {
+  if (settings.language == null) {
+    loadSettings()
+  }
+  if (settings.language == 'de') {
+    subs = deSubs;
     pokemon = dePokemon;
-  } else if (settings.monLanguage == 'fr') {
+  } else if (settings.language == 'fr') {
+    subs = frSubs;
     pokemon = frPokemon;
   } else {
+    subs = enSubs;
     pokemon = enPokemon;
   }
 }
@@ -1862,7 +1868,7 @@ function showS2Cells2(level, style) {
 function updateS2Overlay() {
 		if (settings.viewCells && (map.getZoom() >= 13.5)) {
 				viewCellLayer.clearLayers()
-        showS2Cells0(settings.cellsLevel0, {color: 'Orange', weight: 1})
+        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1})
         showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
         showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
 				editableLayer.removeFrom(map).addTo(map);
@@ -1876,7 +1882,8 @@ function updateS2Overlay() {
 		}
 }
 </script>
-  </head>
+
+</head>
   <body>
     <div id="map"></div>
 
@@ -1884,7 +1891,7 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Settings</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.settings);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -1893,57 +1900,57 @@ function updateS2Overlay() {
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">Route Optimization Attempts:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.routeOptAtt);</script></span>
               </div>
               <input id="optimizationAttempts" name="optimizationAttempts" type="text" class="form-control" aria-label="Optimization attempts">
               <div class="input-group-append">
-                <span class="input-group-text">Tries</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.tries);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">S2cells (orange) level:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells0);</script></span>
               </div>
               <input id="cellsLevel0" name="cellsLevel0" type="text" class="form-control" aria-label="cells Level 0">
               <div class="input-group-append">
-                <span class="input-group-text">(empty = off)</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">S2cells (blue, 14) level:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells1);</script></span>
               </div>
               <input id="cellsLevel1" name="cellsLevel1" type="text" class="form-control" aria-label="cells level 1">
               <div class="input-group-append">
-                <span class="input-group-text">(empty = off)</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">S2cells (green, 17) level:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells2);</script></span>
               </div>
               <input id="cellsLevel2" name="cellsLevel2" type="text" class="form-control" aria-label="cells level 2">
               <div class="input-group-append">
-                <span class="input-group-text">(empty = off)</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">Circle Radius:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.circleRadius);</script></span>
               </div>
               <input id="circleSize" name="circleSize" type="text" class="form-control" aria-label="Circle Radius (in meters)">
               <div class="input-group-append">
-                <span class="input-group-text">Meters</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.meters);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3 date" id="nestMigrationDate" data-target-input="nearest">
               <div class="input-group-prepend">
-                <span class="input-group-text">Last Nest Migration:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.lastNestMigration);</script></span>
               </div>
               <input type="text" class="form-control datetimepicker-input" data-target="#nestMigrationDate"/>
               <div class="input-group-append" data-target="#nestMigrationDate" data-toggle="datetimepicker">
@@ -1953,26 +1960,26 @@ function updateS2Overlay() {
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text">Spawn Report Limit:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.spawnReportLimit);</script></span>
               </div>
               <input id="spawnReportLimit" name="spawnReportLimit" type="text" class="form-control" aria-label="Spawn report limit">
               <div class="input-group-append">
-                <span class="input-group-text">Pokemon (0 for unlimited)</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.pokemon);</script></span>
               </div>
             </div>
 
             <div class="form-group">
-              <label for="monLanguage">Select language for Pokémon names:</label>
-              <select class="form-control" id="monLanguage">
+              <label for="language"><script type="text/javascript">document.write(subs.selectLanguage);</script></label>
+              <select class="form-control" id="language">
                 <option value="en">English</option>
                 <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
+                <option value="fr" disabled>Français</option>
               </select>
             </div>
 
             <div class="btn-toolbar" style="margin-bottom: 10px;">
               <div class="input-group-prepend">
-                <span class="input-group-text">Choose Tileset:</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.chooseTileset);</script></span>
               </div>
               <div class="btn-group mr-2" role="group" aria-label="">
                 <button id="tlChoice0" class="btn btn-primary float-left" type="button" value="osm" style="margin-left: 10px;">Standard</button>
@@ -1984,7 +1991,7 @@ function updateS2Overlay() {
 
           </div>
           <div class="modal-footer">
-            <button type="button" id="saveSettings" class="btn btn-primary" data-dismiss="modal">Close</button>
+            <button type="button" id="saveSettings" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -1994,35 +2001,35 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Output</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.output);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <label for="mapMode">Generated route:</label>
+            <label for="mapMode"><script type="text/javascript">document.write(subs.generatedRoute)</script></label>
             <div class="input-group mb-3">
               <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
             </div>
             <div class="btn-toolbar">
               <div class="btn-group mr-2" role="group" aria-label="">
-                <button id="getOutput" class="btn btn-primary float-left" type="button">Get output</button>
+                <button id="getOutput" class="btn btn-primary float-left" type="button"><script type="text/javascript">document.write(subs.getOutput);</script></button>
               </div>
               <div class="btn-group" role="group" aria-label="">
-                <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button">Copy to clipboard</button>
+                <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard);</script></button>
               </div>
             </div>
             <div class="btn-toolbar" style='margin-top: 10px;'>
               <div class="btn-group" role="group" aria-label="">
-                <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 5px;'>Get all nest reports</button>
+                <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 5px;'><script type="text/javascript">document.write(subs.getAllNests);</script></button>
               </div>
               <div class="btn-group" role="group" aria-label="">
-                <button id="getCirclesCount" class="btn btn-primary float-right" type="button">Count points in Circles</button>
+                <button id="getCirclesCount" class="btn btn-primary float-right" type="button"><script type="text/javascript">document.write(subs.countPoints);</script></button>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -2032,28 +2039,28 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Import Instance</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.importInstance);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <label for="importInstanceName">Select an instance:</label>
+            <label for="importInstanceName"><script type="text/javascript">document.write(subs.selectInstance);</script></label>
             <div class="input-group mb-3">
               <select name="importInstanceName" id="importInstanceName" class="form-control" aria-label="Select an instance to import">
               </select>
             </div>
             <div class="input-group">
               <div class="input-group-prepend">
-                <span class="input-group-text">Instance Color (hex):</span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.instanceColor);</script></span>
               </div>
               <input id="instanceColor" name="instanceColor" type="text" class="form-control" value="#1090fa" aria-label="Hexadecimal Color for Imported Instance"/>
 
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" id="importInstance" class="btn btn-primary" data-dismiss="modal">Import Instance</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" id="importInstance" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.importInstance);</script></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -2063,40 +2070,30 @@ function updateS2Overlay() {
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Import Polygon</h5>
+              <h5 class="modal-title"><script type="text/javascript">document.write(subs.importPolygon);</script></h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <label for="importPolygonDataType">Polygon data type:</label>
+              <label for="importPolygonDataType"><script type="text/javascript">document.write(subs.polygonDataType);</script></label>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="importPolygonDataType" id="importPolygonDataTypeCoordList" value="importPolygonDataTypeCoordList" checked>
-                <label class="form-check-label" for="importPolygonDataTypeCoordList">
-                  Coordinate list (latitude,longitude on each new line)
-                </label>
+                <label class="form-check-label" for="importPolygonDataTypeCoordList"><script type="text/javascript">document.write(subs.coordinateList);</script></label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="importPolygonDataType" id="importPolygonDataTypeGeoJson" value="importPolygonDataTypeGeoJson">
-                <label class="form-check-label" for="importPolygonDataTypeGeoJson">
-                  GeoJSON
-                </label>
+                <label class="form-check-label" for="importPolygonDataTypeGeoJson"><script type="text/javascript">document.write(subs.geoJson);</script></label>
               </div>
-              <div class="form-check disabled">
-                <input class="form-check-input" type="radio" name="importPolygonDataType" id="importPolygonDataTypeKmlGeo" value="importPolygonDataTypeKmlGeo" disabled>
-                <label class="form-check-label" for="importPolygonDataTypeKmlGeo">
-                  KML Geo (not yet implented)
-                </label>
-              </div>
-              <label for="importPolygonData">Polygon data:</label>
+              <label for="importPolygonData"><script type="text/javascript">document.write(subs.polygonData);</script></label>
               <div class="input-group mb">
                 <textarea name="importPolygonData" id="importPolygonData" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" id="savePolygon" class="btn btn-primary">Import</button>
-              <button type="button" id="saveNestPolygon" class="btn btn-secondary">Import as nest</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" id="savePolygon" class="btn btn-primary"><script type="text/javascript">document.write(subs.import);</script></button>
+              <button type="button" id="saveNestPolygon" class="btn btn-secondary"><script type="text/javascript">document.write(subs.importNest);</script></button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
             </div>
           </div>
         </div>
@@ -2107,26 +2104,22 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Export Polygon</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.exportPolygon);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-          <label for="exportPolygonDataType">Polygon data type:</label>
+          <label for="exportPolygonDataType"><script type="text/javascript">document.write(subs.polygonDataType);</script></label>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypeCoordsList" value="exportPolygonDataTypeCoordsList" checked>
-                <label class="form-check-label" for="exportPolygonDataTypeCoordsList">
-                  Coordinate list (latitude,longitude on each new line)
-                </label>
+                <label class="form-check-label" for="exportPolygonDataTypeCoordsList"><script type="text/javascript">document.write(subs.coordinateList);</script></label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypeGeoJson" value="exportPolygonDataTypeGeoJson">
-                <label class="form-check-label" for="exportPolygonDataTypeGeoJson">
-                  GeoJSON
-                </label>
+                <label class="form-check-label" for="exportPolygonDataTypeGeoJson"><script type="text/javascript">document.write(subs.geoJson);</script></label>
               </div>
-            <label for="exportPolygonData">Polygon data:</label>
+            <label for="exportPolygonData"><script type="text/javascript">document.write(subs.polygonData);</script></label>
             <div class="input-group mb">
               <textarea name="exportPolygonDataGeoJson" id="exportPolygonDataGeoJson" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
             </div>
@@ -2135,7 +2128,7 @@ function updateS2Overlay() {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" id="exportPolygonClose" class="btn btn-primary" data-dismiss="modal">Close</button>
+            <button type="button" id="exportPolygonClose" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -2145,27 +2138,27 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Export Polygon Points (CSV)</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.exportPolygonPoints);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <label for="exportPolygonData">Gyms:</label>
+            <label for="exportPolygonData"><script type="text/javascript">document.write(subs.gyms);</script></label>
             <div class="input-group mb">
               <textarea name="exportPolygonPointsGyms" id="exportPolygonPointsGyms" style="height:200px;" class="form-control" aria-label="Gym data"></textarea>
             </div>
-            <label for="exportPolygonData">Pokestops:</label>
+            <label for="exportPolygonData"><script type="text/javascript">document.write(subs.pokestops);</script></label>
             <div class="input-group mb">
               <textarea name="exportPolygonPointsPokestops" id="exportPolygonPointsPokestops" style="height:200px;" class="form-control" aria-label="Pokestop data"></textarea>
             </div>
-            <label for="exportPolygonData">Spawnpoints:</label>
+            <label for="exportPolygonData"><script type="text/javascript">document.write(subs.spawnpoints);</script></label>
             <div class="input-group mb">
               <textarea name="exportPolygonPointsSpawnpoints" id="exportPolygonPointsSpawnpoints" style="height:200px;" class="form-control" aria-label="Spawnpoint data"></textarea>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" id="exportPolygonPointsClose" class="btn btn-primary" data-dismiss="modal">Close</button>
+            <button type="button" id="exportPolygonPointsClose" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -2175,7 +2168,7 @@ function updateS2Overlay() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Optimize!</h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.optimize);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -2184,86 +2177,86 @@ function updateS2Overlay() {
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForGyms" id="optimizeForGyms" autocomplete="off"> On
+                  <input type="radio" name="optimizeForGyms" id="optimizeForGyms" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForGyms" id="dontOptimizeForGyms" autocomplete="off"> Off
+                  <input type="radio" name="optimizeForGyms" id="dontOptimizeForGyms" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append">
-                <span style="padding: .375rem .75rem;">Optimize for known gyms</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizeGyms);</script></span>
               </div>
             </div>
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle"data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForPokestops" id="optimizeForPokestops" autocomplete="off"> On
+                  <input type="radio" name="optimizeForPokestops" id="optimizeForPokestops" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForPokestops" id="dontOptimizeForPokestops" autocomplete="off"> Off
+                  <input type="radio" name="optimizeForPokestops" id="dontOptimizeForPokestops" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append" width>
-                <span style="padding: .375rem .75rem;">Optimize for known pokestops</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePokestops);</script></span>
               </div>
             </div>
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForSpawnpoints" id="optimizeForSpawnpoints" autocomplete="off"> On
+                  <input type="radio" name="optimizeForSpawnpoints" id="optimizeForSpawnpoints" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForSpawnpoints" id="dontOptimizeForSpawnpoints" autocomplete="off"> Off
+                  <input type="radio" name="optimizeForSpawnpoints" id="dontOptimizeForSpawnpoints" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append">
-                <span style="padding: .375rem .75rem;">Optimize for known spawn points</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizeSpawnpoints);</script></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizePolygons" id="optimizePolygons" autocomplete="off"> On
+                  <input type="radio" name="optimizePolygons" id="optimizePolygons" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizePolygons" id="dontOptimizePolygons" autocomplete="off"> Off
+                  <input type="radio" name="optimizePolygons" id="dontOptimizePolygons" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append">
-                <span style="padding: .375rem .75rem;">Optimize points in polygons</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiP);</script></span>
               </div>
             </div>
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle"data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeNests" id="optimizeNests" autocomplete="off"> On
+                  <input type="radio" name="optimizeNests" id="optimizeNests" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeNests" id="dontOptimizeNests" autocomplete="off"> Off
+                  <input type="radio" name="optimizeNests" id="dontOptimizeNests" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append" width>
-                <span style="padding: .375rem .75rem;">Optimize points in nest polygons</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiNP);</script></span>
               </div>
             </div>
             <div class="input-group mb-3">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeCircles" id="optimizeCircles" autocomplete="off"> On
+                  <input type="radio" name="optimizeCircles" id="optimizeCircles" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
                 </label>
                 <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeCircles" id="dontOptimizeCircles" autocomplete="off"> Off
+                  <input type="radio" name="optimizeCircles" id="dontOptimizeCircles" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
                 </label>
               </div>
               <div class="input-group-append">
-                <span style="padding: .375rem .75rem;">Optimize points in circles</span>
+                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiC);</script></span>
               </div>
             </div>
 
           </div>
           <div class="modal-footer">
-            <button type="button" id="getOptimizedRoute" class="btn btn-primary" data-dismiss="modal">Get Optimization</button>
+            <button type="button" id="getOptimizedRoute" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.getOptimization);</script></button>
           </div>
         </div>
       </div>
@@ -2282,8 +2275,8 @@ function updateS2Overlay() {
             <table class="table table-sm" id="spawnReportTable">
               <thead>
                 <tr>
-                  <th scope="col">Pokemon</th>
-                  <th scope="col">Count</th>
+                  <th scope="col"><script type="text/javascript">document.write(subs.pokemon);</script>:</th>
+                  <th scope="col"><script type="text/javascript">document.write(subs.count);</script></th>
                 </tr>
               </thead>
               <tbody>
@@ -2295,7 +2288,7 @@ function updateS2Overlay() {
             </table>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -2309,7 +2302,9 @@ function updateS2Overlay() {
       </div>
     </div>
   </body>
-</html><?php
+</html>
+
+<?php
 }
 function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
   $dsn = "mysql:host=$DB_HOST;dbname=$DB_NAME;port=$DB_PORT;charset=utf8mb4";
