@@ -48,6 +48,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -65,6 +66,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdn.jsdelivr.net/npm/s2-geometry@1.2.10/src/s2geometry.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="./en.js"></script>
     <script type="text/javascript" src="./de.js"></script>
     <script type="text/javascript" src="./fr.js"></script>
@@ -340,6 +342,15 @@ function initMap() {
   spawnpointCellLayer.addTo(map);
   nestLayer = new L.LayerGroup();
   nestLayer.addTo(map);
+  buttonLocate = L.control.locate({
+    id: 'getOwnLocation',
+    position: 'topleft',
+    title: subs.getOwnLocation,
+    setView: 'once',
+    drawCircle: false,
+    drawMarker: false,
+    icon: 'fas fa-crosshairs'
+  }).addTo(map);
   buttonMapModePoiViewer = L.easyButton({
     id: 'enableMapModePoiViewer',
     states: [{
