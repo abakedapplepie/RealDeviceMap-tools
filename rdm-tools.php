@@ -70,6 +70,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script type="text/javascript" src="./en.js"></script>
     <script type="text/javascript" src="./de.js"></script>
     <script type="text/javascript" src="./fr.js"></script>
+    <script type="text/javascript" src="./salesman.js"></script>
 
 <script type="text/javascript">
 var debug = false;
@@ -102,7 +103,7 @@ var drawControl,
 //data vars
 var gyms = [],
   pokestops = [],
-  pokestoprange = [];
+  pokestoprange = [],
   spawnpoints = [];
 //options vars
 var settings = {
@@ -1452,14 +1453,41 @@ $(document).ready(function() {
   $('#getOutput').click(function() {
     $('#outputCircles').val('');
     var allCircles = circleLayer.getLayers();
-    for (i=0;i<allCircles.length;i++) {
-      var circleLatLng = allCircles[i].getLatLng();
-      $('#outputCircles').val(function(index, text) {
-        if (i != allCircles.length-1) {
-          return text + (circleLatLng.lat + "," + circleLatLng.lng) + "\n" ;
+
+    var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
+    if (exportType == 'sorted') {
+
+      var points = [];
+      for (i=0;i<allCircles.length;i++) {
+        var circle = allCircles[i].getLatLng();
+        var Point = {
+          x: circle.lat,
+          y: circle.lng
         }
-        return text + (circleLatLng.lat + "," + circleLatLng.lng);
-      });
+        points.push(Point);
+      };
+      var temp_coeff = 0.999;
+      var solution = solve(points, temp_coeff); 
+      var orderedPoints = solution.map(i => points [i]); 
+
+      for (i=0;i<orderedPoints.length;i++) {
+        $('#outputCircles').val(function(index, text) {
+          if (i != orderedPoints.length-1) {
+            return text + (orderedPoints[i].x + "," + orderedPoints[i].y) + "\n" ;
+          }
+          return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
+        });
+      }
+    } else {
+      for (i=0;i<allCircles.length;i++) {
+        var circleLatLng = allCircles[i].getLatLng();
+        $('#outputCircles').val(function(index, text) {
+          if (i != allCircles.length-1) {
+            return text + (circleLatLng.lat + "," + circleLatLng.lng) + "\n" ;
+          }
+          return text + (circleLatLng.lat + "," + circleLatLng.lng);
+        });
+      }
     }
   });
 });
@@ -2022,15 +2050,25 @@ function updateS2Overlay() {
             <div class="input-group mb-3">
               <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
             </div>
-            <div class="btn-toolbar">
+            <div class="btn-toolbar" style="margin-bottom: 20px;">
               <div class="btn-group mr-2" role="group" aria-label="">
                 <button id="getOutput" class="btn btn-primary float-left" type="button"><script type="text/javascript">document.write(subs.getOutput);</script></button>
               </div>
-              <div class="btn-group" role="group" aria-label="">
+              <div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="exportCoordsType" id="exportCoordsTypeUnsorted" value="unsorted" checked>
+                  <label class="form-check-label" for="exportCoordsTypeUnsorted"><script type="text/javascript">document.write(subs.coordTypeUnsorted);</script></label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="exportCoordsType" id="exportCoordsTypeSorted" value="sorted">
+                  <label class="form-check-label" for="exportCoordsTypeSorted"><script type="text/javascript">document.write(subs.coordTypeSorted);</script></label>
+                </div>
+              </div>
+              <div class="btn-group" role="group" aria-label=""  style='margin-left: 20px;'>
                 <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard);</script></button>
               </div>
             </div>
-            <div class="btn-toolbar" style='margin-top: 10px;'>
+            <div class="btn-toolbar">
               <div class="btn-group" role="group" aria-label="">
                 <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 5px;'><script type="text/javascript">document.write(subs.getAllNests);</script></button>
               </div>

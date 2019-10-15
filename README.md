@@ -4,6 +4,10 @@ Tools for managing RealDeviceMap data
 
 ## rdm-tools.php
 ### Changes
+<<<<<<< HEAD
+=======
+* Route optimization
+>>>>>>> added optional optimization for shortest possible route
 * Button to go to your actual location
 * Multilanguage support
 * Select language and tileset in settings
@@ -26,13 +30,18 @@ Tools for managing RealDeviceMap data
 * GeoJSON import as Nest allows to maintain an own list of nests
 * Coordinate generation - blanket fill polygons with route points
 * Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
+* Optimization for the shortest possible route
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
 * Show different and choosable level of s2 cells
 * Multilanguage Support
 * Choose between Tilesets
 
 ### Installation
+<<<<<<< HEAD
 Upload rdm-tools.php and language files to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
+=======
+Upload rdm-tools.php and .js files to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
+>>>>>>> added optional optimization for shortest possible route
 
 ### Usage
 The map has a variety of control buttons for performing different functions: 
@@ -111,4 +120,9 @@ Example optimization covering known spawnpoints in multiple nests. Note that you
 
 ### Thanks
 * Credit to [abakedapplepie](https://github.com/abakedapplepie) and his creditors for the base
+<<<<<<< HEAD
 * Credit to [xxleevo](https://github.com/xxleevo), [un1matr1x](https://github.com/Un1matr1x) und Alex for their contributions
+=======
+* Credit to [xxleevo](https://github.com/xxleevo), [un1matr1x](https://github.com/Un1matr1x) and Alex for their contributions
+* Credit to [lovasoa](https://github.com/lovasoa) for the traveling salesman script
+>>>>>>> added optional optimization for shortest possible route
