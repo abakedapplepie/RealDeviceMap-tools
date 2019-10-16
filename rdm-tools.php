@@ -1466,7 +1466,7 @@ $(document).ready(function() {
         }
         points.push(Point);
       };
-      var temp_coeff = 0.999;
+      var temp_coeff = 0.9999999;
       var solution = solve(points, temp_coeff); 
       var orderedPoints = solution.map(i => points [i]); 
 
