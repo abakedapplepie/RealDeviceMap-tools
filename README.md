@@ -35,7 +35,7 @@ Tools for managing RealDeviceMap data
 * Show different level of s2 cells
 
 ### Installation
-Upload rdm-tools.php and .js files to your favorite webserver, point the database variables to your RDM DB's IP, and configure your username/password.
+Git clone https://github.com/PickleRickVE/RealDeviceMap-tools, rename config.example.php to config.php and add your credentials for the RDM DB.
 
 ### Usage
 The map has a variety of control buttons for performing different functions: 
