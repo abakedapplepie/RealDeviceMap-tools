@@ -251,6 +251,7 @@ $(function(){
   });
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
+    $('#outputCirclesCount').val('');
     $(document.getElementById('selectAllAndCopy')).text(subs.copyClipboard);
   });
   $('#tlChoice0').on('click', function(event) {
@@ -1476,6 +1477,7 @@ $(document).ready(function() {
           return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
         });
       }
+      $('#outputCirclesCount').val(circlesCount());
     } else {
       for (i=0;i<allCircles.length;i++) {
         var circleLatLng = allCircles[i].getLatLng();
@@ -1486,6 +1488,7 @@ $(document).ready(function() {
           return text + (circleLatLng.lat + "," + circleLatLng.lng);
         });
       }
+      $('#outputCirclesCount').val(circlesCount());
     }
   });
 });
@@ -1560,14 +1563,12 @@ $(document).on("click", "#getCirclesCount", function() {
           includedSpawnpoints.push(item);
         }
       });
-    }
-    
+    }  
   });
-  
   //Output the amount
   alert(subs.countTotal + count + '\n' + subs.countGyms + includedGyms.length + '\n' + subs.countStops + includedStops.length + '\n' + subs.countSpawnpoints + includedSpawnpoints.length);
 });          
-$(document).load("#modalContent", getLanguage(), console.log(subs));
+$(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {
   var spawnReportLimit = $('#spawnReportLimit').val();
   var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
@@ -1799,6 +1800,15 @@ function getLanguage() {
     subs = enSubs;
     pokemon = enPokemon;
   }
+}
+function circlesCount() {
+  // Count all available circles.
+  var count = 0;
+  var allCircles = circleLayer.getLayers();
+  for (i=0;i<allCircles.length;i++) {
+    count++
+  };
+  return count;
 }
 function storeSetting(key) {
   localStorage.setItem(key, JSON.stringify(settings[key]));
@@ -2047,6 +2057,10 @@ function updateS2Overlay() {
             <label for="mapMode"><script type="text/javascript">document.write(subs.generatedRoute)</script></label>
             <div class="input-group mb-3">
               <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
+            </div>
+            <div class="input-group mb-3">
+              <label style=""><script type="text/javascript">document.write(subs.countCircles)</script></label>
+              <output id="outputCirclesCount" aria-label="Circle count output" style="margin-left: 20px; vertical-align: text-bottom;"></output>
             </div>
             <div class="btn-toolbar" style="margin-bottom: 20px;">
               <div class="btn-group mr-2" role="group" aria-label="">
