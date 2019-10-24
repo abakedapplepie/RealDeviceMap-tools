@@ -1455,29 +1455,40 @@ $(document).ready(function() {
 
     var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
     if (exportType == 'sorted') {
+      $.ajax({
+        beforeSend: function() {
+          $("#modalLoading").modal('show');
+        },
+        success: function() {
+          var points = [];
+          for (i=0;i<allCircles.length;i++) {
+            var circle = allCircles[i].getLatLng();
+            var Point = {
+              x: circle.lat,
+              y: circle.lng
+            }
+            points.push(Point);
+          };
+          var temp1 = '9'.repeat((circlesCount().toString().length)-1);
+          var temp2 = Math.ceil(circlesCount()/10);
+          var temp_coeff = '0.99999' + temp1 + temp2;
+          var solution = solve(points, temp_coeff); 
+          var orderedPoints = solution.map(i => points [i]); 
 
-      var points = [];
-      for (i=0;i<allCircles.length;i++) {
-        var circle = allCircles[i].getLatLng();
-        var Point = {
-          x: circle.lat,
-          y: circle.lng
-        }
-        points.push(Point);
-      };
-      var temp_coeff = 0.9999999;
-      var solution = solve(points, temp_coeff); 
-      var orderedPoints = solution.map(i => points [i]); 
-
-      for (i=0;i<orderedPoints.length;i++) {
-        $('#outputCircles').val(function(index, text) {
-          if (i != orderedPoints.length-1) {
-            return text + (orderedPoints[i].x + "," + orderedPoints[i].y) + "\n" ;
+          for (i=0;i<orderedPoints.length;i++) {
+            $('#outputCircles').val(function(index, text) {
+              if (i != orderedPoints.length-1) {
+                return text + (orderedPoints[i].x + "," + orderedPoints[i].y) + "\n" ;
+              }
+              return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
+            });
           }
-          return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
-        });
-      }
-      $('#outputCirclesCount').val(circlesCount());
+          $('#outputCirclesCount').val(circlesCount());
+        },
+        complete: function() {
+          $("#modalLoading").modal('hide');
+        }
+      });
     } else {
       for (i=0;i<allCircles.length;i++) {
         var circleLatLng = allCircles[i].getLatLng();
