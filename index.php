@@ -1225,7 +1225,7 @@ function getNests() {
     bounds.getNorthEast().lat,
     bounds.getNorthEast().lng
   ].join(',');
-  var queryDate = "2019-01-22T00:00:00Z";
+  var queryDate = "2019-02-16T00:00:00Z";
   var queryOptions = [
     '[out:json]',
     '[bbox:' + queryBbox + ']',
@@ -1234,9 +1234,12 @@ function getNests() {
   var queryNestWays = [
     'way["leisure"="park"];',
     'way["leisure"="recreation_ground"];',
+    'way["leisure"="pitch"];',
+    'way["leisure"="playground"];',
+    'way["leisure"="golf_course"];',
     'way["landuse"="recreation_ground"];',
-    'way[leisure=playground];',
-    'way[landuse=meadow];'
+    'way["landuse"="meadow"];',
+    'way["landuse"="grass"];',
   ].join('');
   var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
   if (debug !== false) { console.log(overPassQuery) }
