@@ -63,7 +63,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/2.5.3/js/bootstrap-colorpicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/s2-geometry@1.2.10/src/s2geometry.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-	  <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="./en.js"></script>
     <script type="text/javascript" src="./de.js"></script>
@@ -119,8 +119,11 @@ var settings = {
   mapZoom: null,
   viewCells: null,
   cellsLevel0: null,
+  cellsLevel0Check: false,
   cellsLevel1: null,
+  cellsLevel1Check: false,
   cellsLevel2: null,
+  cellsLevel2Check: false,
   tlLink: null,
   language: null
 };
@@ -130,7 +133,7 @@ var gymLayer,
   pokestopRangeLayer,
   spawnpointLayer,
   editableLayer,
-	circleS2Layer,
+  circleS2Layer,
   circleLayer,
   nestLayer,
   viewCellLayer;
@@ -264,9 +267,10 @@ $(function(){
     var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
-    var cellsLevel0 = $('#cellsLevel0').val();
-    var cellsLevel1 = $('#cellsLevel1').val();
-    var cellsLevel2 = $('#cellsLevel2').val();
+    var cellsLevel0 = $('#cellsLevel0').val() < 20 ? $('#cellsLevel0').val() : '';
+    var cellsLevel0Check = $('#cellsLevel0Check').is(":checked");
+    var cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
+    var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
     if (tlChoice == 'carto') {
       tlChoice = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
@@ -279,8 +283,11 @@ $(function(){
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
       cellsLevel0: cellsLevel0,
-      cellsLevel1: cellsLevel1,
-      cellsLevel2: cellsLevel2,
+      cellsLevel0Check: cellsLevel0Check,
+      cellsLevel1: 14,
+      cellsLevel1Check: cellsLevel1Check,
+      cellsLevel2: 17,
+      cellsLevel2Check: cellsLevel2Check,
       tlLink: tlChoice,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit,
@@ -298,7 +305,8 @@ $(function(){
     }
     if (settings.tlLink != null && settings.tlLink == newSettings.tlLink) {
       location.reload();
-    } 
+    }
+    updateS2Overlay() 
   });
   $('#cancelSettings').on('click', function(event) {
     processSettings(true);
@@ -491,7 +499,7 @@ function initMap() {
   var barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
   buttonViewCells = L.easyButton({
     id: 'viewCells',
-		position: 'topright',
+    position: 'topright',
     states: [{
       stateName: 'enableViewCells',
       icon: 'far fa-square',
@@ -666,16 +674,6 @@ function initMap() {
         } else {
           $('#cellsLevel0').val();
         }
-        if (settings.cellsLevel1 != null) {
-          $('#cellsLevel1').val(settings.cellsLevel1);
-        } else {
-          $('#cellsLevel1').val();
-        }
-        if (settings.cellsLevel2 != null) {
-          $('#cellsLevel2').val(settings.cellsLevel2);
-        } else {
-          $('#cellsLevel2').val();
-        }
         if (settings.nestMigrationDate != null) {
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
         }
@@ -693,73 +691,73 @@ function initMap() {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
   });
-	map.on('draw:created', function (e) {
+  map.on('draw:created', function (e) {
     var layer = e.layer;
     layer.addTo(editableLayer);
-	});
-	nestLayer.on('layeradd', function(e) {
-		var layer = e.layer;
-		layer.bindPopup(function (layer) {
-			if (typeof layer.tags.name !== 'undefined') {
-				var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
-			}
-			var output = name +
-			  '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
-			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
-			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
-			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
-			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
-			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
-			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
-			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="nestLayer" data-layer-id=' +
-			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
-			  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="nestLayer" data-layer-id=' +
-			  layer._leaflet_id +
-			  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
-			return output;
-		});
-	});
-	editableLayer.on('layeradd', function(e) {
-		var layer = e.layer;
-		layer.bindPopup(function (layer) {
-			var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
-									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
-									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
-									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
-									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
-									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
-									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
-									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
-									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
-									 '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
-									 layer._leaflet_id +
-									 ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
-			return output;
-		});
-	});
-	circleLayer.on('layerremove', function(e) {
-		var layer = e.layer;
-		layer.s2cells.forEach(function(item) {
-			circleS2Layer.removeLayer(parseInt(item));
-		});
-	});
+  });
+  nestLayer.on('layeradd', function(e) {
+    var layer = e.layer;
+    layer.bindPopup(function (layer) {
+      if (typeof layer.tags.name !== 'undefined') {
+        var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
+      }
+      var output = name +
+        '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
+        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
+        layer._leaflet_id +
+        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
+        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
+        layer._leaflet_id +
+        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
+        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
+        layer._leaflet_id +
+        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
+        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="nestLayer" data-layer-id=' +
+        layer._leaflet_id +
+        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
+        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="nestLayer" data-layer-id=' +
+        layer._leaflet_id +
+        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
+      return output;
+    });
+  });
+  editableLayer.on('layeradd', function(e) {
+    var layer = e.layer;
+    layer.bindPopup(function (layer) {
+      var output = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
+      return output;
+    });
+  });
+  circleLayer.on('layerremove', function(e) {
+    var layer = e.layer;
+    layer.s2cells.forEach(function(item) {
+      circleS2Layer.removeLayer(parseInt(item));
+    });
+  });
 circleLayer.on('layeradd', function(e) {
-	drawCircleS2Cells(e.layer);
-	circleLayer.removeFrom(map).addTo(map);
-	e.layer.on('drag', function() {
-		drawCircleS2Cells(e.layer)
-	})
-	e.layer.on('drag', function() {
-	circleLayer.removeFrom(map).addTo(map);
-	})
+  drawCircleS2Cells(e.layer);
+  circleLayer.removeFrom(map).addTo(map);
+  e.layer.on('drag', function() {
+    drawCircleS2Cells(e.layer)
+  })
+  e.layer.on('drag', function() {
+  circleLayer.removeFrom(map).addTo(map);
+  })
 });
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
@@ -775,7 +773,7 @@ circleLayer.on('layeradd', function(e) {
         color: 'red',
         fillColor: '#f03',
         fillOpacity: 0.4,
-				draggable: true,
+        draggable: true,
         radius: settings.circleSize
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
@@ -797,45 +795,45 @@ circleLayer.on('layeradd', function(e) {
 }
 function drawCircleS2Cells(layer) {
   if (typeof layer.s2cells !== 'undefined') {
-		layer.s2cells.forEach(function(item) {
-			circleS2Layer.removeLayer(parseInt(item));
-		});
-	}
-	var center = layer.getLatLng()
-	var radius = layer.getRadius();
-	layer.s2cells = [];
-	function addPoly(cell) {
-		const vertices = cell.getCornerLatLngs()
-		const poly = L.polygon(vertices,{
-			color: 'blue',
-			opacity: 0.5,
-			weight: 2,
-			fillOpacity: 0.0
-		});
-		var line = turf.polygonToLine(poly.toGeoJSON());
-		var point = turf.point([center.lng, center.lat]);
-		var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
-		if (distance <= radius) {
-			circleS2Layer.addLayer(poly);
-			layer.s2cells.push(poly._leaflet_id);
-		}
-	}
-	if (radius < 1000 && radius > 200) {
-		var count = 10;
-		let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
-		let steps = 1
-		let direction = 0
-		do {
-				for (let i = 0; i < 2; i++) {
-						for (let i = 0; i < steps; i++) {
-								addPoly(cell)
-								cell = cell.getNeighbors()[direction % 4]
-						}
-						direction++
-				}
-				steps++
-		} while (steps < count)
-	}
+    layer.s2cells.forEach(function(item) {
+      circleS2Layer.removeLayer(parseInt(item));
+    });
+  }
+  var center = layer.getLatLng()
+  var radius = layer.getRadius();
+  layer.s2cells = [];
+  function addPoly(cell) {
+    const vertices = cell.getCornerLatLngs()
+    const poly = L.polygon(vertices,{
+      color: 'blue',
+      opacity: 0.5,
+      weight: 2,
+      fillOpacity: 0.0
+    });
+    var line = turf.polygonToLine(poly.toGeoJSON());
+    var point = turf.point([center.lng, center.lat]);
+    var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+    if (distance <= radius) {
+      circleS2Layer.addLayer(poly);
+      layer.s2cells.push(poly._leaflet_id);
+    }
+  }
+  if (radius < 1000 && radius > 200) {
+    var count = 10;
+    let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
+    let steps = 1
+    let direction = 0
+    do {
+        for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < steps; i++) {
+                addPoly(cell)
+                cell = cell.getNeighbors()[direction % 4]
+            }
+            direction++
+        }
+        steps++
+    } while (steps < count)
+  }
 }
 function setShowMode() {
   if (settings.showGyms !== false) {
@@ -858,7 +856,7 @@ function setShowMode() {
     buttonShowPokestopsRange.state('enableShowPokestopsRange');
     buttonShowPokestopsRange.button.style.backgroundColor = '#B7E9B7';
   } else {
-	pokestopRangeLayer.clearLayers();
+  pokestopRangeLayer.clearLayers();
     buttonShowPokestopsRange.state('disableShowPokestopsRange');
     buttonShowPokestopsRange.button.style.backgroundColor = '#E9B7B7';
   }
@@ -940,41 +938,41 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'instance_name': instanceName
     };
     const json = JSON.stringify(data);
-		var polygonOptions = {
-			clickable: false,
-			color: "#3388ff",
-			fill: true,
-			fillColor: null,
-			fillOpacity: 0.2,
-			opacity: 0.5,
-			stroke: true,
-			weight: 4
-		};
-		if (debug !== false) { console.log(json) }
+    var polygonOptions = {
+      clickable: false,
+      color: "#3388ff",
+      fill: true,
+      fillColor: null,
+      fillOpacity: 0.2,
+      opacity: 0.5,
+      stroke: true,
+      weight: 4
+    };
+    if (debug !== false) { console.log(json) }
     $.ajax({
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-				if (debug !== false) { console.log(result) }
-				points = result.data.area;
-				if (points.length > 0 ) {
-					if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
-						points.forEach(function(item) {
-							newCircle = L.circle(item, {
-								color: color,
-								fillOpacity: 0.5,
-								draggable: true,
-								radius: settings.circleSize
-							}).bindPopup(function (layer) {
-								return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
-							}).addTo(circleLayer);
-						});
-					} else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
-						var newPolygon = L.polygon(points, polygonOptions).addTo(editableLayer);
-					}
-				}
+        if (debug !== false) { console.log(result) }
+        points = result.data.area;
+        if (points.length > 0 ) {
+          if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
+            points.forEach(function(item) {
+              newCircle = L.circle(item, {
+                color: color,
+                fillOpacity: 0.5,
+                draggable: true,
+                radius: settings.circleSize
+              }).bindPopup(function (layer) {
+                return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+              }).addTo(circleLayer);
+            });
+          } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
+            var newPolygon = L.polygon(points, polygonOptions).addTo(editableLayer);
+          }
+        }
       }
     });
   }
@@ -1079,7 +1077,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
             color: 'red',
             fillColor: '#f03',
             fillOpacity: 0.5,
-						draggable: true,
+            draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
@@ -1131,7 +1129,7 @@ function generateRoute() {
             color: 'red',
             fillColor: '#f03',
             fillOpacity: 0.5,
-						draggable: true,
+            draggable: true,
             radius: settings.circleSize
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
@@ -1237,7 +1235,7 @@ function getNests() {
     'way["leisure"="park"];',
     'way["leisure"="recreation_ground"];',
     'way["landuse"="recreation_ground"];',
-	  'way[leisure=playground];',
+    'way[leisure=playground];',
     'way[landuse=meadow];'
   ].join('');
   var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
@@ -1322,7 +1320,7 @@ function loadData() {
     success: function (result) {
       if (debug !== false) { console.log(result) }
       pokestopLayer.clearLayers();
-	    pokestopRangeLayer.clearLayers();
+      pokestopRangeLayer.clearLayers();
       gymLayer.clearLayers();
       spawnpointLayer.clearLayers();
       gyms = [];
@@ -1349,7 +1347,7 @@ function loadData() {
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "</span>").addTo(gymLayer);
             }
             else{
-				      var marker = L.circleMarker([item.lat, item.lng], {
+              var marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'orange',
               radius: radius,
@@ -1360,7 +1358,7 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
-			}
+      }
           }
         });
       }
@@ -1384,7 +1382,7 @@ function loadData() {
           }
         });
       }
-	  if (result.pokestops != null) {
+    if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
           pokestoprange.push(item);
           if (settings.showPokestopsRange === true) {
@@ -1474,7 +1472,6 @@ $(document).ready(function() {
           var temp_coeff = '0.99999' + temp1 + temp2;
           var solution = solve(points, temp_coeff); 
           var orderedPoints = solution.map(i => points [i]); 
-
           for (i=0;i<orderedPoints.length;i++) {
             $('#outputCircles').val(function(index, text) {
               if (i != orderedPoints.length-1) {
@@ -1691,35 +1688,35 @@ $(document).on("click", ".exportPoints", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-	var poly = layer.toGeoJSON();
-	var line = turf.polygonToLine(poly);
+  var poly = layer.toGeoJSON();
+  var line = turf.polygonToLine(poly);
   var gymcoords = '';
   var stopcoords = '';
   var spawncoords = '';
-	if (settings.showGyms == true) {
-		gyms.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				gymcoords += item.lat + ',' + item.lng + "\n";
-			}
-		});
-	}
-	if (settings.showPokestops == true) {
-		pokestops.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				stopcoords += item.lat + ',' + item.lng + "\n";
-			}
-		});
-	}
-	if (settings.showSpawnpoints == true) {
-		spawnpoints.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				spawncoords += item.lat + ',' + item.lng + "\n";
-			}
-		});
-	}
+  if (settings.showGyms == true) {
+    gyms.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        gymcoords += item.lat + ',' + item.lng + "\n";
+      }
+    });
+  }
+  if (settings.showPokestops == true) {
+    pokestops.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        stopcoords += item.lat + ',' + item.lng + "\n";
+      }
+    });
+  }
+  if (settings.showSpawnpoints == true) {
+    spawnpoints.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        spawncoords += item.lat + ',' + item.lng + "\n";
+      }
+    });
+  }
   $('#exportPolygonPointsGyms').val('');
   $('#exportPolygonPointsPokestops').val('');
   $('#exportPolygonPointsSpawnpoints').val('');
@@ -1740,40 +1737,40 @@ $(document).on("click", ".countPoints", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-	var points = 0;
-	var poly = layer.toGeoJSON();
-	var line = turf.polygonToLine(poly);
-	if (settings.showGyms == true) {
-		gyms.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				points++;
-			}
-		});
-	}
-	if (settings.showPokestops == true) {
-		pokestops.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				points++;
-			}
-		});
-	}
-	if (settings.showSpawnpoints == true) {
-		spawnpoints.forEach(function(item) {
-			point = turf.point([item.lng, item.lat]);
-			if (turf.inside(point, poly)) {
-				points++;
-			}
-		});
-	}
-	alert(subs.count + points);
+  var points = 0;
+  var poly = layer.toGeoJSON();
+  var line = turf.polygonToLine(poly);
+  if (settings.showGyms == true) {
+    gyms.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        points++;
+      }
+    });
+  }
+  if (settings.showPokestops == true) {
+    pokestops.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        points++;
+      }
+    });
+  }
+  if (settings.showSpawnpoints == true) {
+    spawnpoints.forEach(function(item) {
+      point = turf.point([item.lng, item.lat]);
+      if (turf.inside(point, poly)) {
+        points++;
+      }
+    });
+  }
+  alert(subs.count + points);
 });
 function loadSettings() {
   const defaultSettings = {
     showGyms: true,
     showPokestops: false,
-	  showPokestopsRange: false,
+    showPokestopsRange: false,
     showSpawnpoints: false,
     showUnknownPois: false,
     circleSize: 500,
@@ -1924,20 +1921,26 @@ function showS2Cells2(level, style) {
     } while (steps < count)
 }
 function updateS2Overlay() {
-		if (settings.viewCells && (map.getZoom() >= 13.5)) {
-				viewCellLayer.clearLayers()
-        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1})
-        showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
-        showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
-				editableLayer.removeFrom(map).addTo(map);
-				nestLayer.removeFrom(map).addTo(map);
-				circleLayer.removeFrom(map).addTo(map);
-		} else if (settings.viewCells && (map.getZoom() < 13.5)) {
-				viewCellLayer.clearLayers()
-				console.log('View cells are currently hidden, zoom in')
-		} else {
-				viewCellLayer.clearLayers()
-		}
+    if (settings.viewCells && (map.getZoom() >= 13.5)) {
+        viewCellLayer.clearLayers()
+        if (settings.cellsLevel0Check != false) {
+          showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1})
+        }
+        if (settings.cellsLevel1Check != false) {
+          showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
+        }
+        if (settings.cellsLevel2Check != false) {
+          showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
+        }        
+        editableLayer.removeFrom(map).addTo(map);
+        nestLayer.removeFrom(map).addTo(map);
+        circleLayer.removeFrom(map).addTo(map);
+    } else if (settings.viewCells && (map.getZoom() < 13.5)) {
+        viewCellLayer.clearLayers()
+        console.log('View cells are currently hidden, zoom in')
+    } else {
+        viewCellLayer.clearLayers()
+    }
 }
 </script>
 
@@ -1970,29 +1973,27 @@ function updateS2Overlay() {
               <div class="input-group-prepend">
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells0);</script></span>
               </div>
-              <input id="cellsLevel0" name="cellsLevel0" type="text" class="form-control" aria-label="cells Level 0">
-              <div class="input-group-append">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
+              <input id="cellsLevel0" name="cellsLevel0" type="text" aria-label="cells Level 0" style="padding-left: 10px; width: 40px;">
+              <div>
+                <input type="checkbox" name="cellsLevel0Check" id="cellsLevel0Check" style="margin-left: 15px; vertical-align: bottom;">
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <div class="input-group-prepend">
+              <div>
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells1);</script></span>
               </div>
-              <input id="cellsLevel1" name="cellsLevel1" type="text" class="form-control" aria-label="cells level 1">
-              <div class="input-group-append">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
+              <div>
+                  <input type="checkbox" name="cellsLevel1Check" id="cellsLevel1Check" style="margin-left: 15px; vertical-align: bottom;">
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <div class="input-group-prepend">
+              <div>
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells2);</script></span>
               </div>
-              <input id="cellsLevel2" name="cellsLevel2" type="text" class="form-control" aria-label="cells level 2">
-              <div class="input-group-append">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.empty);</script></span>
+              <div>
+                  <input type="checkbox" name="cellsLevel2Check" id="cellsLevel2Check" style="margin-left: 15px; vertical-align: bottom;">
               </div>
             </div>
 
@@ -2416,8 +2417,8 @@ function getInstanceData($args) {
     $stmt->bindValue(':name', $args->instance_name, PDO::PARAM_STR);
     $stmt->execute();
     $result = $stmt->fetch();
-		$result['data'] = json_decode($result['data']);
-		echo json_encode($result);
+    $result['data'] = json_decode($result['data']);
+    echo json_encode($result);
   } else {
     echo json_encode(array('status'=>'Error: no instance name?'));
     return;
