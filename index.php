@@ -1938,7 +1938,7 @@ function updateS2Overlay() {
     } else if (settings.viewCells && (map.getZoom() < 13.5)) {
         viewCellLayer.clearLayers()
         console.log('View cells are currently hidden, zoom in')
-    } else if ((settings.cellsLevel0 > 19) && (settings.cellsLevel0Check != false)) {
+    } else if (settings.viewCells && (settings.cellsLevel0 > 19) && (settings.cellsLevel0Check != false)) {
         viewCellLayer.clearLayers()
         if (map.getZoom() < 17.5){
           map.setZoom(17.5)
