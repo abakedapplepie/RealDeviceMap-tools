@@ -267,7 +267,7 @@ $(function(){
     var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
-    var cellsLevel0 = $('#cellsLevel0').val() < 20 ? $('#cellsLevel0').val() : '';
+    var cellsLevel0 = $('#cellsLevel0').val();
     var cellsLevel0Check = $('#cellsLevel0Check').is(":checked");
     var cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
     var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
@@ -1833,15 +1833,14 @@ function retrieveSetting(key) {
   }
   return value;
 }
-function showS2Cells0(level, style) {
+function showS2Cells0(level, style, mp) {
   // Credit goes to the PMSF project
   const bounds = map.getBounds()
   const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
-  const count = 2 ** level * size >> 11
+  const count = (2 ** level * size >> 11)/mp
   function addPoly(cell) {
     const vertices = cell.getCornerLatLngs()
-    const poly = L.polygon(vertices,
-      Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
+    const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
     if (cell.level === settings.cellsLevel0) {
       viewCellLayer.addLayer(poly)
     }
@@ -1870,8 +1869,7 @@ function showS2Cells1(level, style) {
     const count = 2 ** level * size >> 11
     function addPoly(cell) {
         const vertices = cell.getCornerLatLngs()
-        const poly = L.polygon(vertices,
-                               Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
+        const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
         if (cell.level === settings.cellsLevel1) {
             viewCellLayer.addLayer(poly)
         }
@@ -1900,8 +1898,7 @@ function showS2Cells2(level, style) {
     const count = 2 ** level * size >> 11
     function addPoly(cell) {
         const vertices = cell.getCornerLatLngs()
-        const poly = L.polygon(vertices,
-                               Object.assign({color: 'orange', opacity: 0.5, weight: 1, fillOpacity: 0.0}, style))
+        const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
         if (cell.level === settings.cellsLevel2) {
             viewCellLayer.addLayer(poly)
         }
@@ -1924,10 +1921,10 @@ function showS2Cells2(level, style) {
     } while (steps < count)
 }
 function updateS2Overlay() {
-    if (settings.viewCells && (map.getZoom() >= 13.5)) {
+    if (settings.viewCells && (map.getZoom() >= 13.5) && (settings.cellsLevel0 < 20)) {
         viewCellLayer.clearLayers()
         if (settings.cellsLevel0Check != false) {
-          showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1})
+          showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1}, 1)
         }
         if (settings.cellsLevel1Check != false) {
           showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
@@ -1941,6 +1938,13 @@ function updateS2Overlay() {
     } else if (settings.viewCells && (map.getZoom() < 13.5)) {
         viewCellLayer.clearLayers()
         console.log('View cells are currently hidden, zoom in')
+    } else if ((settings.cellsLevel0 > 19) && (settings.cellsLevel0Check != false)) {
+        viewCellLayer.clearLayers()
+        if (map.getZoom() < 17.5){
+          map.setZoom(17.5)
+          console.log('Zoom adapted for L20 cells')
+        } 
+        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 0.5}, 8)        
     } else {
         viewCellLayer.clearLayers()
     }
