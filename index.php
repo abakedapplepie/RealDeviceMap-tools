@@ -103,6 +103,7 @@ var gyms = [],
   pokestops = [],
   pokestoprange = [],
   spawnpoints = [];
+  spawnpoints_u = [];
 //options vars
 var settings = {
   showGyms: null,
@@ -239,13 +240,14 @@ $(function(){
      getInstance(name,color);
    });
   $('#getOptimizedRoute').on('click', function(event) {
-    var optimizeForGyms = $('#optimizeForGyms').parent().hasClass('active');
-    var optimizeForPokestops = $('#optimizeForPokestops').parent().hasClass('active');
-    var optimizeForSpawnpoints = $('#optimizeForSpawnpoints').parent().hasClass('active');
-    var optimizeNests = $('#optimizeNests').parent().hasClass('active');
-    var optimizePolygons = $('#optimizePolygons').parent().hasClass('active');
-    var optimizeCircles = $('#optimizeCircles').parent().hasClass('active');
-    generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles);
+    var optimizeForGyms = $('#optimizeForGyms').is(':checked');
+    var optimizeForPokestops = $('#optimizeForPokestops').is(':checked');
+    var optimizeForSpawnpoints = $('#optimizeForSpawnpoints').is(':checked');
+    var optimizeForUnknownSpawnpoints = $('#optimizeForUnknownSpawnpoints').is(':checked');
+    var optimizeNests = $('#optimizeNests').is(':checked');
+    var optimizePolygons = $('#optimizePolygons').is(':checked');
+    var optimizeCircles = $('#optimizeCircles').is(':checked');
+    generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles);
    });
   $('#modalSpawnReport').on('hidden.bs.modal', function(event) {
     $('#spawnReportTable > tbody').empty();
@@ -977,7 +979,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
     });
   }
 }
-function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
+function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
   $("#modalLoading").modal('show');
   var newCircle,
     currentLatLng,
@@ -1018,6 +1020,14 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
         }
       });
     }
+    if (optimizeForUnknownSpawnpoints == true) {
+      spawnpoints_u.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
+        if (turf.inside(point, poly)) {
+          points.push(item)
+        }
+      });
+    }
     if(points.length > 0) {
       getRoute(points);
     }
@@ -1047,6 +1057,15 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     }
     if (optimizeForSpawnpoints == true) {
       spawnpoints.forEach(function(item) {
+        var workingLatLng = L.latLng(item.lat, item.lng);
+        var distance = workingLatLng.distanceTo(center)
+        if (distance <= radius) {
+          points.push(item);
+        }
+      });
+    }
+    if (optimizeForUnknownSpawnpoints == true) {
+      spawnpoints_u.forEach(function(item) {
         var workingLatLng = L.latLng(item.lat, item.lng);
         var distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
@@ -1330,6 +1349,7 @@ function loadData() {
       pokestops = [];
       pokestoprange = [];
       spawnpoints = [];
+      spawnpoints_u = [];
       if (result.gyms != null) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
@@ -1385,7 +1405,7 @@ function loadData() {
           }
         });
       }
-    if (result.pokestops != null) {
+      if (result.pokestops != null) {
         result.pokestops.forEach(function(item) {
           pokestoprange.push(item);
           if (settings.showPokestopsRange === true) {
@@ -1402,7 +1422,12 @@ function loadData() {
       }
       if (result.spawnpoints != null) {
         result.spawnpoints.forEach(function(item) {
-          spawnpoints.push(item);
+          if (item.despawn_sec != null) {
+            spawnpoints.push(item);
+          } else {
+            spawnpoints_u.push(item);
+            spawnpoints.push(item);
+          }
           var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           if (settings.showSpawnpoints === true){
@@ -2254,86 +2279,39 @@ function updateS2Overlay() {
             </button>
           </div>
           <div class="modal-body">
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForGyms" id="optimizeForGyms" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForGyms" id="dontOptimizeForGyms" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
+            <div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypePOI" id="optimizeForGyms" checked>
+                <label class="form-check-label" for="optimizeForGyms"><script type="text/javascript">document.write(subs.optimizeGyms);</script></label>
               </div>
-              <div class="input-group-append">
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizeGyms);</script></span>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypePOI" id="optimizeForPokestops">
+                <label class="form-check-label" for="optimizeForPokestops"><script type="text/javascript">document.write(subs.optimizePokestops);</script></label>
               </div>
-            </div>
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle"data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForPokestops" id="optimizeForPokestops" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForPokestops" id="dontOptimizeForPokestops" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypePOI" id="optimizeForSpawnpoints">
+                <label class="form-check-label" for="optimizeForSpawnpoints"><script type="text/javascript">document.write(subs.optimizeSpawnpoints);</script></label>
               </div>
-              <div class="input-group-append" width>
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePokestops);</script></span>
+              <div class="form-check" style="margin-bottom: 10px;">
+                <input class="form-check-input" type="radio" name="optimizeTypePOI" id="optimizeForUnknownSpawnpoints">
+                <label class="form-check-label" for="optimizeForUnknownSpawnpoints"><script type="text/javascript">document.write(subs.optimizeUnknownSpawnpoints);</script></label>
               </div>
             </div>
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeForSpawnpoints" id="optimizeForSpawnpoints" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeForSpawnpoints" id="dontOptimizeForSpawnpoints" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
+            <hr>
+            <div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypeLayer" id="optimizePolygons" checked>
+                <label class="form-check-label" for="optimizePolygons"><script type="text/javascript">document.write(subs.optimizePiP);</script></label>
               </div>
-              <div class="input-group-append">
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizeSpawnpoints);</script></span>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypeLayer" id="optimizeNests">
+                <label class="form-check-label" for="optimizeNests"><script type="text/javascript">document.write(subs.optimizePiNP);</script></label>
               </div>
-            </div>
-
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizePolygons" id="optimizePolygons" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizePolygons" id="dontOptimizePolygons" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
-              </div>
-              <div class="input-group-append">
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiP);</script></span>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="optimizeTypeLayer" id="optimizeCircles">
+                <label class="form-check-label" for="optimizeCircles"><script type="text/javascript">document.write(subs.optimizePiC);</script></label>
               </div>
             </div>
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle"data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeNests" id="optimizeNests" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeNests" id="dontOptimizeNests" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
-              </div>
-              <div class="input-group-append" width>
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiNP);</script></span>
-              </div>
-            </div>
-            <div class="input-group mb-3">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="optimizeCircles" id="optimizeCircles" autocomplete="off"><script type="text/javascript">document.write(subs.on);</script>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="optimizeCircles" id="dontOptimizeCircles" autocomplete="off"><script type="text/javascript">document.write(subs.off);</script>
-                </label>
-              </div>
-              <div class="input-group-append">
-                <span style="padding: .375rem .75rem;"><script type="text/javascript">document.write(subs.optimizePiC);</script></span>
-              </div>
-            </div>
-
           </div>
           <div class="modal-footer">
             <button type="button" id="getOptimizedRoute" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.getOptimization);</script></button>

@@ -70,6 +70,7 @@ var deSubs = {
   "optimizeGyms": "Optimiere für Arenen",
   "optimizePokestops": "Optimiere für Pokestops",
   "optimizeSpawnpoints": "Optimiere für Spawnpoints",
+  "optimizeUnknownSpawnpoints": "Optimiere für Spawnpoints ohne TTH",
   "on": "An",
   "off": "Aus",
   "optimizePiP": "Optimiere Punkte in Polygonen",
