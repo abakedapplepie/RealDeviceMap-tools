@@ -47,6 +47,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
+    <link rel="stylesheet" href="./leaflet-search.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -69,6 +70,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script type="text/javascript" src="./de.js"></script>
     <script type="text/javascript" src="./fr.js"></script>
     <script type="text/javascript" src="./salesman.js"></script>
+    <script type="text/javascript" src="./leaflet-search.js"></script>
 
 <script type="text/javascript">
 var debug = false;
@@ -329,6 +331,7 @@ function initMap() {
   map = L.map('map', {
     zoomDelta: 0.25,
     zoomSnap: 0.25,
+    zoomControl: false,
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
@@ -352,6 +355,16 @@ function initMap() {
   spawnpointCellLayer.addTo(map);
   nestLayer = new L.LayerGroup();
   nestLayer.addTo(map);
+  map.addControl( new L.Control.Search({
+    url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
+    jsonpParam: 'json_callback',
+    propertyName: 'display_name',
+    propertyLoc: ['lat','lon'],
+    marker: false,
+    autoCollapse: true,
+    autoType: false,
+    minLength: 2
+  }) );
   buttonLocate = L.control.locate({
     id: 'getOwnLocation',
     position: 'topleft',
