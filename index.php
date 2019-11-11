@@ -78,6 +78,7 @@ var debug = false;
 var map;
 var manualCircle = false;
 var tlChoice = null;
+var adBoundsLv = null;
 var subs = enSubs;
 var drawControl,
   buttonManualCircle,
@@ -250,6 +251,16 @@ $(function(){
     var optimizePolygons = $('#optimizePolygons').is(':checked');
     var optimizeCircles = $('#optimizeCircles').is(':checked');
     generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles);
+   });
+  $('#getAdBounds').on('click', function(event) {
+    if ($('#adBoundsLv6').is(':checked')) {
+      adBoundsLv = '6';
+    } else if ($('#adBoundsLv8').is(':checked')) {
+      adBoundsLv = '8';
+    } else {
+      adBoundsLv = '9';
+    }  
+    getAdBounds();
    });
   $('#modalSpawnReport').on('hidden.bs.modal', function(event) {
     $('#spawnReportTable > tbody').empty();
@@ -577,11 +588,21 @@ function initMap() {
   });
   buttonImportNests = L.easyButton({
     states: [{
-      stateName: 'openImportPolygonModal',
+      stateName: 'openImportNestsModal',
       icon: 'fas fa-tree',
       title: subs.importOSM,
       onClick: function (control){
         getNests();
+      }
+    }]
+  });
+  buttonImportAdBounds = L.easyButton({
+    states: [{
+      stateName: 'openImportAdBoundsModal',
+      icon: 'far fa-map',
+      title: subs.importAdBounds,
+      onClick: function (control){
+        $('#modalAdBounds').modal('show');
       }
     }]
   });
@@ -628,7 +649,7 @@ function initMap() {
       }
     }]
   });
-  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute, buttonTrash], { position: 'topleft' }).addTo(map);
+  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute, buttonTrash], { position: 'topleft' }).addTo(map);
   buttonGenerateRoute = L.easyButton({
     id: 'generateRoute',
     states:[{
@@ -1245,6 +1266,85 @@ function getSpawnReport(layer) {
     }
   });
 }
+function getAdBounds() {
+  circleLayer.clearLayers();
+  editableLayer.clearLayers();
+  nestLayer.clearLayers();
+  const bounds = map.getBounds();
+  const overpassApiEndpoint = 'https://overpass-api.de/api/interpreter';
+  var queryBbox = [ // s, e, n, w
+    bounds.getSouthWest().lat,
+    bounds.getSouthWest().lng,
+    bounds.getNorthEast().lat,
+    bounds.getNorthEast().lng
+  ].join(',');
+  var queryDate = "2019-02-16T00:00:00Z";
+  var queryOptions = [
+    '[out:json]',
+    '[timeout:620]',
+    '[bbox:' + queryBbox + ']',
+    '[date:"' + queryDate + '"]'
+  ].join('');
+  var queryAdBounds = [
+    'relation[admin_level=' + adBoundsLv + '];',
+  ].join('');
+  var overPassQuery = queryOptions + ';(' + queryAdBounds + ')' + ';out;>;out skel qt;';
+  $.ajax({
+    beforeSend: function() {
+      $("#modalLoading").modal('show');
+    },
+    url: overpassApiEndpoint,
+    type: 'GET',
+    dataType: 'json',
+    data: {'data': overPassQuery},
+    success: function (result) {
+      var geoJsonFeatures = osmtogeojson(result);
+      geoJsonFeatures.features.forEach(function(feature) {
+        if (feature.geometry.type == 'Polygon' || feature.geometry.type == 'MultiPolygon') { 
+          feature = turf.flip(feature);
+          var polygon = L.polygon(feature.geometry.coordinates, {
+          clickable: false,
+          color: "#a83297",
+          fill: true,
+          fillColor: '#a83297',
+          fillOpacity: 0.1,
+          opacity: 1.0,
+          stroke: true,
+          weight: 2
+          });
+          polygon.tags = {};
+          polygon.tags.name = feature.properties.tags.name;
+          polygon.addTo(editableLayer);
+          polygon.bindPopup(function (layer) {
+            if (typeof layer.tags.name !== 'undefined') {
+              var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
+            }
+            var output = name +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
+
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
+
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
+
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
+            return output;
+          });
+        }
+      });
+    },
+    complete: function() {
+      $("#modalLoading").modal('hide');
+    }
+  });
+}
 function getNests() {
   circleLayer.clearLayers();
   editableLayer.clearLayers();
@@ -1284,7 +1384,6 @@ function getNests() {
     dataType: 'json',
     data: {'data': overPassQuery},
     success: function (result) {
-      if (debug !== false) { console.log(result) }
       var geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
         feature = turf.flip(feature);
@@ -2328,6 +2427,38 @@ function updateS2Overlay() {
           </div>
           <div class="modal-footer">
             <button type="button" id="getOptimizedRoute" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.getOptimization);</script></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modalAdBounds" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.adBoundsHeader);</script></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv6">
+                <label class="form-check-label" for="adBoundsLv6"><script type="text/javascript">document.write(subs.adBoundsLv6);</script></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv8">
+                <label class="form-check-label" for="adBoundsLv8"><script type="text/javascript">document.write(subs.adBoundsLv8);</script></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv9" checked>
+                <label class="form-check-label" for="adBoundsLv9"><script type="text/javascript">document.write(subs.adBoundsLv9);</script></label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="getAdBounds" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.getAdBounds);</script></button>
           </div>
         </div>
       </div>
