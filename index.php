@@ -342,7 +342,7 @@ function initMap() {
   map = L.map('map', {
     zoomDelta: 0.25,
     zoomSnap: 0.25,
-    zoomControl: false,
+    zoomControl: true,
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
