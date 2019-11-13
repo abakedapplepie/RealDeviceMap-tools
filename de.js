@@ -55,6 +55,7 @@ var deSubs = {
   "s2cells0": "S2-Zellen (rot) Level:",
   "s2cells1": "S2-Zellen (Level 14, blau)",
   "s2cells2": "S2-Zellen (Level 17, grün)",
+  "s2CountPOI": "Anzahl der Objekte anzeigen",
   "circleRadius": "Kreis Radius:",
   "meters": "Meter",
   "lastNestMigration": "Letzter Nestwechsel:",

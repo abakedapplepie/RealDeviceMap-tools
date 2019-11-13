@@ -55,6 +55,7 @@ var frSubs = {
   "s2cells0": "S2cells (rouge) level:",
   "s2cells1": "S2cells (level 14, bleu)",
   "s2cells2": "S2cells (level 17, vert)",
+  "s2CountPOI": "Show POI Count",
   "circleRadius": "Radius du circle:",
   "meters": "Mètres",
   "lastNestMigration": "Last Nest Migration:",

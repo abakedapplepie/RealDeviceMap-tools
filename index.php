@@ -128,6 +128,7 @@ var settings = {
   cellsLevel1Check: false,
   cellsLevel2: null,
   cellsLevel2Check: false,
+  s2CountPOI: false,
   tlLink: null,
   language: null
 };
@@ -286,6 +287,7 @@ $(function(){
     var cellsLevel0Check = $('#cellsLevel0Check').is(":checked");
     var cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
     var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
+    var s2CountPOICheck = $('#s2CountPOI').is(":checked");
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
     if (tlChoice == 'carto') {
       tlChoice = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
@@ -303,6 +305,7 @@ $(function(){
       cellsLevel1Check: cellsLevel1Check,
       cellsLevel2: 17,
       cellsLevel2Check: cellsLevel2Check,
+      s2CountPOI: s2CountPOICheck,
       tlLink: tlChoice,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit,
@@ -342,7 +345,7 @@ function initMap() {
   map = L.map('map', {
     zoomDelta: 0.25,
     zoomSnap: 0.25,
-    zoomControl: false,
+    zoomControl: true,
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
@@ -1906,6 +1909,23 @@ $(document).on("click", ".countPoints", function() {
   }
   alert(subs.count + points);
 });
+function cellCount(poly) {
+  var points = 0;
+  cell = poly.toGeoJSON();
+  gyms.forEach(function(item) {
+    point = turf.point([item.lng, item.lat]);
+    if (turf.inside(point, cell)) {
+      points++;
+    }
+  });
+  pokestops.forEach(function(item) {
+    point = turf.point([item.lng, item.lat]);
+    if (turf.inside(point, cell)) {
+      points++;
+    }
+  });
+  return points;
+};
 function loadSettings() {
   const defaultSettings = {
     showGyms: true,
@@ -2009,6 +2029,12 @@ function showS2Cells1(level, style) {
         const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
         if (cell.level === settings.cellsLevel1) {
             viewCellLayer.addLayer(poly)
+            if (settings.s2CountPOI != false) {
+              var poiCount = cellCount(poly).toString();
+              var marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
+              marker.bindTooltip(poiCount, {permanent: true, textOnly: true, opacity: 0.8, direction: 'center', offset: [25, -20] })
+              viewCellLayer.addLayer(marker);
+            }
         }
     }
     // add cells spiraling outward
@@ -2063,9 +2089,17 @@ function updateS2Overlay() {
         if (settings.cellsLevel0Check != false) {
           showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1}, 1)
         }
-        if (settings.cellsLevel1Check != false) {
+        if ((settings.cellsLevel1Check != false) && (settings.s2CountPOI == false)) {
           showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
         }
+        if ((settings.cellsLevel1Check != false) && (settings.s2CountPOI != false)) {
+          viewCellLayer.clearLayers()
+          if (map.getZoom() < 15.5){
+            map.setZoom(15.5)
+            console.log('Zoom adapted for L14 cells with POI Count')
+          }
+          showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
+        }  
         if (settings.cellsLevel2Check != false) {
           showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
         }        
@@ -2125,10 +2159,12 @@ function updateS2Overlay() {
 
             <div class="input-group mb-3">
               <div>
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells1);</script></span>
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells1);</script><br>
+                <script type="text/javascript">document.write(subs.s2CountPOI);</script></span>
               </div>
               <div>
-                  <input type="checkbox" name="cellsLevel1Check" id="cellsLevel1Check" style="margin-left: 15px; vertical-align: bottom;">
+                  <input type="checkbox" name="cellsLevel1Check" id="cellsLevel1Check" style="margin-left: 15px; vertical-align: bottom;"><br>
+                  <input type="checkbox" name="s2CountPOI" id="s2CountPOI" style="margin-left: 15px; vertical-align: -0.8em;">
               </div>
             </div>
 

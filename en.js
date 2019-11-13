@@ -55,6 +55,7 @@ var enSubs = {
   "s2cells0": "S2cells (red) level:",
   "s2cells1": "S2cells (level 14, blue)",
   "s2cells2": "S2cells (level 17, green)",
+  "s2CountPOI": "Show POI Count",
   "circleRadius": "Circle Radius:",
   "meters": "Meters",
   "lastNestMigration": "Last Nest Migration:",
