@@ -994,7 +994,6 @@ function getInstance(instanceName = null, color = '#1090fa') {
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-        if (debug !== false) { console.log(result) }
         points = result.data.area;
         if (points.length > 0 ) {
           if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
@@ -1009,7 +1008,9 @@ function getInstance(instanceName = null, color = '#1090fa') {
               }).addTo(circleLayer);
             });
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
-            var newPolygon = L.polygon(points, polygonOptions).addTo(editableLayer);
+            points.forEach(function(coords) {
+              newPolygon = L.polygon(coords, polygonOptions).addTo(editableLayer);
+            });
           }
         }
       }
