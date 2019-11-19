@@ -79,18 +79,18 @@ var map;
 var manualCircle = false;
 var tlChoice = null;
 var adBoundsLv = null;
+var csvImport = null;
 var subs = enSubs;
 var drawControl,
   buttonManualCircle,
   buttonImportNests,
   buttonModalImportPolygon,
+  buttonModalImportSubmissions,
   buttonModalImportInstance,
   buttonTrash,
   buttonTrashRoute,
-  barShowPolyOpts,
   buttonGenerateRoute,
   buttonOptimizeRoute,
-  barRoute,
   buttonModalOutput,
   buttonMapModePoiViewer,
   buttonMapModeRouteGenerator,
@@ -100,7 +100,13 @@ var drawControl,
   buttonShowSpawnpoints,
   buttonShowUnknownPois,
   buttonSettingsModal,
-  buttonViewCells;
+  buttonClearSubs,
+  buttonViewCells,
+  barShowPolyOpts,
+  barOutput,
+  barWayfarer,
+  barRightOpts,
+  barMapMode;
 //data vars
 var gyms = [],
   pokestops = [],
@@ -141,7 +147,8 @@ var gymLayer,
   circleS2Layer,
   circleLayer,
   nestLayer,
-  viewCellLayer;
+  viewCellLayer,
+  subsLayer;
 $(function(){
   loadSettings();
   getLanguage();
@@ -237,6 +244,41 @@ $(function(){
       }
     } 
     $('#modalImport').modal('hide');
+  });
+  $('#importSubmissions').on('click', function(event) {
+    subsLayer.clearLayers();
+    var pointsData = [];
+    var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+    var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+    // to do: import for specific format from alfonsoML
+    if (csvImport != null) {
+      pointsData = csvtoarray(csvImport);
+      csvImport = null;
+      $('#csvOpener').val('');
+    } else {
+      pointsData = csvtoarray($('#importSubmissionsData').val().trim());
+      $('#importSubmissionsData').val('');
+    }
+    pointsData.forEach(function(item) {
+      if ($('#submissionRangeCheck').is(':checked')) { 
+        var range = L.circle([item[0], item[1]], {
+              color: 'black',
+              fillColor: 'purple',
+              radius: 20,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.3
+            }).addTo(subsLayer);
+      }
+      var marker = L.circleMarker([item[0], item[1]], {
+              color: 'black',
+              fillColor: 'purple',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
+    });
   });
   $('#importInstance').on('click', function(event) {
      var name = $("#importInstanceName" ).val();
@@ -369,7 +411,11 @@ function initMap() {
   spawnpointCellLayer.addTo(map);
   nestLayer = new L.LayerGroup();
   nestLayer.addTo(map);
-  map.addControl( new L.Control.Search({
+  subsLayer = new L.LayerGroup();
+  subsLayer.addTo(map);
+  
+  // Buttons left
+  searchControl = new L.Control.Search({
     url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
     jsonpParam: 'json_callback',
     propertyName: 'display_name',
@@ -378,7 +424,7 @@ function initMap() {
     autoCollapse: true,
     autoType: false,
     minLength: 2
-  }) );
+  }).addTo(map);
   buttonLocate = L.control.locate({
     id: 'getOwnLocation',
     position: 'topleft',
@@ -388,169 +434,7 @@ function initMap() {
     drawMarker: false,
     icon: 'fas fa-crosshairs'
   }).addTo(map);
-  buttonMapModePoiViewer = L.easyButton({
-    id: 'enableMapModePoiViewer',
-    states: [{
-      stateName: 'enableMapModePoiViewer',
-      icon: 'fas fa-binoculars',
-      title: subs.poiViewer,
-      onClick: function (btn) {
-        settings.mapMode = 'PoiViewer';
-        storeSetting('mapMode');
-        setMapMode();
-      }
-    }]
-  })
-  buttonMapModeRouteGenerator = L.easyButton({
-    id: 'enableMapModeRouteGenerator',
-    states: [{
-      stateName: 'enableMapModeRouteGenerator',
-      icon: 'fas fa-route',
-      title: subs.routeGenerator,
-      onClick: function (btn) {
-        settings.mapMode = 'RouteGenerator';
-        storeSetting('mapMode');
-        setMapMode();
-      }
-    }]
-  })
-  var barMapMode = L.easyBar([buttonMapModeRouteGenerator, buttonMapModePoiViewer], { position: 'topright' }).addTo(map);
-  buttonShowGyms = L.easyButton({
-    id: 'showGyms',
-    states: [{
-      stateName: 'enableShowGyms',
-      icon: 'fas fa-dumbbell',
-      title: subs.hideGyms,
-      onClick: function (btn) {
-        settings.showGyms = false;
-        storeSetting('showGyms');
-        setShowMode();
-        }
-    }, {
-      stateName: 'disableShowGyms',
-      icon: 'fas fa-dumbbell',
-      title: subs.showGyms,
-      onClick: function (btn) {
-        settings.showGyms = true;
-        storeSetting('showGyms');
-        setShowMode();
-      }
-    }]
-  })
-  buttonShowPokestops = L.easyButton({
-    id: 'showPokestops',
-    states: [{
-      stateName: 'enableShowPokestops',
-      icon: 'fas fa-map-pin',
-      title: subs.hidePokestops,
-      onClick: function (btn) {
-        settings.showPokestops = false;
-        storeSetting('showPokestops');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowPokestops',
-      icon: 'fas fa-map-pin',
-      title: subs.showPokestops,
-      onClick: function (btn) {
-        settings.showPokestops = true;
-        storeSetting('showPokestops');
-        setShowMode();
-      }
-    }]
-  })
-  buttonShowPokestopsRange = L.easyButton({
-    id: 'showPokestopsRange',
-    states: [{
-      stateName: 'enableShowPokestopsRange',
-      icon: 'fas fa-layer-group',
-      title: subs.hidePokestopRange,
-      onClick: function (btn) {
-        settings.showPokestopsRange = false;
-        storeSetting('showPokestopsRange');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowPokestopsRange',
-      icon: 'fas fa-layer-group',
-      title: subs.showPokestopRange,
-      onClick: function (btn) {
-        settings.showPokestopsRange = true;
-        storeSetting('showPokestopsRange');
-        setShowMode();
-      }
-    }]
-  })
-  buttonShowSpawnpoints = L.easyButton({
-    id: 'showSpawnpoints',
-    states:[{
-      stateName: 'enableShowSpawnpoints',
-      icon: 'fas fa-paw',
-      title: subs.hideSpawnpoints,
-      onClick: function (btn) {
-        settings.showSpawnpoints = false;
-        storeSetting('showSpawnpoints');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowSpawnpoints',
-      icon: 'fas fa-paw',
-      title: subs.showSpawnpoints,
-      onClick: function (btn) {
-        settings.showSpawnpoints = true;
-        storeSetting('showSpawnpoints');
-        setShowMode();
-      }
-    }]
-  })
-  buttonShowUnknownPois = L.easyButton({
-    id: 'showUnknownPois',
-    states:[{
-      stateName: 'enableShowUnknownPois',
-      icon: 'fas fa-question-circle',
-      title: subs.showAllPOIS,
-      onClick: function (btn) {
-        settings.showUnknownPois = false;
-        storeSetting('showUnknownPois');
-        setShowMode();
-      }
-    }, {
-      stateName: 'disableShowUnknownPois',
-      icon: 'fas fa-question-circle',
-      title: subs.showUnknownPOIS,
-      onClick: function (btn) {
-        settings.showUnknownPois = true;
-        storeSetting('showUnknownPois');
-        setShowMode();
-      }
-    }]
-  })
-  var barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
-  buttonViewCells = L.easyButton({
-    id: 'viewCells',
-    position: 'topright',
-    states: [{
-      stateName: 'enableViewCells',
-      icon: 'far fa-square',
-      title: subs.hideViewingCells,
-      onClick: function (btn) {
-        settings.viewCells = false;
-        storeSetting('viewCells');
-        setShowMode();
-        }
-    }, {
-      stateName: 'disableViewCells',
-      icon: 'far fa-square',
-      title: subs.showViewingCells,
-      onClick: function (btn) {
-        settings.viewCells = true;
-        storeSetting('viewCells');
-        setShowMode();
-      }
-    }]
-  }).addTo(map)
   drawControl = new L.Control.Draw({
-    position: 'topleft',
     draw: {
       polyline: false,
       polygon:   {
@@ -570,6 +454,8 @@ function initMap() {
       poly: false
     }
   }).addTo(map);
+
+  // barShowPolyOpts
   buttonManualCircle = L.easyButton({
     states: [{
       stateName: 'enableManualCircle',
@@ -640,19 +526,9 @@ function initMap() {
       }
     }]
   });
-  buttonTrash = L.easyButton({
-    states: [{
-      stateName: 'clearMap',
-      icon: 'fas fa-trash',
-      title: subs.clearShapes,
-      onClick: function (control){
-        circleLayer.clearLayers();
-        editableLayer.clearLayers();
-        nestLayer.clearLayers();
-      }
-    }]
-  });
-  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute, buttonTrash], { position: 'topleft' }).addTo(map);
+  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
+  
+  // barOutput
   buttonGenerateRoute = L.easyButton({
     id: 'generateRoute',
     states:[{
@@ -663,7 +539,7 @@ function initMap() {
         generateRoute();
       }
     }]
-  })
+  });
   buttonOptimizeRoute = L.easyButton({
     id: 'optimizeRoute',
     states:[{
@@ -674,8 +550,7 @@ function initMap() {
         $('#modalOptimize').modal('show');
       }
     }]
-  })
-  barRoute = L.easyBar([buttonGenerateRoute, buttonOptimizeRoute], { position: 'topleft' }).addTo(map);
+  });
   buttonModalOutput = L.easyButton({
     states: [{
       stateName: 'openOutputModal',
@@ -685,7 +560,212 @@ function initMap() {
         $('#modalOutput').modal('show');
       }
     }]
-  }).addTo(map);
+  });
+  barOutput = L.easyBar([buttonGenerateRoute, buttonOptimizeRoute, buttonModalOutput], { position: 'topleft' }).addTo(map);
+
+  // barWayfarer
+  buttonModalImportSubmissions = L.easyButton({
+    states: [{
+      stateName: 'openImportSubmissionsModal',
+      icon: 'far fa-dot-circle',
+      title: subs.importSubmissions,
+      onClick: function (control){
+        $('#modalImportSubmissions').modal('show');
+      }
+    }]
+  });
+  buttonClearSubs = L.easyButton({
+    states: [{
+      stateName: 'clearSubs',
+      icon: 'fas fa-times-circle',
+      title: subs.clearSubs,
+      onClick: function (control){
+        subsLayer.clearLayers();
+      }
+    }]
+  });
+  buttonViewCells = L.easyButton({
+    id: 'viewCells',
+    states: [{
+      stateName: 'enableViewCells',
+      icon: 'fas fa-square',
+      title: subs.hideViewingCells,
+      onClick: function (btn) {
+        settings.viewCells = false;
+        storeSetting('viewCells');
+        setShowMode();
+        }
+    }, {
+      stateName: 'disableViewCells',
+      icon: 'far fa-square',
+      title: subs.showViewingCells,
+      onClick: function (btn) {
+        settings.viewCells = true;
+        storeSetting('viewCells');
+        setShowMode();
+      }
+    }]
+  });
+  barWayfarer = L.easyBar([buttonModalImportSubmissions, buttonClearSubs, buttonViewCells], { position: 'topleft' }).addTo(map);
+
+  // Buttons right
+  // Bar mapMode
+  buttonMapModePoiViewer = L.easyButton({
+    id: 'enableMapModePoiViewer',
+    states: [{
+      stateName: 'enableMapModePoiViewer',
+      icon: 'fas fa-binoculars',
+      title: subs.poiViewer,
+      onClick: function (btn) {
+        settings.mapMode = 'PoiViewer';
+        storeSetting('mapMode');
+        setMapMode();
+      }
+    }]
+  });
+  buttonMapModeRouteGenerator = L.easyButton({
+    id: 'enableMapModeRouteGenerator',
+    states: [{
+      stateName: 'enableMapModeRouteGenerator',
+      icon: 'fas fa-route',
+      title: subs.routeGenerator,
+      onClick: function (btn) {
+        settings.mapMode = 'RouteGenerator';
+        storeSetting('mapMode');
+        setMapMode();
+      }
+    }]
+  });
+  barMapMode = L.easyBar([buttonMapModeRouteGenerator, buttonMapModePoiViewer], { position: 'topright' }).addTo(map);
+
+  //Bar showPOIs
+  buttonShowGyms = L.easyButton({
+    id: 'showGyms',
+    states: [{
+      stateName: 'enableShowGyms',
+      icon: 'fas fa-dumbbell',
+      title: subs.hideGyms,
+      onClick: function (btn) {
+        settings.showGyms = false;
+        storeSetting('showGyms');
+        setShowMode();
+        }
+    }, {
+      stateName: 'disableShowGyms',
+      icon: 'fas fa-dumbbell',
+      title: subs.showGyms,
+      onClick: function (btn) {
+        settings.showGyms = true;
+        storeSetting('showGyms');
+        setShowMode();
+      }
+    }]
+  });
+  buttonShowPokestops = L.easyButton({
+    id: 'showPokestops',
+    states: [{
+      stateName: 'enableShowPokestops',
+      icon: 'fas fa-map-pin',
+      title: subs.hidePokestops,
+      onClick: function (btn) {
+        settings.showPokestops = false;
+        storeSetting('showPokestops');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowPokestops',
+      icon: 'fas fa-map-pin',
+      title: subs.showPokestops,
+      onClick: function (btn) {
+        settings.showPokestops = true;
+        storeSetting('showPokestops');
+        setShowMode();
+      }
+    }]
+  });
+  buttonShowPokestopsRange = L.easyButton({
+    id: 'showPokestopsRange',
+    states: [{
+      stateName: 'enableShowPokestopsRange',
+      icon: 'fas fa-layer-group',
+      title: subs.hidePokestopRange,
+      onClick: function (btn) {
+        settings.showPokestopsRange = false;
+        storeSetting('showPokestopsRange');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowPokestopsRange',
+      icon: 'fas fa-layer-group',
+      title: subs.showPokestopRange,
+      onClick: function (btn) {
+        settings.showPokestopsRange = true;
+        storeSetting('showPokestopsRange');
+        setShowMode();
+      }
+    }]
+  });
+  buttonShowSpawnpoints = L.easyButton({
+    id: 'showSpawnpoints',
+    states:[{
+      stateName: 'enableShowSpawnpoints',
+      icon: 'fas fa-paw',
+      title: subs.hideSpawnpoints,
+      onClick: function (btn) {
+        settings.showSpawnpoints = false;
+        storeSetting('showSpawnpoints');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowSpawnpoints',
+      icon: 'fas fa-paw',
+      title: subs.showSpawnpoints,
+      onClick: function (btn) {
+        settings.showSpawnpoints = true;
+        storeSetting('showSpawnpoints');
+        setShowMode();
+      }
+    }]
+  });
+  buttonShowUnknownPois = L.easyButton({
+    id: 'showUnknownPois',
+    states:[{
+      stateName: 'enableShowUnknownPois',
+      icon: 'fas fa-question-circle',
+      title: subs.showAllPOIS,
+      onClick: function (btn) {
+        settings.showUnknownPois = false;
+        storeSetting('showUnknownPois');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowUnknownPois',
+      icon: 'fas fa-question-circle',
+      title: subs.showUnknownPOIS,
+      onClick: function (btn) {
+        settings.showUnknownPois = true;
+        storeSetting('showUnknownPois');
+        setShowMode();
+      }
+    }]
+  });
+  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
+
+  // Bar rightOpts
+  buttonTrash = L.easyButton({
+    states: [{
+      stateName: 'clearMap',
+      icon: 'fas fa-trash',
+      title: subs.clearShapes,
+      onClick: function (control){
+        circleLayer.clearLayers();
+        editableLayer.clearLayers();
+        nestLayer.clearLayers();
+        subsLayer.clearLayers();
+      }
+    }]
+  });
+  buttonTrash.button.style.backgroundColor = '#B7E9B7';
   buttonModalSettings = L.easyButton({
     position: 'topright',
     states: [{
@@ -724,8 +804,10 @@ function initMap() {
         $('#modalSettings').modal('show');
       }
     }]
-  }).addTo(map);
+  });
   buttonModalSettings.button.style.backgroundColor = '#B7E9B7';
+  barRightOpts = L.easyBar([buttonTrash, buttonModalSettings], { position: 'topright' }).addTo(map);
+
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
     buttonManualCircle.state('enableManualCircle');
@@ -895,7 +977,7 @@ function setShowMode() {
     buttonShowPokestopsRange.state('enableShowPokestopsRange');
     buttonShowPokestopsRange.button.style.backgroundColor = '#B7E9B7';
   } else {
-  pokestopRangeLayer.clearLayers();
+    pokestopRangeLayer.clearLayers();
     buttonShowPokestopsRange.state('disableShowPokestopsRange');
     buttonShowPokestopsRange.button.style.backgroundColor = '#E9B7B7';
   }
@@ -916,10 +998,8 @@ function setShowMode() {
   }
   if (settings.viewCells !== false) {
     buttonViewCells.state('enableViewCells');
-    buttonViewCells.button.style.backgroundColor = '#B7E9B7';
   } else {
     buttonViewCells.state('disableViewCells');
-    buttonViewCells.button.style.backgroundColor = '#E9B7B7';
   }
   loadData();
 }
@@ -929,22 +1009,23 @@ function setMapMode(){
       buttonMapModePoiViewer.button.style.backgroundColor = '#E9B7B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#B7E9B7';
       $('.leaflet-draw').show();
-      buttonShowUnknownPois.enable();
+//      buttonShowUnknownPois.enable();
       barShowPolyOpts.enable();
-      barRoute.enable();
-      buttonModalOutput.enable();
+      barOutput.enable();
+      barWayfarer.disable();
       break;
     case 'PoiViewer':
       buttonMapModePoiViewer.button.style.backgroundColor = '#B7E9B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#E9B7B7';
-      editableLayer.clearLayers();
+/*      editableLayer.clearLayers();
       circleLayer.clearLayers();
-      nestLayer.clearLayers();
+      nestLayer.clearLayers();*/
       $('.leaflet-draw').hide();
-      buttonShowUnknownPois.enable();
+//      buttonShowUnknownPois.enable();
       barShowPolyOpts.disable();
-      barRoute.disable();
-      buttonModalOutput.disable();
+      barOutput.disable();
+      barWayfarer.enable();
+      manualCircle = false;
       break;
   }
 }
@@ -2347,6 +2428,49 @@ function updateS2Overlay() {
             <div class="modal-footer">
               <button type="button" id="savePolygon" class="btn btn-primary"><script type="text/javascript">document.write(subs.import);</script></button>
               <button type="button" id="saveNestPolygon" class="btn btn-secondary"><script type="text/javascript">document.write(subs.importNest);</script></button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal" id="modalImportSubmissions" tabindex="-1" role="dialog">
+      <form id="importSubmissionsForm">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><script type="text/javascript">document.write(subs.importSubmissions);</script></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <label for="importSubmissionsData"><script type="text/javascript">document.write(subs.poiData);</script></label>
+              <div class="input-group mb">
+                <textarea name="importSubmissionsData" id="importSubmissionsData" style="height:250px;" class="form-control" aria-label="Submissions data"></textarea>
+              </div>
+            </div>
+            <div class="modal-body">
+              <label for="csvOpener"><script type="text/javascript">document.write(subs.csvOpener);</script></label>
+              <input id="csvOpener" type='file' accept='text/csv' onchange='openFile(event)'>
+                <script>
+                  var openFile = function(event) {
+                    var input = event.target;
+                    var reader = new FileReader();
+                    reader.onload = function(){
+                      csvImport = reader.result;
+                    };
+                    reader.readAsText(input.files[0]);
+                  };
+                </script>
+            </div>
+            <div class="modal-body">       
+              <label for="submissionRangeCheck"><script type="text/javascript">document.write(subs.submissionRangeCheck);</script></label>
+              <input type="checkbox" name="submissionRangeCheck" id="submissionRangeCheck" style="margin-left: 15px; vertical-align: middle;">
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="importSubmissions" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.import);</script></button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
             </div>
           </div>
