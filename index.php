@@ -250,7 +250,6 @@ $(function(){
     var pointsData = [];
     var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
     var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-    // to do: import for specific format from alfonsoML
     if (csvImport != null) {
       pointsData = csvtoarray(csvImport);
       csvImport = null;
@@ -259,26 +258,53 @@ $(function(){
       pointsData = csvtoarray($('#importSubmissionsData').val().trim());
       $('#importSubmissionsData').val('');
     }
-    pointsData.forEach(function(item) {
-      if ($('#submissionRangeCheck').is(':checked')) { 
-        var range = L.circle([item[0], item[1]], {
-              color: 'black',
-              fillColor: 'purple',
-              radius: 20,
-              weight: weight,
-              opacity: 1,
-              fillOpacity: 0.3
-            }).addTo(subsLayer);
-      }
-      var marker = L.circleMarker([item[0], item[1]], {
-              color: 'black',
-              fillColor: 'purple',
-              radius: radius,
-              weight: weight,
-              opacity: 1,
-              fillOpacity: 0.8
-            }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
-    });
+    var formatCheck = pointsData[0][0];
+    if (formatCheck != 'id'){
+      pointsData.forEach(function(item) {
+        if ($('#submissionRangeCheck').is(':checked')) { 
+          var range = L.circle([item[0], item[1]], {
+                color: 'black',
+                fillColor: 'purple',
+                radius: 20,
+                weight: weight,
+                opacity: 1,
+                fillOpacity: 0.3
+              }).addTo(subsLayer);
+        }
+        var marker = L.circleMarker([item[0], item[1]], {
+                color: 'black',
+                fillColor: 'purple',
+                radius: radius,
+                weight: weight,
+                opacity: 1,
+                fillOpacity: 0.8
+              }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
+      });
+    } else if (formatCheck == 'id') {
+      pointsData.shift();
+      pointsData.forEach(function(item) {
+        if ($('#submissionRangeCheck').is(':checked')) { 
+          var range = L.circle([item[4], item[5]], {
+                color: 'black',
+                fillColor: 'purple',
+                radius: 20,
+                weight: weight,
+                opacity: 1,
+                fillOpacity: 0.3
+              }).addTo(subsLayer);
+        }
+        var marker = L.circleMarker([item[4], item[5]], {
+                color: 'black',
+                fillColor: 'purple',
+                radius: radius,
+                weight: weight,
+                opacity: 1,
+                fillOpacity: 0.8
+              }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
+      });
+    } else {
+      alert('Something went horribly wrong');
+    }
   });
   $('#importInstance').on('click', function(event) {
      var name = $("#importInstanceName" ).val();
@@ -1508,11 +1534,24 @@ function getNests() {
     }
   });
 }
+function splitCsv(str) {
+  return str.split(',').reduce((accum,curr)=>{
+    if(accum.isConcatting) {
+      accum.soFar[accum.soFar.length-1] += ','+curr
+    } else {
+      accum.soFar.push(curr)
+    }
+    if(curr.split('"').length % 2 == 0) {
+      accum.isConcatting= !accum.isConcatting
+    }
+    return accum;
+  },{soFar:[],isConcatting:false}).soFar
+}
 function csvtoarray(dataString) {
   var lines = dataString
     .split(/\n/)           // Convert to one string per line
     .map(function(lineStr) {
-      return lineStr.split(",");   // Convert each line to array (,)
+      return splitCsv(lineStr);   // Convert each line to array (,)
     })
   return lines;
 }
