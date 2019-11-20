@@ -248,8 +248,6 @@ $(function(){
   $('#importSubmissions').on('click', function(event) {
     subsLayer.clearLayers();
     var pointsData = [];
-    var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-    var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
     if (csvImport != null) {
       pointsData = csvtoarray(csvImport);
       csvImport = null;
@@ -264,21 +262,14 @@ $(function(){
         if ($('#submissionRangeCheck').is(':checked')) { 
           var range = L.circle([item[0], item[1]], {
                 color: 'black',
-                fillColor: 'purple',
+                fillColor: 'red',
                 radius: 20,
-                weight: weight,
+                weight: 1,
                 opacity: 1,
                 fillOpacity: 0.3
               }).addTo(subsLayer);
         }
-        var marker = L.circleMarker([item[0], item[1]], {
-                color: 'black',
-                fillColor: 'purple',
-                radius: radius,
-                weight: weight,
-                opacity: 1,
-                fillOpacity: 0.8
-              }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
+        var marker = L.marker([item[0], item[1]]).bindPopup('<span>' + item[2] + '</span>').addTo(subsLayer);
       });
     } else if (formatCheck == 'id') {
       pointsData.shift();
@@ -286,21 +277,14 @@ $(function(){
         if ($('#submissionRangeCheck').is(':checked')) { 
           var range = L.circle([item[4], item[5]], {
                 color: 'black',
-                fillColor: 'purple',
+                fillColor: 'red',
                 radius: 20,
-                weight: weight,
+                weight: 1,
                 opacity: 1,
                 fillOpacity: 0.3
               }).addTo(subsLayer);
         }
-        var marker = L.circleMarker([item[4], item[5]], {
-                color: 'black',
-                fillColor: 'purple',
-                radius: radius,
-                weight: weight,
-                opacity: 1,
-                fillOpacity: 0.8
-              }).bindPopup("<span>" + item[2] + "</span>").addTo(subsLayer);
+        var marker = L.marker([item[4], item[5]]).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>').addTo(subsLayer);
       });
     } else {
       alert('Something went horribly wrong');
