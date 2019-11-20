@@ -936,8 +936,8 @@ function drawCircleS2Cells(layer) {
   function addPoly(cell) {
     const vertices = cell.getCornerLatLngs()
     const poly = L.polygon(vertices,{
-      color: 'blue',
-      opacity: 0.5,
+      color: 'black',
+      opacity: 0.8,
       weight: 2,
       fillOpacity: 0.0
     });
