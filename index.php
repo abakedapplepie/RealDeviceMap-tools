@@ -246,7 +246,10 @@ $(function(){
     $('#modalImport').modal('hide');
   });
   $('#importSubmissions').on('click', function(event) {
+    // todo: make markers draggable with bound range
     subsLayer.clearLayers();
+    var radius = ($('#submissionRangeCheck').is(':checked')) ? 20 : 0;
+    var weight = ($('#submissionRangeCheck').is(':checked')) ? 1 : 0;
     var pointsData = [];
     if (csvImport != null) {
       pointsData = csvtoarray(csvImport);
@@ -259,32 +262,30 @@ $(function(){
     var formatCheck = pointsData[0][0];
     if (formatCheck != 'id'){
       pointsData.forEach(function(item) {
-        if ($('#submissionRangeCheck').is(':checked')) { 
-          var range = L.circle([item[0], item[1]], {
+        var range = L.circle([item[0], item[1]], {
                 color: 'black',
                 fillColor: 'red',
-                radius: 20,
-                weight: 1,
+                radius: radius,
+                weight: weight,
                 opacity: 1,
                 fillOpacity: 0.3
-              }).addTo(subsLayer);
-        }
-        var marker = L.marker([item[0], item[1]]).bindPopup('<span>' + item[2] + '</span>').addTo(subsLayer);
+        });        
+        var marker = L.marker([item[0], item[1]]).bindPopup('<span>' + item[2] + '</span>');
+        var addGroup = L.featureGroup([range, marker]).addTo(subsLayer);
       });
     } else if (formatCheck == 'id') {
       pointsData.shift();
       pointsData.forEach(function(item) {
-        if ($('#submissionRangeCheck').is(':checked')) { 
-          var range = L.circle([item[4], item[5]], {
+        var range = L.circle([item[4], item[5]], {
                 color: 'black',
                 fillColor: 'red',
-                radius: 20,
-                weight: 1,
+                radius: radius,
+                weight: weight,
                 opacity: 1,
                 fillOpacity: 0.3
-              }).addTo(subsLayer);
-        }
-        var marker = L.marker([item[4], item[5]]).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>').addTo(subsLayer);
+        });
+        var marker = L.marker([item[4], item[5]]).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>');
+        var addGroup = L.featureGroup([range, marker]).addTo(subsLayer);
       });
     } else {
       alert('Something went horribly wrong');
