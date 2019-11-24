@@ -68,6 +68,7 @@ var deSubs = {
   "spawnReportLimitExp": "Pokemon (0 für unbegrenzt)",
   "selectLanguage": "Wähle die Sprache aus:",
   "chooseTileset": "Wähle den Kartenstil:",
+  "ownTileset": "Eigenes Tileset",
   "close": "Schließen",
   "output": "Ausgabe",
   "generatedRoute": "Generierte Route:",

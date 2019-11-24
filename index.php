@@ -77,7 +77,6 @@ var debug = false;
 //map and control vars
 var map;
 var manualCircle = false;
-var tlChoice = null;
 var adBoundsLv = null;
 var csvImport = null;
 var subs = enSubs;
@@ -136,6 +135,7 @@ var settings = {
   cellsLevel2Check: false,
   s2CountPOI: false,
   tlLink: null,
+  tlChoice: null,
   language: null
 };
 //map layer vars
@@ -326,13 +326,8 @@ $(function(){
     $('#outputCirclesCount').val('');
     $(document.getElementById('selectAllAndCopy')).text(subs.copyClipboard);
   });
-  $('#tlChoice0').on('click', function(event) {
-    tlChoice = $('#tlChoice0').val();
-  });
-  $('#tlChoice1').on('click', function(event) {
-    tlChoice = $('#tlChoice1').val();
-  });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
+    var tileset = null;
     var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
@@ -342,10 +337,14 @@ $(function(){
     var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
     var s2CountPOICheck = $('#s2CountPOI').is(":checked");
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+    var oldTlChoice = settings.tlChoice;
+    var tlChoice = $('#tlChoice').val();
     if (tlChoice == 'carto') {
-      tlChoice = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
+      tileset = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
+    } else if (tlChoice == 'own') {
+      tileset = '<?php echo OWN_TS ?>';
     } else if (tlChoice == 'osm') {
-      tlChoice = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      tileset = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     }
     var oldLang = settings.language;
     var language = $('#language').val();
@@ -359,7 +358,8 @@ $(function(){
       cellsLevel2: 17,
       cellsLevel2Check: cellsLevel2Check,
       s2CountPOI: s2CountPOICheck,
-      tlLink: tlChoice,
+      tlChoice: tlChoice,
+      tlLink: tileset,
       nestMigrationDate: nestMigrationDate,
       spawnReportLimit: spawnReportLimit,
       language: language
@@ -374,7 +374,7 @@ $(function(){
       getLanguage();
       location.reload();
     }
-    if (settings.tlLink != null && settings.tlLink == newSettings.tlLink) {
+    if (settings.tlChoice != oldTlChoice) {
       location.reload();
     }
     updateS2Overlay() 
@@ -811,6 +811,11 @@ function initMap() {
           $('#language').val(settings.language);
         } else {
           $('#language').val('en');
+        }
+        if (settings.tlChoice != null) {
+          $('#tlChoice').val(settings.tlChoice);
+        } else {
+          $('#tlChoice').val('osm');
         }
         $('#modalSettings').modal('show');
       }
@@ -2034,7 +2039,7 @@ function cellCount(poly) {
 };
 function loadSettings() {
   const defaultSettings = {
-    showGyms: true,
+    showGyms: false,
     showPokestops: false,
     showPokestopsRange: false,
     showSpawnpoints: false,
@@ -2043,11 +2048,12 @@ function loadSettings() {
     optimizationAttempts: 10,
     nestMigrationDate: 1539201600,
     spawnReportLimit: 10,
-    mapMode: 'PoiViewer',
+    mapMode: 'RouteGenerator',
     mapCenter: [42.548197, -83.14684],
     mapZoom: 13,
     viewCells: false,
     tlLink: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    tlChoice: 'osm',
     language: 'en'
   }
   Object.keys(settings).forEach(function(key) {
@@ -2322,16 +2328,13 @@ function updateS2Overlay() {
               </select>
             </div>
 
-            <div class="btn-toolbar" style="margin-bottom: 10px;">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.chooseTileset);</script></span>
-              </div>
-              <div class="btn-group mr-2" role="group" aria-label="">
-                <button id="tlChoice0" class="btn btn-primary float-left" type="button" value="osm" style="margin-left: 10px;">Standard</button>
-              </div>
-              <div class="btn-group" role="group" aria-label="">
-                <button id="tlChoice1" class="btn btn-secondary float-right" type="button" value="carto">Lite</button>
-              </div>
+            <div class="form-group">
+              <label for="tlChoice"><script type="text/javascript">document.write(subs.chooseTileset);</script></label>
+              <select class="form-control" id="tlChoice">
+                <option value="osm">Standard</option>
+                <option value="carto">Lite</option>
+                <option value="own"><script type="text/javascript">document.write(subs.ownTileset);</script></option>
+              </select>
             </div>
 
           </div>
