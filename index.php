@@ -79,6 +79,7 @@ var map;
 var manualCircle = false;
 var adBoundsLv = null;
 var csvImport = null;
+var copyOutput = null;
 var subs = enSubs;
 var drawControl,
   buttonManualCircle,
@@ -324,7 +325,7 @@ $(function(){
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
     $('#outputCirclesCount').val('');
-    $(document.getElementById('selectAllAndCopy')).text(subs.copyClipboard);
+    $(document.getElementById('copyCircleOutput')).text(subs.copyClipboard);
   });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
     var tileset = null;
@@ -382,12 +383,17 @@ $(function(){
   $('#cancelSettings').on('click', function(event) {
     processSettings(true);
   });
-  $("#selectAllAndCopy").click(function () {
-    document.getElementById('outputCircles').select();
+  $("#copyCircleOutput").click(function () {
+    document.getElementById(copyOutput).select();
     document.execCommand('copy');
     $(this).text(subs.copied);
   });
-})
+  $("#copyPolygonOutput").click(function () {
+    document.getElementById(copyOutput).select();
+    document.execCommand('copy');
+    $(this).text(subs.copied);
+  });
+});
 function initMap() {
   var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
   var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
@@ -1025,7 +1031,6 @@ function setMapMode(){
       buttonMapModePoiViewer.button.style.backgroundColor = '#E9B7B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#B7E9B7';
       $('.leaflet-draw').show();
-//      buttonShowUnknownPois.enable();
       barShowPolyOpts.enable();
       barOutput.enable();
       barWayfarer.disable();
@@ -1033,11 +1038,7 @@ function setMapMode(){
     case 'PoiViewer':
       buttonMapModePoiViewer.button.style.backgroundColor = '#B7E9B7';
       buttonMapModeRouteGenerator.button.style.backgroundColor = '#E9B7B7';
-/*      editableLayer.clearLayers();
-      circleLayer.clearLayers();
-      nestLayer.clearLayers();*/
       $('.leaflet-draw').hide();
-//      buttonShowUnknownPois.enable();
       barShowPolyOpts.disable();
       barOutput.disable();
       barWayfarer.enable();
@@ -1695,10 +1696,21 @@ $(document).ready(function() {
     if (this.value == 'exportPolygonDataTypeCoordsList') {
       $('#exportPolygonDataCoordsList').show();
       $('#exportPolygonDataGeoJson').hide();
-    }
-    else if (this.value == 'exportPolygonDataTypeGeoJson') {
+      $('#exportPolygonDataPoracle').hide();
+      copyOutput = 'exportPolygonDataCoordsList';
+      $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
+    } else if (this.value == 'exportPolygonDataTypeGeoJson') {
       $('#exportPolygonDataCoordsList').hide();
       $('#exportPolygonDataGeoJson').show();
+      $('#exportPolygonDataPoracle').hide();
+      copyOutput = 'exportPolygonDataGeoJson';
+      $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
+    } else if (this.value == 'exportPolygonDataTypePoracle') {
+      $('#exportPolygonDataCoordsList').hide();
+      $('#exportPolygonDataGeoJson').hide();
+      $('#exportPolygonDataPoracle').show();
+      copyOutput = 'exportPolygonDataPoracle';
+      $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
     }
   });
   $('#getOutput').click(function() {
@@ -1909,6 +1921,7 @@ $(document).on("click", "#getAllNests", function() {
   });
 });
 $(document).on("click", ".exportLayer", function() {
+  $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
   var id = $(this).attr('data-layer-id');
   var layer;
   var container = $(this).attr('data-layer-container');
@@ -1920,14 +1933,28 @@ $(document).on("click", ".exportLayer", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
+  // geojson
   var polyjson = JSON.stringify(layer.toGeoJSON());
   $('#exportPolygonDataGeoJson').val(polyjson);
+  // simple coords
   var polycoords = '';
   turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
     polycoords += item[0] + ',' + item[1] + "\n";
   });
   $('#exportPolygonDataCoordsList').val(polycoords);
+  // poracle
+  var po_start = '  {\n    "name": "polygon",\n    "color": "#6CB1E1",\n    "id": 0,\n    "path": [\n';
+  var po_end = '    ]\n  }';
+  var po_coords = '';
+  turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
+    po_coords += '      [\n        ' + item[0] + ',\n        ' + item[1] + '\n      ],\n';
+  });
+  po_coords = po_coords.slice(0, -2) + '\n';
+  var poracle = po_start + po_coords + po_end;
+  $('#exportPolygonDataPoracle').val(poracle);
   $('#exportPolygonDataGeoJson').hide();
+  $('#exportPolygonDataPoracle').hide();
+  copyOutput = 'exportPolygonDataCoordsList'
   $('#modalExportPolygon').modal('show');
 });
 $(document).on("click", ".exportPoints", function() {
@@ -2378,7 +2405,7 @@ function updateS2Overlay() {
                 </div>
               </div>
               <div class="btn-group" role="group" aria-label=""  style='margin-left: 20px;'>
-                <button id="selectAllAndCopy" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard);</script></button>
+                <button id="copyCircleOutput" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard); copyOutput = 'outputCircles';</script></button>
               </div>
             </div>
             <div class="btn-toolbar">
@@ -2524,6 +2551,10 @@ function updateS2Overlay() {
                 <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypeGeoJson" value="exportPolygonDataTypeGeoJson">
                 <label class="form-check-label" for="exportPolygonDataTypeGeoJson"><script type="text/javascript">document.write(subs.geoJson);</script></label>
               </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="exportPolygonDataType" id="exportPolygonDataTypePoracle" value="exportPolygonDataTypePoracle">
+                <label class="form-check-label" for="exportPolygonDataTypePoracle"><script type="text/javascript">document.write(subs.poracle);</script></label>
+              </div>
             <label for="exportPolygonData"><script type="text/javascript">document.write(subs.polygonData);</script></label>
             <div class="input-group mb">
               <textarea name="exportPolygonDataGeoJson" id="exportPolygonDataGeoJson" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
@@ -2531,8 +2562,12 @@ function updateS2Overlay() {
             <div class="input-group mb">
               <textarea name="exportPolygonDataCoords" id="exportPolygonDataCoordsList" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
             </div>
+            <div class="input-group mb">
+              <textarea name="exportPolygonDataPoracle" id="exportPolygonDataPoracle" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
+            </div>
           </div>
           <div class="modal-footer">
+            <button id="copyPolygonOutput" class="btn btn-secondary float-left" type="button"><script type="text/javascript">document.write(subs.copyClipboard);</script></button>
             <button type="button" id="exportPolygonClose" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>

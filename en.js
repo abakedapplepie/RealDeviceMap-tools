@@ -91,6 +91,7 @@ var enSubs = {
   "polygonDataType": "Polygon data type:",
   "coordinateList": "Coordinate list (latitude,longitude on each new line)",
   "geoJson": "GeoJSON",
+  "poracle": "PoracleJS format",
   "polygonData": "Polygon data:",
   "import": "Import",
   "importNest": "Import as nest",

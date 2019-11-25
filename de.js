@@ -91,6 +91,7 @@ var deSubs = {
   "polygonDataType": "Polygon Datentyp:",
   "coordinateList": "Koordinatenliste (latitude,longitude in neue Zeile)",
   "geoJson": "GeoJSON",
+  "poracle": "PoracleJS-Format",
   "polygonData": "Polygon-Daten:",
   "import": "Importieren",
   "importNest": "Als Nest importieren",
