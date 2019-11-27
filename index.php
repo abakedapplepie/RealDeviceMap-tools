@@ -98,6 +98,7 @@ var drawControl,
   buttonShowPokestops,
   buttonShowPokestopsRange,
   buttonShowSpawnpoints,
+  buttonHideOldSpawnpoints,
   buttonShowUnknownPois,
   buttonSettingsModal,
   buttonClearSubs,
@@ -120,6 +121,8 @@ var settings = {
   showPokestopsRange: null,
   showSpawnpoints: null,
   showUnknownPois: null,
+  hideOldSpawnpoints: null,
+  oldSpawnpointsTimestamp: null,
   circleSize: null,
   optimizationAttempts: null,
   nestMigrationDate: null,
@@ -157,6 +160,7 @@ $(function(){
   setMapMode();
   setShowMode();
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
+  $('#oldSpawnpointsTimestamp').datetimepicker('sideBySide', true)
   $('#savePolygon').on('click', function(event) {
     var polygonData = [];
     var importReady = true
@@ -338,6 +342,7 @@ $(function(){
     var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
     var s2CountPOICheck = $('#s2CountPOI').is(":checked");
     var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+    var oldSpawnpointsTimestamp = moment($("#oldSpawnpointsTimestamp").datetimepicker('date')).local().format('X');
     var oldTlChoice = settings.tlChoice;
     var tlChoice = $('#tlChoice').val();
     if (tlChoice == 'carto') {
@@ -362,6 +367,7 @@ $(function(){
       tlChoice: tlChoice,
       tlLink: tileset,
       nestMigrationDate: nestMigrationDate,
+      oldSpawnpointsTimestamp: oldSpawnpointsTimestamp,
       spawnReportLimit: spawnReportLimit,
       language: language
     };
@@ -744,6 +750,28 @@ function initMap() {
       }
     }]
   });
+  buttonHideOldSpawnpoints = L.easyButton({
+    id: 'hideOldSpawnpoints',
+    states:[{
+      stateName: 'enableHideOldSpawnpoints',
+      icon: 'fas fa-history',
+      title: subs.hideOldSpawnpoints,
+      onClick: function (btn) {
+        settings.hideOldSpawnpoints = false;
+        storeSetting('hideOldSpawnpoints');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableHideOldSpawnpoints',
+      icon: 'fas fa-history',
+      title: subs.showOldSpawnpoints,
+      onClick: function (btn) {
+        settings.hideOldSpawnpoints = true;
+        storeSetting('hideOldSpawnpoints');
+        setShowMode();
+      }
+    }]
+  })
   buttonShowUnknownPois = L.easyButton({
     id: 'showUnknownPois',
     states:[{
@@ -766,7 +794,7 @@ function initMap() {
       }
     }]
   });
-  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
+  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
 
   // Bar rightOpts
   buttonTrash = L.easyButton({
@@ -812,6 +840,9 @@ function initMap() {
         }
         if (settings.nestMigrationDate != null) {
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
+        }
+        if (settings.oldSpawnpointsTimestamp != null) {
+          $('#oldSpawnpointsTimestamp').datetimepicker('date', moment.unix(settings.oldSpawnpointsTimestamp).utc().local().format('MM/DD/YYYY HH:mm'));
         }
         if (settings.language != null) {
           $('#language').val(settings.language);
@@ -1010,6 +1041,14 @@ function setShowMode() {
     spawnpointLayer.clearLayers();
     buttonShowSpawnpoints.state('disableShowSpawnpoints');
     buttonShowSpawnpoints.button.style.backgroundColor = '#E9B7B7';
+  }
+  if (settings.hideOldSpawnpoints !== false) {
+    buttonHideOldSpawnpoints.state('enableHideOldSpawnpoints');
+    buttonHideOldSpawnpoints.button.style.backgroundColor = '#B7E9B7';
+  } else {
+    spawnpointLayer.clearLayers();
+    buttonHideOldSpawnpoints.state('disableHideOldSpawnpoints');
+    buttonHideOldSpawnpoints.button.style.backgroundColor = '#E9B7B7';
   }
   if (settings.showUnknownPois !== false) {
     buttonShowUnknownPois.state('enableShowUnknownPois');
@@ -1647,45 +1686,91 @@ function loadData() {
           }
         });
       }
-      if (result.spawnpoints != null) {
-        result.spawnpoints.forEach(function(item) {
-          if (item.despawn_sec != null) {
-            spawnpoints.push(item);
-          } else {
-            spawnpoints_u.push(item);
-            spawnpoints.push(item);
-          }
-          var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          if (settings.showSpawnpoints === true){
-            if (item.despawn_sec != null){
-            var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'black',
-              fillColor: 'blue',
-              radius: radius,
-              weight: weight,
-              opacity: 1,
-              fillOpacity: 0.8
-            }).addTo(map);
-            marker.tags = {};
-            marker.tags.id = item.id;
-            var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
-            marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
+      if (result.spawnpoints != null && settings.showSpawnpoints === true) {
+        console.log(settings.hideOldSpawnpoints)
+        
+        if (settings.hideOldSpawnpoints != false){ 
+          var oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
+          result.spawnpoints.forEach(function(item) {
+          
+            console.log(oldSpawnpointsTimestamp, item.updated)
+            if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
+              spawnpoints.push(item);
+            } else if (item.updated >= oldSpawnpointsTimestamp){
+              spawnpoints_u.push(item);
+              spawnpoints.push(item);
             }
-            else{
-            var marker = L.circleMarker([item.lat, item.lng], {
-              color: 'black',
-              fillColor: 'red',
-              radius: radius,
-              weight: weight,
-              opacity: 1,
-              fillOpacity: 0.8
-            }).addTo(map);
-            marker.tags = {};
-            marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
-          }
-        }});
+            var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            if (settings.showSpawnpoints === true){
+              if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
+                var marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'blue',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
+              } else if (item.updated >= oldSpawnpointsTimestamp) {
+                var marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'red',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
+              }
+            }
+          });
+        } else {
+          result.spawnpoints.forEach(function(item) {
+            if (item.despawn_sec != null) {
+              spawnpoints.push(item);
+            } else {
+              spawnpoints_u.push(item);
+              spawnpoints.push(item);
+            }
+            var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            if (settings.showSpawnpoints === true){
+              if (item.despawn_sec != null){
+                var marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'blue',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
+              } else {
+                var marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'red',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
+              }
+            }
+          });
+        }
       }
     }
   });
@@ -2074,6 +2159,7 @@ function loadSettings() {
     circleSize: 500,
     optimizationAttempts: 10,
     nestMigrationDate: 1539201600,
+    oldSpawnpointsTimestamp: 1569438000,
     spawnReportLimit: 10,
     mapMode: 'RouteGenerator',
     mapCenter: [42.548197, -83.14684],
@@ -2343,6 +2429,14 @@ function updateS2Overlay() {
               <input id="spawnReportLimit" name="spawnReportLimit" type="text" class="form-control" aria-label="Spawn report limit">
               <div class="input-group-append">
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.pokemon);</script></span>
+              </div>
+            </div>
+
+            <label><script type="text/javascript">document.write(subs.oldSpawnpointsTitle);</script></label>
+            <div class="input-group mb-3 date" id="oldSpawnpointsTimestamp" data-target-input="nearest">
+              <input type="text" class="form-control datetimepicker-input" data-target="#oldSpawnpointsTimestamp"/>
+              <div class="input-group-append" data-target="#oldSpawnpointsTimestamp" data-toggle="datetimepicker">
+                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
               </div>
             </div>
 
@@ -2845,7 +2939,7 @@ function getData($args) {
   $stmt = $db->prepare($sql_pokestop);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng FROM spawnpoint WHERE " . $show_unknown_mod_sp . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, updated FROM spawnpoint WHERE " . $show_unknown_mod_sp . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_spawnpoint);
   $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
   $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
