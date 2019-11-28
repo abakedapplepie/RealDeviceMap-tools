@@ -109,8 +109,8 @@ var enSubs = {
   "adBoundsLv8": "Cities",
   "adBoundsLv9": "Wards",
   "getAdBounds": "Get polygons",
-  "hideOldSpawnpoints": "Hide old spawnpoints",
-  "showOldSpawnpoints": "Show old spawnpoints",
+  "hideOldSpawnpoints": "Show old spawnpoints",
+  "showOldSpawnpoints": "Hide old spawnpoints",
   "oldSpawnpointsTitle": "No spawnpoints last updated before:",
   "instanceMode": "Import circles in passive mode: "
 };
