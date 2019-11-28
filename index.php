@@ -150,6 +150,7 @@ var gymLayer,
   editableLayer,
   circleS2Layer,
   circleLayer,
+  bgLayer,
   nestLayer,
   viewCellLayer,
   subsLayer;
@@ -414,6 +415,8 @@ function initMap() {
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
+  bgLayer = new L.FeatureGroup();
+  bgLayer.addTo(map);
   editableLayer = new L.FeatureGroup();
   editableLayer.addTo(map);
   circleS2Layer = new L.FeatureGroup();
@@ -803,6 +806,7 @@ function initMap() {
       icon: 'fas fa-trash',
       title: subs.clearShapes,
       onClick: function (control){
+        bgLayer.clearLayers();
         circleLayer.clearLayers();
         editableLayer.clearLayers();
         nestLayer.clearLayers();
@@ -1135,6 +1139,14 @@ function getInstance(instanceName = null, color = '#1090fa') {
         if (points.length > 0 ) {
           if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
             points.forEach(function(item) {
+             if ($('#instanceMode').is(':checked')) {
+              newCircle = L.circle(item, {
+                color: '#b410fa',
+                fillOpacity: 0.4,
+                draggable: false,
+                radius: settings.circleSize
+              }).addTo(bgLayer);
+             } else {
               newCircle = L.circle(item, {
                 color: color,
                 fillOpacity: 0.5,
@@ -1143,6 +1155,8 @@ function getInstance(instanceName = null, color = '#1090fa') {
               }).bindPopup(function (layer) {
                 return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
               }).addTo(circleLayer);
+             }
+
             });
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
             points.forEach(function(coords) {
@@ -1408,6 +1422,7 @@ function getSpawnReport(layer) {
   });
 }
 function getAdBounds() {
+  bgLayer.clearLayers();
   circleLayer.clearLayers();
   editableLayer.clearLayers();
   nestLayer.clearLayers();
@@ -1487,6 +1502,7 @@ function getAdBounds() {
   });
 }
 function getNests() {
+  bgLayer.clearLayers();
   circleLayer.clearLayers();
   editableLayer.clearLayers();
   nestLayer.clearLayers();
@@ -2532,6 +2548,14 @@ function updateS2Overlay() {
             <div class="input-group mb-3">
               <select name="importInstanceName" id="importInstanceName" class="form-control" aria-label="Select an instance to import">
               </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 15px;">
+              <div>
+                <label><script type="text/javascript">document.write(subs.instanceMode);</script></label>
+              </div>
+              <div>
+                  <input type="checkbox" name="instanceMode" id="instanceMode" style="margin-left: 15px;">
+              </div>
             </div>
             <div class="input-group">
               <div class="input-group-prepend">
