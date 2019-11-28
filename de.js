@@ -109,8 +109,8 @@ var deSubs = {
   "adBoundsLv8": "Städte/Gemeinden",
   "adBoundsLv9": "Ortsteile",
   "getAdBounds": "Erzeuge Polygone",
-  "hideOldSpawnpoints": "Alte Spawnpoints aus",
-  "showOldSpawnpoints": "Alte Spawnpoints an",
+  "hideOldSpawnpoints": "Alte Spawnpoints einblenden",
+  "showOldSpawnpoints": "Alte Spawnpoints ausblenden",
   "oldSpawnpointsTitle": "Keine Spawnpoints älter als:",
   "instanceMode": "Kreise als passiv importieren: "
 };
