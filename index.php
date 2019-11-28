@@ -1615,14 +1615,12 @@ function loadData() {
     'show_unknownpois': settings.showUnknownPois
   };
   const json = JSON.stringify(data);
-  if (debug !== false) { console.log(json) }
   $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
-      if (debug !== false) { console.log(result) }
       pokestopLayer.clearLayers();
       pokestopRangeLayer.clearLayers();
       gymLayer.clearLayers();
@@ -1632,12 +1630,11 @@ function loadData() {
       pokestoprange = [];
       spawnpoints = [];
       spawnpoints_u = [];
-      if (result.gyms != null) {
+      if (result.gyms != null && settings.showGyms === true) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
           var radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          if (settings.showGyms === true) {
             if(item.ex == 1){
               var marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
@@ -1663,16 +1660,14 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
-      }
-          }
+            }
         });
       }
-      if (result.pokestops != null) {
+      if (result.pokestops != null && settings.showPokestops === true) {
         result.pokestops.forEach(function(item) {
           pokestops.push(item);
           var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          if (settings.showPokestops === true) {
             var marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'green',
@@ -1684,13 +1679,11 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(pokestopLayer);
-          }
         });
       }
-      if (result.pokestops != null) {
+      if (result.pokestops != null && settings.showPokestopsRange === true) {
         result.pokestops.forEach(function(item) {
           pokestoprange.push(item);
-          if (settings.showPokestopsRange === true) {
             var marker = L.circle([item.lat, item.lng], {
               color: 'green',
               radius: 70,
@@ -1699,17 +1692,12 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopRangeLayer);
-          }
         });
       }
       if (result.spawnpoints != null && settings.showSpawnpoints === true) {
-        console.log(settings.hideOldSpawnpoints)
-        
         if (settings.hideOldSpawnpoints != false){ 
           var oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
           result.spawnpoints.forEach(function(item) {
-          
-            console.log(oldSpawnpointsTimestamp, item.updated)
             if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
               spawnpoints.push(item);
             } else if (item.updated >= oldSpawnpointsTimestamp){
