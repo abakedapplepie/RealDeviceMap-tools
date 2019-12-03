@@ -8,7 +8,7 @@ Tools for managing RealDeviceMap data
 * Hide option for spawnpoints before a choosable date
 * Polygon export in PoracleJS format
 * Wayfarer mode with choosable S2 cell levels and count of POIs in L14 cells
-* Import of nomination data from Wayfarer with optional 20m range - checkout out ![Wayfarer direct export](https://github.com/PickleRickVE/wayfarer-direct-export) or ![Wayfarer Planner](https://gitlab.com/AlfonsoML/wayfarer) by AlfonsoML. 
+* Import of nomination data from Wayfarer with optional 20m range - checkout out [Wayfarer direct export](https://github.com/PickleRickVE/wayfarer-direct-export) or [Wayfarer Planner](https://gitlab.com/AlfonsoML/wayfarer) by AlfonsoML. 
 * Instances with multiple polygons are imported as single ones, no longer a big polygon
 * Import of administrative boundaries
 * Route optimization with traveling salesman
