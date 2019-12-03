@@ -2,37 +2,34 @@
 # RealDeviceMap-tools
 Tools for managing RealDeviceMap data
 
-## rdm-tools.php
 ### Changes
-* Route optimization
+* Performance improvement
+* Passive mode for imported circle instances
+* Hide option for spawnpoints before a choosable date
+* Polygon export in PoracleJS format
+* Wayfarer mode with choosable S2 cell levels and count of POIs in L14 cells
+* Import of nomination data from Wayfarer with optional 20m range - checkout out ![Wayfarer direct export](https://github.com/PickleRickVE/wayfarer-direct-export) or ![Wayfarer Planner](https://gitlab.com/AlfonsoML/wayfarer) by AlfonsoML. 
+* Instances with multiple polygons are imported as single ones, no longer a big polygon
+* Import of administrative boundaries
+* Route optimization with traveling salesman
 * Button to go to your actual location
+* Searchfield for cities
+* Option for own tileset in config
 * Multilanguage support
 * Select language and tileset in settings
 * Fixed copy to clipboard
 * Count of points in circles
-* Better contrast for POIs and circles, cosmetic changes
-
 
 ### Features
-* View/hide gyms, stops, and spawnpoints
-* View/hide gyms, stops, range around stops and spawnpoints
+* View/hide gyms, stops, 70m range around stops and spawnpoints
 * Optionally show only unknown gyms/stops/spawnpoints
 * Nest polygon import from OSM data, set to last datetime of Niantic OSM sync
-  * [date:"2019-01-22T00:00:00Z"]
-  * way["leisure"="park"]
-  * way["leisure"="recreation_ground"]
-  * way["landuse"="recreation_ground"]
-  * way[leisure=playground]
-  * way[landuse=meadow]
 * CSV and GeoJSON polygon import
 * GeoJSON polygon export
 * Coordinate generation - blanket fill polygons with route points
 * Coordinate optimization - fill polygons with route points optimized for existing known gyms/stops/spawnpoints
-* Optimization for the shortest possible route
 * Instance import - view your RDM instances and add/remove route points, then reexport and upload to RDM
 * GeoJSON polygon import as Nest allows to maintain an own list of nests
-* Show 70m range around stops
-* Show different level of s2 cells
 
 ### Installation
 Git clone https://github.com/PickleRickVE/RealDeviceMap-tools, rename config.example.php to config.php and add your credentials for the RDM DB.
