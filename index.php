@@ -1580,19 +1580,33 @@ function getNests() {
     }
   });
 }
-function splitCsv(str) {
-  return str.split(',').reduce((accum,curr)=>{
-    if(accum.isConcatting) {
-      accum.soFar[accum.soFar.length-1] += ','+curr
-    } else {
-      accum.soFar.push(curr)
+function splitCsv(str){
+  var result = [];
+  var strBuf = '';
+  var start = 0 ;
+  var marker = false;
+  for (var i = 0; i< str.length; i++){
+
+    if (str[i] === '"'){
+      marker = !marker;
     }
-    if(curr.split('"').length % 2 == 0) {
-      accum.isConcatting= !accum.isConcatting
+    if (str[i] === ',' && !marker){
+      result.push(str.substr(start, i - start));
+      start = i+1;
     }
-    return accum;
-  },{soFar:[],isConcatting:false}).soFar
-}
+  }
+  if (start <= str.length){
+    result.push(str.substr(start, i - start));
+  }
+  for (var r = 0; r < result.length; r++) {
+    for (var j = 0; j < result[r].length; j++) {
+      if (result[r][j] === '"') {
+        result[r] = result[r].slice(1,-1);
+      }
+    }
+  }
+  return result;
+};
 function csvtoarray(dataString) {
   var lines = dataString
     .split(/\n/)           // Convert to one string per line
@@ -2323,8 +2337,8 @@ function updateS2Overlay() {
         }
         if ((settings.cellsLevel1Check != false) && (settings.s2CountPOI != false)) {
           viewCellLayer.clearLayers()
-          if (map.getZoom() < 15.5){
-            map.setZoom(15.5)
+          if (map.getZoom() < 14.5){
+            map.setZoom(14.5)
             console.log('Zoom adapted for L14 cells with POI Count')
           }
           showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
@@ -2335,7 +2349,7 @@ function updateS2Overlay() {
         editableLayer.removeFrom(map).addTo(map);
         nestLayer.removeFrom(map).addTo(map);
         circleLayer.removeFrom(map).addTo(map);
-    } else if (settings.viewCells && (map.getZoom() < 13.5)) {
+    } else if (settings.viewCells && (map.getZoom() < 13.0)) {
         viewCellLayer.clearLayers()
         console.log('View cells are currently hidden, zoom in')
     } else if (settings.viewCells && (settings.cellsLevel0 > 19) && (settings.cellsLevel0Check != false)) {
