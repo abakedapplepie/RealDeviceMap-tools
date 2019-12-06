@@ -77,6 +77,7 @@ var debug = false;
 //map and control vars
 var map;
 var manualCircle = false;
+var newPOI = false;
 var adBoundsLv = null;
 var csvImport = null;
 var copyOutput = null;
@@ -103,6 +104,7 @@ var drawControl,
   buttonSettingsModal,
   buttonClearSubs,
   buttonViewCells,
+  buttonNewPOI,
   barShowPolyOpts,
   barOutput,
   barWayfarer,
@@ -252,10 +254,7 @@ $(function(){
     $('#modalImport').modal('hide');
   });
   $('#importSubmissions').on('click', function(event) {
-    // todo: make markers draggable with bound range
     subsLayer.clearLayers();
-    var radius = ($('#submissionRangeCheck').is(':checked')) ? 20 : 0;
-    var weight = ($('#submissionRangeCheck').is(':checked')) ? 1 : 0;
     var pointsData = [];
     if (csvImport != null) {
       pointsData = csvtoarray(csvImport);
@@ -267,31 +266,31 @@ $(function(){
     }
     var formatCheck = pointsData[0][0];
     if (formatCheck != 'id'){
-      pointsData.forEach(function(item) {
-        var range = L.circle([item[0], item[1]], {
-                color: 'black',
-                fillColor: 'red',
-                radius: radius,
-                weight: weight,
-                opacity: 1,
-                fillOpacity: 0.3
-        });        
-        var marker = L.marker([item[0], item[1]]).bindPopup('<span>' + item[2] + '</span>');
-        var addGroup = L.featureGroup([range, marker]).addTo(subsLayer);
+      pointsData.forEach(function(item) {      
+        var marker = L.marker([item[0], item[1]], {
+          draggable: true
+        }).bindPopup('<span>' + item[2] + '</span>').addTo(subsLayer);
+        if ($('#submissionRangeCheck').is(':checked')) {
+          marker.rangeID = addPOIRange(marker);
+          marker.on('drag', function() {
+            subsLayer.removeLayer(marker.rangeID);
+            marker.rangeID = addPOIRange(marker);
+          })
+        };
       });
     } else if (formatCheck == 'id') {
       pointsData.shift();
       pointsData.forEach(function(item) {
-        var range = L.circle([item[4], item[5]], {
-                color: 'black',
-                fillColor: 'red',
-                radius: radius,
-                weight: weight,
-                opacity: 1,
-                fillOpacity: 0.3
-        });
-        var marker = L.marker([item[4], item[5]]).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>');
-        var addGroup = L.featureGroup([range, marker]).addTo(subsLayer);
+        var marker = L.marker([item[4], item[5]], {
+          draggable: true
+        }).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>').addTo(subsLayer);
+        if ($('#submissionRangeCheck').is(':checked')) {
+          marker.rangeID = addPOIRange(marker);
+          marker.on('drag', function() {
+            subsLayer.removeLayer(marker.rangeID);
+            marker.rangeID = addPOIRange(marker);
+          })
+        };
       });
     } else {
       alert('Something went horribly wrong');
@@ -600,6 +599,25 @@ function initMap() {
       }
     }]
   });
+  buttonNewPOI = L.easyButton({
+    states: [{
+      stateName: 'enableNewPOI',
+      icon: 'fas fa-map-marker-alt',
+      title: subs.enableNewPOI,
+      onClick: function (btn) {
+        newPOI = true;
+        btn.state('disableNewPOI');
+      }
+    }, {
+      stateName: 'disableNewPOI',
+      icon: 'fas fa-map-marker',
+      title: subs.disableNewPOI,
+      onClick: function (btn) {
+        newPOI = false;
+        btn.state('enableNewPOI');
+      }
+    }]
+  });
   buttonClearSubs = L.easyButton({
     states: [{
       stateName: 'clearSubs',
@@ -632,7 +650,7 @@ function initMap() {
       }
     }]
   });
-  barWayfarer = L.easyBar([buttonModalImportSubmissions, buttonClearSubs, buttonViewCells], { position: 'topleft' }).addTo(map);
+  barWayfarer = L.easyBar([buttonModalImportSubmissions, buttonNewPOI, buttonClearSubs, buttonViewCells], { position: 'topleft' }).addTo(map);
 
   // Buttons right
   // Bar mapMode
@@ -867,8 +885,11 @@ function initMap() {
 
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
+    newPOI = false;
     buttonManualCircle.state('enableManualCircle');
+    buttonNewPOI.state('enableNewPOI');
   });
+
   map.on('draw:created', function (e) {
     var layer = e.layer;
     layer.addTo(editableLayer);
@@ -927,16 +948,16 @@ function initMap() {
       circleS2Layer.removeLayer(parseInt(item));
     });
   });
-circleLayer.on('layeradd', function(e) {
-  drawCircleS2Cells(e.layer);
-  circleLayer.removeFrom(map).addTo(map);
-  e.layer.on('drag', function() {
-    drawCircleS2Cells(e.layer)
-  })
-  e.layer.on('drag', function() {
-  circleLayer.removeFrom(map).addTo(map);
-  })
-});
+  circleLayer.on('layeradd', function(e) {
+    drawCircleS2Cells(e.layer);
+    circleLayer.removeFrom(map).addTo(map);
+    e.layer.on('drag', function() {
+      drawCircleS2Cells(e.layer)
+    })
+    e.layer.on('drag', function() {
+    circleLayer.removeFrom(map).addTo(map);
+    })
+  });
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -970,6 +991,37 @@ circleLayer.on('layeradd', function(e) {
     
     }
   });
+  subsLayer.on('layerremove', function(e) {
+    var layer = e.layer;
+    layer.forEach(function(item) {
+      subsLayer.removeLayer(parseInt(item));
+    });
+  });
+
+  map.on('click', function(e) {
+    if (newPOI === true) {
+      let marker = L.marker(e.latlng, {
+        draggable: true
+      }).bindPopup(function (layer) {
+        return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="subsLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><button class="btn btn-secondary btn-sm exportPOIs" data-layer-container="subsLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.exportPOIs + '</button></div>'}).addTo(subsLayer);
+      marker.rangeID = addPOIRange(marker);
+      marker.on('drag', function() {
+        subsLayer.removeLayer(marker.rangeID);
+        marker.rangeID = addPOIRange(marker);
+      })
+    };
+  });
+}
+function addPOIRange (layer) {
+  let range = L.circle(layer.getLatLng(), {
+    color: 'black',
+    fillColor: 'red',
+    radius: 20,
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.3
+  }).addTo(subsLayer);
+  return range._leaflet_id;
 }
 function drawCircleS2Cells(layer) {
   if (typeof layer.s2cells !== 'undefined') {
@@ -1077,6 +1129,7 @@ function setMapMode(){
       barShowPolyOpts.enable();
       barOutput.enable();
       barWayfarer.disable();
+      newPOI = false;
       break;
     case 'PoiViewer':
       buttonMapModePoiViewer.button.style.backgroundColor = '#B7E9B7';
@@ -1882,6 +1935,12 @@ $(document).on("click", ".deleteLayer", function() {
     case 'nestLayer':
       nestLayer.removeLayer(parseInt(id));
       break;
+    case 'subsLayer':
+      let markerID = parseInt(id);
+      let rangeID = subsLayer.getLayer(markerID).rangeID;
+      subsLayer.removeLayer(markerID);
+      subsLayer.removeLayer(rangeID);
+      break;
   }
 });
 $(document).on("click", ".getSpawnReport", function() {
@@ -2059,6 +2118,12 @@ $(document).on("click", ".exportLayer", function() {
   $('#exportPolygonDataPoracle').hide();
   copyOutput = 'exportPolygonDataCoordsList'
   $('#modalExportPolygon').modal('show');
+});
+$(document).on("click", ".exportPOIs", function() {
+  let id = $(this).attr('data-layer-id');
+  let layer = subsLayer.getLayer(parseInt(id));
+  let poicoords = 'Lat, Lon: ' + layer._latlng.lat + ', ' + layer._latlng.lng;
+  alert(subs.exportPOILabel + '\n' + poicoords)
 });
 $(document).on("click", ".exportPoints", function() {
   var id = $(this).attr('data-layer-id');
