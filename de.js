@@ -51,7 +51,7 @@ var deSubs = {
   "countSpawnpoints": "Anzahl Spawnpoints: ",
   "spawnReport": "Spawn-Bericht - ",
   "unnamed": "unbenannt",
-  "at": "@",
+  "at": "bei",
   "skipped": " übersprungen, keine Daten",
   "nestReport": "Nest-Bericht für alle sichtbaren Nester",
   "settings": "Einstellungen",

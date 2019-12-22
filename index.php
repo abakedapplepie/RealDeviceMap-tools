@@ -114,7 +114,7 @@ var drawControl,
 var gyms = [],
   pokestops = [],
   pokestoprange = [],
-  spawnpoints = [];
+  spawnpoints = [],
   spawnpoints_u = [];
 //options vars
 var settings = {
@@ -1417,6 +1417,37 @@ function generateRoute() {
      route(layer);
   });
 }
+function prepareSpawns() {
+  spawnpoints = [];
+  pokestops = [];
+  const bounds = map.getBounds();
+  const data = {
+    'get_data': true,
+    'min_lat': bounds.getSouthWest().lat,
+    'max_lat': bounds.getNorthEast().lat,
+    'min_lng': bounds.getSouthWest().lng,
+    'max_lng': bounds.getNorthEast().lng,
+    'show_gyms': false,
+    'show_pokestops': false,
+    'show_spawnpoints': true,
+    'show_unknownpois': false
+  };
+  const json = JSON.stringify(data);
+  $.ajax({
+    url: this.href,
+    type: 'POST',
+    async: false,
+    dataType: 'json',
+    data: {'data': json},
+    success: function (result) {
+      pokestops = result.pokestops;
+      spawnpoints = result.spawnpoints;
+    },
+    error: function () {
+      alert('Something went horribly wrong');
+    }
+  });
+}
 function getSpawnReport(layer) {
   var reportStops = [],
     reportSpawns = [];
@@ -1955,6 +1986,7 @@ $(document).on("click", ".getSpawnReport", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
+  prepareSpawns();
   getSpawnReport(layer);
 });
 
@@ -2006,19 +2038,8 @@ $(document).on("click", "#getCirclesCount", function() {
 });          
 $(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {
-  var spawnReportLimit = $('#spawnReportLimit').val();
-  var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
-  const newSettings = {
-    nestMigrationDate: nestMigrationDate,
-    spawnReportLimit: spawnReportLimit
-  };
-  Object.keys(newSettings).forEach(function(key) {
-    if (settings[key] != newSettings[key]) {
-      settings[key] = newSettings[key];
-      storeSetting(key);
-    }
-  });
-  var missedCount = 0;
+  $("#modalLoading").modal('show');
+  prepareSpawns();
   nestLayer.eachLayer(function(layer) {
     var reportStops = [],
       reportSpawns = [];
@@ -2047,9 +2068,6 @@ $(document).on("click", "#getAllNests", function() {
     const json = JSON.stringify(data);
     if (debug !== false) { console.log(json) }
     $.ajax({
-      beforeSend: function() {
-        $("#modalLoading").modal('show');
-      },
       url: this.href,
       type: 'POST',
       dataType: 'json',
@@ -2058,7 +2076,7 @@ $(document).on("click", "#getAllNests", function() {
         if (debug !== false) { console.log(result) }
         if (result.spawns !== null) {
           if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">at ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           } else {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
           }
@@ -2067,9 +2085,9 @@ $(document).on("click", "#getAllNests", function() {
           });
         } else {
           if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + sub.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           } else {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + sub.unnamed + '</strong> ' + sub.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + sub.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           }
         }
       },
