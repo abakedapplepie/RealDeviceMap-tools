@@ -390,7 +390,7 @@ $(function(){
     processSettings(true);
   });
   $("#copyCircleOutput").click(function () {
-    document.getElementById(copyOutput).select();
+    document.getElementById('outputCircles').select();
     document.execCommand('copy');
     $(this).text(subs.copied);
   });
@@ -2600,7 +2600,7 @@ function updateS2Overlay() {
                 </div>
               </div>
               <div class="btn-group" role="group" aria-label=""  style='margin-left: 20px;'>
-                <button id="copyCircleOutput" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard); copyOutput = 'outputCircles';</script></button>
+                <button id="copyCircleOutput" class="btn btn-secondary float-right" type="button"><script type="text/javascript">document.write(subs.copyClipboard);</script></button>
               </div>
             </div>
             <div class="btn-toolbar">
