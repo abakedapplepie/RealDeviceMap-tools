@@ -329,6 +329,7 @@ $(function(){
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
     $('#outputCirclesCount').val('');
+    $('#outputAvgPt').val('');
     $(document.getElementById('copyCircleOutput')).text(subs.copyClipboard);
   });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
@@ -1903,7 +1904,7 @@ $(document).ready(function() {
   $('#getOutput').click(function() {
     $('#outputCircles').val('');
     var allCircles = circleLayer.getLayers();
-
+    var avgPt = 0;
     var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
     if (exportType == 'sorted') {
       $.ajax({
@@ -1934,6 +1935,8 @@ $(document).ready(function() {
             });
           }
           $('#outputCirclesCount').val(circlesCount());
+          avgPt = (countPointsInCircles()) / (circlesCount());
+          $('#outputAvgPt').val(avgPt.toFixed(2));
         },
         complete: function() {
           $("#modalLoading").modal('hide');
@@ -1950,6 +1953,8 @@ $(document).ready(function() {
         });
       }
       $('#outputCirclesCount').val(circlesCount());
+      avgPt = (countPointsInCircles()) / (circlesCount());
+      $('#outputAvgPt').val(avgPt.toFixed(2));
     }
   });
 });
@@ -1989,19 +1994,14 @@ $(document).on("click", ".getSpawnReport", function() {
   prepareSpawns();
   getSpawnReport(layer);
 });
-
-$(document).on("click", "#getCirclesCount", function() {
-  // Count all available points we have on layers.
+function countPointsInCircles(display) {
   var count = 0;
-  var txt = '';
   var includedGyms = [];
   var includedStops = [];
   var includedSpawnpoints = [];
-    circleLayer.eachLayer(function(layer){
-    //Get the Center for each Circle on the Map.
+  circleLayer.eachLayer(function(layer){
     var radius = layer.getRadius();
-    var circleCenter = layer.getLatLng();
-    
+    var circleCenter = layer.getLatLng();  
     //Gym Counting
     if (settings.showGyms == true) {
       gyms.forEach(function(item) {
@@ -2031,10 +2031,17 @@ $(document).on("click", "#getCirclesCount", function() {
           includedSpawnpoints.push(item);
         }
       });
-    }  
+    }
   });
   //Output the amount
-  alert(subs.countTotal + count + '\n' + subs.countGyms + includedGyms.length + '\n' + subs.countStops + includedStops.length + '\n' + subs.countSpawnpoints + includedSpawnpoints.length);
+  if (display == true) {
+    alert(subs.countTotal + count + '\n' + subs.countGyms + includedGyms.length + '\n' + subs.countStops + includedStops.length + '\n' + subs.countSpawnpoints + includedSpawnpoints.length);
+  }
+  return count;
+}
+$(document).on("click", "#getCirclesCount", function() {
+  let display = true;
+  countPointsInCircles(display);
 });          
 $(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {
@@ -2581,10 +2588,12 @@ function updateS2Overlay() {
             <div class="input-group mb-3">
               <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
             </div>
-            <div class="input-group mb-3">
-              <label style=""><script type="text/javascript">document.write(subs.countCircles)</script></label>
-              <output id="outputCirclesCount" aria-label="Circle count output" style="margin-left: 20px; vertical-align: text-bottom;"></output>
-            </div>
+            <dl class="row">
+              <dt class="col-sm-7"><script type="text/javascript">document.write(subs.countCircles)</script></dt>
+              <dd class="col-sm-3"><output id="outputCirclesCount" aria-label="Circle count output"></output></dd>
+              <dt class="col-sm-7"><script type="text/javascript">document.write(subs.outputAvgPt)</script></dt>
+              <dd class="col-sm-3"><output id="outputAvgPt" aria-label="Average ppc output"></output></dd>
+            </dl>
             <div class="btn-toolbar" style="margin-bottom: 20px;">
               <div class="btn-group mr-2" role="group" aria-label="">
                 <button id="getOutput" class="btn btn-primary float-left" type="button"><script type="text/javascript">document.write(subs.getOutput);</script></button>
