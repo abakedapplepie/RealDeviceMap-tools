@@ -1418,10 +1418,18 @@ function generateRoute() {
      route(layer);
   });
 }
-function prepareSpawns() {
+function prepareData(layerBounds) {
   spawnpoints = [];
   pokestops = [];
-  const bounds = map.getBounds();
+  gyms = [];
+  let bounds;
+  if (layerBounds != undefined) {
+    bounds = layerBounds;
+  } else if (circleLayer.getLayers().length > 1) {
+    bounds = circleLayer.getBounds();
+  } else {
+    bounds = map.getBounds();
+  }
   const data = {
     'get_data': true,
     'min_lat': bounds.getSouthWest().lat,
@@ -1443,6 +1451,7 @@ function prepareSpawns() {
     success: function (result) {
       pokestops = result.pokestops;
       spawnpoints = result.spawnpoints;
+      gyms = result.gyms;
     },
     error: function () {
       alert('Something went horribly wrong');
@@ -1991,10 +2000,11 @@ $(document).on("click", ".getSpawnReport", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-  prepareSpawns();
+  prepareData(layer._bounds);
   getSpawnReport(layer);
 });
 function countPointsInCircles(display) {
+  prepareData();
   var count = 0;
   var includedGyms = [];
   var includedStops = [];
@@ -2002,7 +2012,6 @@ function countPointsInCircles(display) {
   circleLayer.eachLayer(function(layer){
     var radius = layer.getRadius();
     var circleCenter = layer.getLatLng();  
-    //Gym Counting
     if (settings.showGyms == true) {
       gyms.forEach(function(item) {
         var point =  L.latLng(item.lat,item.lng);
@@ -2012,7 +2021,6 @@ function countPointsInCircles(display) {
         }
       });
     }
-    // Stop Counting
     if (settings.showPokestops == true) {
       pokestops.forEach(function(item) {
         var point =  L.latLng(item.lat,item.lng);
@@ -2022,7 +2030,6 @@ function countPointsInCircles(display) {
         }
       });
     }
-    //Spawnpoint Counting
     if (settings.showSpawnpoints == true) {
       spawnpoints.forEach(function(item) {
         var point =  L.latLng(item.lat,item.lng);
@@ -2033,7 +2040,6 @@ function countPointsInCircles(display) {
       });
     }
   });
-  //Output the amount
   if (display == true) {
     alert(subs.countTotal + count + '\n' + subs.countGyms + includedGyms.length + '\n' + subs.countStops + includedStops.length + '\n' + subs.countSpawnpoints + includedSpawnpoints.length);
   }
@@ -2046,7 +2052,7 @@ $(document).on("click", "#getCirclesCount", function() {
 $(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {
   $("#modalLoading").modal('show');
-  prepareSpawns();
+  prepareData();
   nestLayer.eachLayer(function(layer) {
     var reportStops = [],
       reportSpawns = [];
@@ -2200,9 +2206,9 @@ $(document).on("click", ".exportPoints", function() {
   $('#modalExportPolygonPoints').modal('show');
 });
 $(document).on("click", ".countPoints", function() {
-  var id = $(this).attr('data-layer-id');
-  var layer;
-  var container = $(this).attr('data-layer-container');
+  let id = $(this).attr('data-layer-id');
+  let layer;
+  let container = $(this).attr('data-layer-container');
   switch (container) {
     case 'editableLayer':
       layer = editableLayer.getLayer(parseInt(id));
@@ -2211,14 +2217,19 @@ $(document).on("click", ".countPoints", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-  var points = 0;
-  var poly = layer.toGeoJSON();
-  var line = turf.polygonToLine(poly);
+  let count = 0;
+  let gymCount = 0;
+  let stopCount = 0;
+  let spawnpointCount = 0;
+  let poly = layer.toGeoJSON();
+  let line = turf.polygonToLine(poly);
+  prepareData(layer._bounds);
   if (settings.showGyms == true) {
     gyms.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
-        points++;
+        count++;
+        gymCount++;
       }
     });
   }
@@ -2226,7 +2237,8 @@ $(document).on("click", ".countPoints", function() {
     pokestops.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
-        points++;
+        count++;
+        stopCount++;
       }
     });
   }
@@ -2234,11 +2246,12 @@ $(document).on("click", ".countPoints", function() {
     spawnpoints.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
-        points++;
+        count++;
+        spawnpointCount++;
       }
     });
   }
-  alert(subs.count + points);
+  alert(subs.countTotal + count + '\n' + subs.countGyms + gymCount + '\n' + subs.countStops + stopCount + '\n' + subs.countSpawnpoints + spawnpointCount);
 });
 function cellCount(poly) {
   var points = 0;
@@ -2264,6 +2277,7 @@ function loadSettings() {
     showPokestopsRange: false,
     showSpawnpoints: false,
     showUnknownPois: false,
+    hideOldSpawnpoints: false,
     circleSize: 500,
     optimizationAttempts: 10,
     nestMigrationDate: 1539201600,
@@ -2342,9 +2356,9 @@ function showS2Cells0(level, style, mp) {
   do {
     for (let i = 0; i < 2; i++) {
       for (let i = 0; i < steps; i++) {
-        //if (bounds.contains(cell.getLatLng())) {
+        if (bounds.intersects(cell.getCornerLatLngs())) {
           addPoly(cell)
-        //}
+        }
         cell = cell.getNeighbors()[direction % 4]
       }
       direction++
@@ -2353,39 +2367,40 @@ function showS2Cells0(level, style, mp) {
   } while (steps < count)
 }
 function showS2Cells1(level, style) {
-    // Credit goes to the PMSF project
-    const bounds = map.getBounds()
-    const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
-    const count = 2 ** level * size >> 11
-    function addPoly(cell) {
-        const vertices = cell.getCornerLatLngs()
-        const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
-        if (cell.level === settings.cellsLevel1) {
-            viewCellLayer.addLayer(poly)
-            if (settings.s2CountPOI != false) {
-              var poiCount = cellCount(poly).toString();
-              var marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
-              marker.bindTooltip(poiCount, {permanent: true, textOnly: true, opacity: 0.8, direction: 'center', offset: [25, -20] })
-              viewCellLayer.addLayer(marker);
-            }
-        }
+  // Credit goes to the PMSF project
+  const bounds = map.getBounds()
+  const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
+  const count = 2 ** level * size >> 11
+  function addPoly(cell) {
+    const vertices = cell.getCornerLatLngs()
+    const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
+    if (cell.level === settings.cellsLevel1) {
+      viewCellLayer.addLayer(poly)
+      if (settings.s2CountPOI != false) {
+        prepareData(poly._bounds);  
+        var poiCount = cellCount(poly).toString();
+        var marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
+        marker.bindTooltip(poiCount, {permanent: true, textOnly: true, opacity: 0.8, direction: 'center', offset: [25, -20] })
+        viewCellLayer.addLayer(marker);
+      }
     }
-    // add cells spiraling outward
-    let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
-    let steps = 1
-    let direction = 0
-    do {
-        for (let i = 0; i < 2; i++) {
-            for (let i = 0; i < steps; i++) {
-                //if (bounds.contains(cell.getLatLng())) {
-                addPoly(cell)
-                //}
-                cell = cell.getNeighbors()[direction % 4]
-            }
-            direction++
+  }
+  // add cells spiraling outward
+  let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
+  let steps = 1
+  let direction = 0
+  do {
+    for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < steps; i++) {
+        if (bounds.intersects(cell.getCornerLatLngs())) {
+          addPoly(cell)
         }
-        steps++
-    } while (steps < count)
+        cell = cell.getNeighbors()[direction % 4]
+      }
+      direction++
+    }
+    steps++
+  } while (steps < count)
 }
 function showS2Cells2(level, style) {
     // Credit goes to the PMSF project
@@ -2406,9 +2421,9 @@ function showS2Cells2(level, style) {
     do {
         for (let i = 0; i < 2; i++) {
             for (let i = 0; i < steps; i++) {
-                //if (bounds.contains(cell.getLatLng())) {
-                addPoly(cell)
-                //}
+                if (bounds.intersects(cell.getCornerLatLngs())) {
+                  addPoly(cell)
+                }
                 cell = cell.getNeighbors()[direction % 4]
             }
             direction++
