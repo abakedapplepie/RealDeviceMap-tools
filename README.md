@@ -3,6 +3,7 @@
 Tools for managing RealDeviceMap data
 
 ### Changes
+* Color Picker built in
 * Export of multiple polygons at once in json-, poracle geofences- & pmsf/rdm nestlist-format or simple list of coordinates with option for naming polygons/nests and saving as file
 * Added average points per circle in output 
 * Placement of own POIs in Wayfarer mode and draggability with 20m-range bound onto

@@ -48,6 +48,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
     <link rel="stylesheet" href="./leaflet-search.css" />
+    <link rel="stylesheet" href="./pick-a-color-1.2.3.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -71,6 +72,8 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script type="text/javascript" src="./fr.js"></script>
     <script type="text/javascript" src="./salesman.js"></script>
     <script type="text/javascript" src="./leaflet-search.js"></script>
+    <script src="./tinycolor-0.9.15.min.js"></script>
+    <script src="./pick-a-color-1.2.3.min.js"></script>
 
 <script type="text/javascript">
 var debug = false;
@@ -166,11 +169,19 @@ $(function(){
   setShowMode();
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
   $('#oldSpawnpointsTimestamp').datetimepicker('sideBySide', true)
+  $(".pick-a-color").pickAColor({
+        showSpectrum          : false,
+        showSavedColors       : false,
+        saveColorsPerElement  : false,
+        fadeMenuToggle        : false,
+        showAdvanced          : true,
+        showBasicColors       : true,
+        showHexInput          : false,
+        allowBlank            : false
+  });
   $('#savePolygon').on('click', function(event) {
     var polygonData = [];
     var importReady = true
-    //TODO: add error handling
-    //TODO: add check for json or txt
     var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
      if (importType == 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
@@ -213,8 +224,6 @@ $(function(){
     $('#modalImport').modal('hide');
   });
   $('#saveNestPolygon').on('click', function(event) {
-    //TODO: add error handling
-    //TODO: add check for json or txt
     var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
     if (importType == 'importPolygonDataTypeGeoJson') {
       geoJson = JSON.parse($('#importPolygonData').val());
@@ -323,7 +332,7 @@ $(function(){
   });
   $('#importInstance').on('click', function(event) {
      var name = $("#importInstanceName" ).val();
-     var color = $("#instanceColor" ).val();
+     var color = '#' + $("#instanceColor input").val();
      getInstance(name,color);
    });
   $('#getOptimizedRoute').on('click', function(event) {
@@ -2986,12 +2995,12 @@ $(document).on("click", "#generateNestFile", function () {
                   <input type="checkbox" name="instanceMode" id="instanceMode" style="margin-left: 15px;">
               </div>
             </div>
+
             <div class="input-group">
               <div class="input-group-prepend">
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.instanceColor);</script></span>
+                <input type="text" value="222" name="instanceColor" class="pick-a-color form-control">
               </div>
-              <input id="instanceColor" name="instanceColor" type="text" class="form-control" value="#1090fa" aria-label="Hexadecimal Color for Imported Instance"/>
-
             </div>
           </div>
           <div class="modal-footer">
