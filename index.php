@@ -180,14 +180,14 @@ $(function(){
         allowBlank            : false
   });
   $('#savePolygon').on('click', function(event) {
-    var polygonData = [];
-    var importReady = true
-    var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
-     if (importType == 'importPolygonDataTypeCoordList') {
+    let polygonData = [];
+    let importReady = true;
+    let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
+    if (importType == 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
       importReady = true;
     } else if (importType == 'importPolygonDataTypeGeoJson') {
-      var geoJson = JSON.parse($('#importPolygonData').val());
+      let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
         geoJson.features.forEach(function(feature) {
           if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
@@ -207,9 +207,10 @@ $(function(){
       importReady = false;
     }
     if (importReady = true) {
-      var polygonOptions = {
+      polygonColor = $("#polygonColor input").val();
+      let polygonOptions = {
         clickable: false,
-        color: "#3388ff",
+        color: "#" + polygonColor,
         fill: true,
         fillColor: null,
         fillOpacity: 0.2,
@@ -218,7 +219,48 @@ $(function(){
         weight: 4
       };
       polygonData.forEach(function(polygon) {
-        var newPolygon = L.polygon(polygon, polygonOptions).addTo(editableLayer);
+        let layer = L.polygon(polygon, polygonOptions).addTo(editableLayer);
+
+        layer.bindPopup(function (layer) {
+          if (layer.tags.name == '') {
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+            nameInput = '<hr><div class="input-group mb-3">' +
+                              '<div class="input-group-prepend">' +
+                                '<span class="input-group-text">' + subs.name + '</span>' +
+                              '</div>' +
+                              '<input id="polygonName" name="polygonName" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="text" class="form-control" aria-label="Polygon name">' +
+                            '</div>';
+          } else {
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
+            nameInput = '<hr>';        
+          }
+          if (layer.tags.included == true) {
+            included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeFromExport + '</span></div></div>';
+          } else {
+            included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
+          }
+          var output = name +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
+                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
+                   layer._leaflet_id +
+                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
+                   nameInput + included;
+          return output;
+        }, {maxWidth: 500, minWidth: 300});
       });
     }
     $('#modalImport').modal('hide');
@@ -933,32 +975,7 @@ function initMap() {
     var layer = e.layer;
     layer.addTo(editableLayer);
   });
-/*  nestLayer.on('layeradd', function(e) {
-    var layer = e.layer;
-    layer.bindPopup(function (layer) {
-      if (typeof layer.tags.name !== 'undefined') {
-        var name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
-      }
-      var output = name +
-        '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' +
-        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
-        layer._leaflet_id +
-        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
-        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
-        layer._leaflet_id +
-        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
-        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
-        layer._leaflet_id +
-        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
-        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="nestLayer" data-layer-id=' +
-        layer._leaflet_id +
-        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
-        '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="nestLayer" data-layer-id=' +
-        layer._leaflet_id +
-        ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>';
-      return output;
-    });
-  });*/
+
   editableLayer.on('layeradd', function(e) {
     var layer = e.layer;
     layer.tags = {};
@@ -2104,7 +2121,7 @@ $(document).on('keyup', '#polygonName', function(event) {
       break;
   }
   if (event.keyCode === 13) {
-    if (layer.tags.name == undefined) {
+    if (layer.tags.name == undefined || layer.tags.name == '') {
       let newName = $('#polygonName').val();
       if (newName == '') {
         alert(subs.chooseName);
@@ -2999,7 +3016,7 @@ $(document).on("click", "#generateNestFile", function () {
             <div class="input-group">
               <div class="input-group-prepend">
                 <span class="input-group-text"><script type="text/javascript">document.write(subs.instanceColor);</script></span>
-                <input type="text" value="222" name="instanceColor" class="pick-a-color form-control">
+                <input type="text" value="3388ff" name="instanceColor" class="pick-a-color form-control">
               </div>
             </div>
           </div>
@@ -3032,8 +3049,14 @@ $(document).on("click", "#generateNestFile", function () {
               </div>
               <label for="importPolygonData"><script type="text/javascript">document.write(subs.polygonData);</script></label>
               <div class="input-group mb">
-                <textarea name="importPolygonData" id="importPolygonData" style="height:400px;" class="form-control" aria-label="Polygon data"></textarea>
+                <textarea name="importPolygonData" id="importPolygonData" style="height:200px;" class="form-control" aria-label="Polygon data"></textarea>
               </div>
+              <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.polygonColor);</script></span>
+                <input type="text" value="3388ff" name="polygonColor" class="pick-a-color form-control">
+              </div>
+            </div>
             </div>
             <div class="modal-footer">
               <button type="button" id="savePolygon" class="btn btn-primary"><script type="text/javascript">document.write(subs.import);</script></button>
