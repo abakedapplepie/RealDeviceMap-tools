@@ -165,6 +165,7 @@ $(function(){
   loadSettings();
   getLanguage();
   initMap();
+  map.keyboard.disable();
   setMapMode();
   setShowMode();
   $('#nestMigrationDate').datetimepicker('sideBySide', true)
