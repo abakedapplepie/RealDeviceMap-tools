@@ -62,7 +62,7 @@ var deSubs = {
   "s2cells2": "S2-Zellen (Level 17, grün)",
   "s2CountPOI": "Anzahl der Objekte anzeigen",
   "circleRadius": "Kreis Radius:",
-  "meters": "Meter",
+  "other": "anderer:",
   "lastNestMigration": "Letzter Nestwechsel:",
   "spawnReportLimit": "Spawn-Bericht Grenze:",
   "spawnReportLimitExp": "Pokemon (0 für unbegrenzt)",

@@ -62,7 +62,7 @@ var enSubs = {
   "s2cells2": "S2cells (level 17, green)",
   "s2CountPOI": "Show POI count",
   "circleRadius": "Circle radius:",
-  "meters": "Meters",
+  "other": "other:",
   "lastNestMigration": "Last nest migration:",
   "spawnReportLimit": "Spawn report limit:",
   "spawnReportLimitExp": "Pokemon (0 for unlimited)",

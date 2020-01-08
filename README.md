@@ -3,7 +3,8 @@
 Tools for managing RealDeviceMap data
 
 ### Changes
-* Color Picker built in
+* Autogeneration of the correct circle size for raid instances depending on the specific latitude, option in settings to choose between iv-, raid- or own radius
+* Color Picker built in for instance- and polygon-import
 * Export of multiple polygons at once in json-, poracle geofences- & pmsf/rdm nestlist-format or simple list of coordinates with option for naming polygons/nests and saving as file
 * Added average points per circle in output 
 * Placement of own POIs in Wayfarer mode and draggability with 20m-range bound onto

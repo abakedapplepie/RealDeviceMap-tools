@@ -144,6 +144,7 @@ var settings = {
   cellsLevel2: null,
   cellsLevel2Check: false,
   s2CountPOI: false,
+  selectCircleRange: null,
   tlLink: null,
   tlChoice: null,
   language: null
@@ -412,7 +413,6 @@ $(function(){
   });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
     var tileset = null;
-    var circleSize = $('#circleSize').val();
     var spawnReportLimit = $('#spawnReportLimit').val();
     var optimizationAttempts = $('#optimizationAttempts').val();
     var cellsLevel0 = $('#cellsLevel0').val();
@@ -431,6 +431,15 @@ $(function(){
     } else if (tlChoice == 'osm') {
       tileset = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     }
+    let circleSize;
+    let selectCircleRange = $("#modalSettings input[name=selectCircleRange]:checked").val()
+    if (selectCircleRange == 'circleIV') {
+      circleSize = 70;
+    } else if (selectCircleRange == 'circleRaid') {
+      circleSize = 'raid';
+    } else {
+      circleSize = $('#circleSize').val();
+    } 
     var oldLang = settings.language;
     var language = $('#language').val();
     const newSettings = {
@@ -443,6 +452,7 @@ $(function(){
       cellsLevel2: 17,
       cellsLevel2Check: cellsLevel2Check,
       s2CountPOI: s2CountPOICheck,
+      selectCircleRange: selectCircleRange,
       tlChoice: tlChoice,
       tlLink: tileset,
       nestMigrationDate: nestMigrationDate,
@@ -922,7 +932,7 @@ function initMap() {
       icon: 'fas fa-cog',
       title: subs.openSettings,
       onClick: function (control){
-        if (settings.circleSize != null) {
+        if (settings.circleSize != null && settings.circleSize != 'raid') {
           $('#circleSize').val(settings.circleSize);
         } else {
           $('#circleSize').val('500');
@@ -941,6 +951,9 @@ function initMap() {
           $('#cellsLevel0').val(settings.cellsLevel0);
         } else {
           $('#cellsLevel0').val();
+        }
+        if (settings.selectCircleRange != null) {
+          document.getElementById(settings.selectCircleRange).checked = true;
         }
         if (settings.nestMigrationDate != null) {
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
@@ -1050,29 +1063,29 @@ function initMap() {
     loadData();
   });
   map.on('click', function(e) {
+    let lat = Math.abs(e.latlng.lat);
+    let radius;
     if (manualCircle === true) {
-      if(settings.circleSize != 70){
+      if (settings.circleSize != 'raid') {
+        radius = settings.circleSize;
+      } else {
+        if (lat <= 39) {
+          radius = 715;
+        } else if (lat >= 69) {
+          radius = 330;
+        } else {
+          radius = -13 * lat + 1225;
+        }
+      }
       var newCircle = new L.circle(e.latlng, {
         color: 'red',
         fillColor: '#f03',
-        fillOpacity: 0.4,
-        draggable: true,
-        radius: settings.circleSize
-      }).bindPopup(function (layer) {
-        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
-      }).addTo(circleLayer);
-      }else{
-      var newCircle = new L.circle(e.latlng, {
-        color: 'red',
-        fillColor: 'red',
         fillOpacity: 0.2,
         draggable: true,
-        radius: 70
+        radius: radius
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
       }).addTo(circleLayer);
-    }
-    
     }
   });
   subsLayer.on('layerremove', function(e) {
@@ -1122,7 +1135,7 @@ function drawCircleS2Cells(layer) {
       color: 'black',
       opacity: 0.8,
       weight: 2,
-      fillOpacity: 0.0
+      fillOpacity: 0.2
     });
     var line = turf.polygonToLine(poly.toGeoJSON());
     var point = turf.point([center.lng, center.lat]);
@@ -1274,26 +1287,55 @@ function getInstance(instanceName = null, color = '#1090fa') {
       success: function (result) {
         points = result.data.area;
         if (points.length > 0 ) {
-          if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
+          if (result.type == 'circle_pokemon') {
             points.forEach(function(item) {
              if ($('#instanceMode').is(':checked')) {
               newCircle = L.circle(item, {
                 color: '#b410fa',
                 fillOpacity: 0.4,
                 draggable: false,
-                radius: settings.circleSize
+                radius: 70
               }).addTo(bgLayer);
              } else {
               newCircle = L.circle(item, {
                 color: color,
                 fillOpacity: 0.5,
                 draggable: true,
-                radius: settings.circleSize
+                radius: 70
               }).bindPopup(function (layer) {
                 return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
               }).addTo(circleLayer);
              }
 
+            });
+          } else if (result.type == 'circle_raid') {
+            points.forEach(function(item) {
+              let lat = Math.abs(item.lat);
+              let radius;
+              if (lat <= 39) {
+                radius = 715;
+              } else if (lat >= 69) {
+                radius = 330;
+              } else {
+                radius = -13 * lat + 1225;
+              }
+              if ($('#instanceMode').is(':checked')) {
+                newCircle = L.circle(item, {
+                  color: '#b410fa',
+                  fillOpacity: 0.4,
+                  draggable: false,
+                  radius: radius
+                }).addTo(bgLayer);
+              } else {
+                newCircle = L.circle(item, {
+                  color: color,
+                  fillOpacity: 0.2,
+                  draggable: true,
+                  radius: radius
+                }).bindPopup(function (layer) {
+                  return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+                }).addTo(circleLayer);
+              }
             });
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
             points.forEach(function(coords) {
@@ -1309,11 +1351,25 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
   $("#modalLoading").modal('show');
   var newCircle,
     currentLatLng,
+    circleRadius,
     point;
   var pointsOut = [];
+  let lat = Math.abs(map.getCenter().lat);
+  if (settings.circleSize != 'raid') {
+    circleRadius = settings.circleSize;
+  } else {
+    if (lat <= 39) {
+      circleRadius = 715;
+    } else if (lat >= 69) {
+      circleRadius = 330;
+    } else {
+      circleRadius = -13 * lat + 1225;
+    }
+  }
+
   var data = {
     'get_optimization': true,
-    'circle_size': settings.circleSize,
+    'circle_size': circleRadius,
     'optimization_attempts': settings.optimizationAttempts,
     'do_tsp': false,
     'points': []
@@ -1407,7 +1463,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     data.points = _.uniq(points);
     const json = JSON.stringify(data);
     if (debug !== false) { console.log(data) }
-    console.log(json)
     $.ajax({
       beforeSend: function() {
       },
@@ -1421,9 +1476,9 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
            newCircle = L.circle([point.lat, point.lng], {
             color: 'red',
             fillColor: '#f03',
-            fillOpacity: 0.5,
+            fillOpacity: 0.2,
             draggable: true,
-            radius: settings.circleSize
+            radius: circleRadius
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
@@ -1453,6 +1508,19 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
 }
 function generateRoute() {
   circleLayer.clearLayers();
+  let circleRadius;
+  let lat = Math.abs(map.getCenter().lat);
+  if (settings.circleSize != 'raid') {
+    circleRadius = settings.circleSize;
+  } else {
+    if (lat <= 39) {
+      circleRadius = 715;
+    } else if (lat >= 69) {
+      circleRadius = 330;
+    } else {
+      circleRadius = -13 * lat + 1225;
+    }
+  }  
   var xMod = Math.sqrt(0.75);
   var yMod = Math.sqrt(0.568);
   var route = function(layer) {
@@ -1460,8 +1528,8 @@ function generateRoute() {
     var line = turf.polygonToLine(poly);
     var newCircle;
     var currentLatLng = layer.getBounds().getNorthEast();
-    var startLatLng = L.GeometryUtil.destination(currentLatLng, 90, settings.circleSize*1.5);
-    var endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, settings.circleSize*1.5), 180, settings.circleSize);
+    var startLatLng = L.GeometryUtil.destination(currentLatLng, 90, circleRadius*1.5);
+    var endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, circleRadius*1.5), 180, circleRadius);
     var row = 0;
     var heading = 270;
     var i = 0;
@@ -1469,28 +1537,28 @@ function generateRoute() {
       do {
         var point = turf.point([currentLatLng.lng, currentLatLng.lat]);
         var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
-        if (distance <= settings.circleSize || distance == 0 || turf.inside(point, poly)) {
+        if (distance <= circleRadius || distance == 0 || turf.inside(point, poly)) {
           newCircle = L.circle(currentLatLng, {
             color: 'red',
             fillColor: '#f03',
-            fillOpacity: 0.5,
+            fillOpacity: 0.2,
             draggable: true,
-            radius: settings.circleSize
+            radius: circleRadius
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
         }
-        currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*settings.circleSize*2));
+        currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
         i++;
       }while((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
-      currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*settings.circleSize*2));
+      currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*circleRadius*2));
       rem = row%2;
       if (rem == 1) {
         heading = 270;
       } else {
         heading = 90;
       }
-      currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*settings.circleSize)*3);
+      currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius)*3);
       row++;
     }
   }
@@ -2477,7 +2545,8 @@ function loadSettings() {
     showSpawnpoints: false,
     showUnknownPois: false,
     hideOldSpawnpoints: false,
-    circleSize: 500,
+    circleSize: 70,
+    selectCircleRange: 'circleIV',
     optimizationAttempts: 10,
     nestMigrationDate: 1539201600,
     oldSpawnpointsTimestamp: 1569438000,
@@ -2840,13 +2909,27 @@ $(document).on("click", "#generateNestFile", function () {
               </div>
             </div>
 
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.circleRadius);</script></span>
+            <div class="input-group mb">              
+              <div class="input-group">
+                <label class="form-check-label"><script type="text/javascript">document.write(subs.circleRadius);</script></label>
               </div>
-              <input id="circleSize" name="circleSize" type="text" class="form-control" aria-label="Circle Radius (in meters)">
+            </div>
+            <div class="input-group mb-3">
+              <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
+                <input class="form-check-input" type="radio" name="selectCircleRange" id="circleIV" value="circleIV">
+                <label class="form-check-label" for="circleIV"><script type="text/javascript">document.write('IV (70m)');</script></label>
+                </div>
+              <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
+                <input class="form-check-input" type="radio" name="selectCircleRange" id="circleRaid" value="circleRaid">
+                <label class="form-check-label" for="circleRaid"><script type="text/javascript">document.write('Raid (auto)');</script></label>
+              </div>
+              <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
+                <input class="form-check-input" type="radio" name="selectCircleRange" id="circleOwn" value="circleOwn">
+                <label class="form-check-label" for="circleOwn"><script type="text/javascript">document.write(subs.other);</script></label>
+              </div>
+              <input id="circleSize" name="circleSize" type="text" size="3" class="form-control" aria-label="Circle Radius (in meters)">
               <div class="input-group-append">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.meters);</script></span>
+                <span class="input-group-text"><script type="text/javascript">document.write('m');</script></span>
               </div>
             </div>
 
