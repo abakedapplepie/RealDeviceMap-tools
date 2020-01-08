@@ -430,6 +430,8 @@ $(function(){
       tileset = '<?php echo OWN_TS ?>';
     } else if (tlChoice == 'osm') {
       tileset = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    } else if (tlChoice == 'sat') {
+      tileset = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
     }
     let circleSize;
     let selectCircleRange = $("#modalSettings input[name=selectCircleRange]:checked").val()
@@ -2975,6 +2977,7 @@ $(document).on("click", "#generateNestFile", function () {
               <select class="form-control" id="tlChoice">
                 <option value="osm">Standard</option>
                 <option value="carto">Lite</option>
+                <option value="sat">Satellite</option>
                 <option value="own"><script type="text/javascript">document.write(subs.ownTileset);</script></option>
               </select>
             </div>
