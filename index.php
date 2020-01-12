@@ -38,7 +38,8 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
         display: none;
       }
     </style>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
@@ -53,7 +54,8 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.EasyButton/2.3.0/easy-button.min.js"></script>
@@ -119,7 +121,8 @@ var gyms = [],
   pokestops = [],
   pokestoprange = [],
   spawnpoints = [],
-  spawnpoints_u = [];
+  spawnpoints_u = [],
+  instances = [];
 //options vars
 var settings = {
   showGyms: null,
@@ -157,6 +160,7 @@ var gymLayer,
   editableLayer,
   circleS2Layer,
   circleLayer,
+  instanceLayer,
   bgLayer,
   nestLayer,
   viewCellLayer,
@@ -531,6 +535,8 @@ function initMap() {
   subsLayer.addTo(map);
   exportList = new L.FeatureGroup();
   exportList.addTo(map);
+  instanceLayer = new L.FeatureGroup();
+  instanceLayer.addTo(map);
   
   // Buttons left
   searchControl = new L.Control.Search({
@@ -641,6 +647,7 @@ function initMap() {
       title: subs.clearRoute,
       onClick: function (control){
         circleLayer.clearLayers();
+        instanceLayer.clearLayers();
       }
     }]
   });
@@ -919,6 +926,7 @@ function initMap() {
       onClick: function (control){
         bgLayer.clearLayers();
         circleLayer.clearLayers();
+        instanceLayer.clearLayers();
         editableLayer.clearLayers();
         nestLayer.clearLayers();
         subsLayer.clearLayers();
@@ -1055,6 +1063,22 @@ function initMap() {
     })
     e.layer.on('drag', function() {
     circleLayer.removeFrom(map).addTo(map);
+    })
+  });
+  instanceLayer.on('layerremove', function(e) {
+    var layer = e.layer;
+    layer.s2cells.forEach(function(item) {
+      circleS2Layer.removeLayer(parseInt(item));
+    });
+  });
+  instanceLayer.on('layeradd', function(e) {
+    drawCircleS2Cells(e.layer);
+    instanceLayer.removeFrom(map).addTo(map);
+    e.layer.on('drag', function() {
+      drawCircleS2Cells(e.layer)
+    })
+    e.layer.on('drag', function() {
+    instanceLayer.removeFrom(map).addTo(map);
     })
   });
   map.on('moveend', function() {
@@ -1280,7 +1304,10 @@ function getInstance(instanceName = null, color = '#1090fa') {
       stroke: true,
       weight: 4
     };
-    if (debug !== false) { console.log(json) }
+    let radius = 0;
+    if ($('#instanceRadiusCheck').is(":checked")) {
+      radius = $('#ownRadius').val();
+    } 
     $.ajax({
       url: this.href,
       type: 'POST',
@@ -1290,36 +1317,46 @@ function getInstance(instanceName = null, color = '#1090fa') {
         points = result.data.area;
         if (points.length > 0 ) {
           if (result.type == 'circle_pokemon') {
+            if (!($('#instanceRadiusCheck').is(":checked"))) {
+              radius = 70;
+            }
+            let instance = [];
+            instance.name = instanceName;
+            instance.id = instances.length;
             points.forEach(function(item) {
-             if ($('#instanceMode').is(':checked')) {
-              newCircle = L.circle(item, {
-                color: '#b410fa',
-                fillOpacity: 0.4,
-                draggable: false,
-                radius: 70
-              }).addTo(bgLayer);
-             } else {
-              newCircle = L.circle(item, {
-                color: color,
-                fillOpacity: 0.5,
-                draggable: true,
-                radius: 70
-              }).bindPopup(function (layer) {
-                return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
-              }).addTo(circleLayer);
-             }
-
+              if ($('#instanceMode').is(':checked')) {
+                newCircle = L.circle(item, {
+                  color: '#b410fa',
+                  fillOpacity: 0.4,
+                  draggable: false,
+                  radius: radius
+                }).addTo(bgLayer);
+              } else {
+                newCircle = L.circle(item, {
+                  color: color,
+                  fillOpacity: 0.5,
+                  draggable: true,
+                  radius: radius,
+                  instanceID: instance.id
+                }).bindPopup(function (layer) {
+                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+                }).addTo(instanceLayer);
+                instance.push(newCircle._leaflet_id);
+              }              
             });
+            
+            instances.push(instance);
           } else if (result.type == 'circle_raid') {
             points.forEach(function(item) {
               let lat = Math.abs(item.lat);
-              let radius;
+              if (!($('#instanceRadiusCheck').is(":checked"))) {
               if (lat <= 39) {
                 radius = 715;
               } else if (lat >= 69) {
                 radius = 330;
               } else {
                 radius = -13 * lat + 1225;
+              }
               }
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
@@ -1335,8 +1372,8 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   draggable: true,
                   radius: radius
                 }).bindPopup(function (layer) {
-                  return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
-                }).addTo(circleLayer);
+                  return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+                }).addTo(instanceLayer);
               }
             });
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
@@ -1510,6 +1547,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
 }
 function generateRoute() {
   circleLayer.clearLayers();
+  instanceLayer.clearLayers();
   let circleRadius;
   let lat = Math.abs(map.getCenter().lat);
   if (settings.circleSize != 'raid') {
@@ -1571,6 +1609,11 @@ function generateRoute() {
      route(layer);
   });
 }
+function instanceRemove(arr, value) {
+  return arr.filter(function(ele){
+    return ele != value;
+  });
+}
 function prepareData(layerBounds) {
   spawnpoints = [];
   pokestops = [];
@@ -1580,6 +1623,8 @@ function prepareData(layerBounds) {
     bounds = layerBounds;
   } else if (circleLayer.getLayers().length > 1) {
     bounds = circleLayer.getBounds();
+  } else if (instanceLayer.getLayers().length > 1) {
+    bounds = instanceLayer.getBounds();
   } else {
     bounds = map.getBounds();
   }
@@ -1671,6 +1716,7 @@ function getSpawnReport(layer) {
 function getAdBounds() {
   bgLayer.clearLayers();
   circleLayer.clearLayers();
+  instanceLayer.clearLayers();
   editableLayer.clearLayers();
   nestLayer.clearLayers();
   const bounds = map.getBounds();
@@ -1763,6 +1809,7 @@ function getAdBounds() {
 function getNests() {
   bgLayer.clearLayers();
   circleLayer.clearLayers();
+  instanceLayer.clearLayers();
   editableLayer.clearLayers();
   nestLayer.clearLayers();
   const bounds = map.getBounds();
@@ -2100,7 +2147,7 @@ $(document).ready(function() {
   });
   $('#getOutput').click(function() {
     $('#outputCircles').val('');
-    var allCircles = circleLayer.getLayers();
+    var allCircles = circleLayer.getLayers().concat(instanceLayer.getLayers());
     var avgPt = 0;
     var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
     if (exportType == 'sorted') {
@@ -2161,6 +2208,9 @@ $(document).on("click", ".deleteLayer", function() {
   switch (container) {
     case 'circleLayer':
       circleLayer.removeLayer(parseInt(id));
+      break;
+    case 'instanceLayer':
+      instanceLayer.removeLayer(parseInt(id));
       break;
     case 'editableLayer':
       editableLayer.removeLayer(parseInt(id));
@@ -2279,6 +2329,37 @@ function countPointsInCircles(display) {
   var includedStops = [];
   var includedSpawnpoints = [];
   circleLayer.eachLayer(function(layer){
+    var radius = layer.getRadius();
+    var circleCenter = layer.getLatLng();  
+    if (settings.showGyms == true) {
+      gyms.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedGyms.indexOf(item) === -1){
+          count++;
+          includedGyms.push(item);
+        }
+      });
+    }
+    if (settings.showPokestops == true) {
+      pokestops.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedStops.indexOf(item) === -1){
+          count++;
+          includedStops.push(item);
+        }
+      });
+    }
+    if (settings.showSpawnpoints == true) {
+      spawnpoints.forEach(function(item) {
+        var point =  L.latLng(item.lat,item.lng);
+        if(circleCenter.distanceTo(point) <= radius && includedSpawnpoints.indexOf(item) === -1){
+          count++;
+          includedSpawnpoints.push(item);
+        }
+      });
+    }
+  });
+  instanceLayer.eachLayer(function(layer){
     var radius = layer.getRadius();
     var circleCenter = layer.getLatLng();  
     if (settings.showGyms == true) {
@@ -2589,7 +2670,7 @@ function getLanguage() {
 function circlesCount() {
   // Count all available circles.
   var count = 0;
-  var allCircles = circleLayer.getLayers();
+  var allCircles = circleLayer.getLayers().concat(instanceLayer.getLayers());
   for (i=0;i<allCircles.length;i++) {
     count++
   };
@@ -2724,6 +2805,7 @@ function updateS2Overlay() {
         editableLayer.removeFrom(map).addTo(map);
         nestLayer.removeFrom(map).addTo(map);
         circleLayer.removeFrom(map).addTo(map);
+        instanceLayer.removeFrom(map).addTo(map);
     } else if (settings.viewCells && (map.getZoom() < 13.0)) {
         viewCellLayer.clearLayers()
         console.log('View cells are currently hidden, zoom in')
@@ -3090,6 +3172,15 @@ $(document).on("click", "#generateNestFile", function () {
             <div class="input-group mb-3">
               <select name="importInstanceName" id="importInstanceName" class="form-control" aria-label="Select an instance to import">
               </select>
+            </div>
+            <div class="input-group mb-3">
+              <div>
+                <input type="checkbox" name="instanceRadiusCheck" id="instanceRadiusCheck" style="margin-right: 15px; vertical-align: bottom;">
+              </div>
+              <div class="input-group-prepend">
+                <span class="input-group-text"><script type="text/javascript">document.write(subs.ownRadius);</script></span>
+              </div>
+              <input id="ownRadius" name="ownRadius" type="text" aria-label="Own radius for instance import" style="padding-left: 10px; width: 80px;">
             </div>
             <div class="input-group" style="margin-bottom: 15px;">
               <div>
