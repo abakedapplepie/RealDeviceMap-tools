@@ -39,8 +39,6 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
       }
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
@@ -50,12 +48,11 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
     <link rel="stylesheet" href="./leaflet-search.css" />
     <link rel="stylesheet" href="./pick-a-color-1.2.3.min.css">
+    <link rel="stylesheet" href="./multi.select.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.EasyButton/2.3.0/easy-button.min.js"></script>
@@ -76,6 +73,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script type="text/javascript" src="./leaflet-search.js"></script>
     <script src="./tinycolor-0.9.15.min.js"></script>
     <script src="./pick-a-color-1.2.3.min.js"></script>
+    <script src="./multi.select.js"></script>
 
 <script type="text/javascript">
 var debug = false;
@@ -122,7 +120,8 @@ var gyms = [],
   pokestoprange = [],
   spawnpoints = [],
   spawnpoints_u = [],
-  instances = [];
+  instances = [],
+  circleInstance = [];
 //options vars
 var settings = {
   showGyms: null,
@@ -682,7 +681,9 @@ function initMap() {
       icon: 'far fa-clipboard',
       title: subs.getOutput,
       onClick: function (control){
+        $('.multi-select').remove();
         $('#modalOutput').modal('show');
+        newMultiSelect();
       }
     }]
   });
@@ -931,6 +932,8 @@ function initMap() {
         nestLayer.clearLayers();
         subsLayer.clearLayers();
         exportList.clearLayers();
+        circleInstance = [];
+        instances = [];
       }
     }]
   });
@@ -1054,6 +1057,14 @@ function initMap() {
     layer.s2cells.forEach(function(item) {
       circleS2Layer.removeLayer(parseInt(item));
     });
+    let id = circleInstance.ID;
+    let name = circleInstance.name;
+    circleInstance = removeArrayElement(circleInstance, layer._leaflet_id)
+    circleInstance.ID = id;
+    circleInstance.name = name;
+    instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
+    instances[id].ID = id;
+    instances[id].name = name;
   });
   circleLayer.on('layeradd', function(e) {
     drawCircleS2Cells(e.layer);
@@ -1066,10 +1077,15 @@ function initMap() {
     })
   });
   instanceLayer.on('layerremove', function(e) {
-    var layer = e.layer;
+    let layer = e.layer;
     layer.s2cells.forEach(function(item) {
       circleS2Layer.removeLayer(parseInt(item));
     });
+    let id = layer.options.instanceID;
+    let name = instances[id].name;
+    instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
+    instances[id].ID = id;
+    instances[id].name = name;
   });
   instanceLayer.on('layeradd', function(e) {
     drawCircleS2Cells(e.layer);
@@ -1112,6 +1128,18 @@ function initMap() {
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
       }).addTo(circleLayer);
+      if (circleInstance == '') {
+        circleInstance.push(newCircle._leaflet_id);
+        if (instances.length != 'undefined') {
+          circleInstance.ID = instances.length;
+        } else {
+          circleInstance.ID = 0;
+        }
+        circleInstance.name = subs.drawnCircles;
+        instances.push(circleInstance);
+      } else {
+        instances[circleInstance.ID].push(newCircle._leaflet_id);
+      }
     }
   });
   subsLayer.on('layerremove', function(e) {
@@ -1344,7 +1372,6 @@ function getInstance(instanceName = null, color = '#1090fa') {
                 instance.push(newCircle._leaflet_id);
               }              
             });
-            
             instances.push(instance);
           } else if (result.type == 'circle_raid') {
             points.forEach(function(item) {
@@ -1405,7 +1432,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       circleRadius = -13 * lat + 1225;
     }
   }
-
   var data = {
     'get_optimization': true,
     'circle_size': circleRadius,
@@ -1609,7 +1635,7 @@ function generateRoute() {
      route(layer);
   });
 }
-function instanceRemove(arr, value) {
+function removeArrayElement(arr, value) {
   return arr.filter(function(ele){
     return ele != value;
   });
@@ -2145,9 +2171,9 @@ $(document).ready(function() {
       $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
     }
   });
-  $('#getOutput').click(function() {
+    $('#getOutput').click(function() {
     $('#outputCircles').val('');
-    var allCircles = circleLayer.getLayers().concat(instanceLayer.getLayers());
+    let allCircles = getAllCircles().getLayers();
     var avgPt = 0;
     var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
     if (exportType == 'sorted') {
@@ -2165,8 +2191,8 @@ $(document).ready(function() {
             }
             points.push(Point);
           };
-          var temp1 = '9'.repeat((circlesCount().toString().length)-1);
-          var temp2 = Math.ceil(circlesCount()/10);
+          var temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
+          var temp2 = Math.ceil(allCircles.length/10);
           var temp_coeff = '0.99999' + temp1 + temp2;
           var solution = solve(points, temp_coeff); 
           var orderedPoints = solution.map(i => points [i]); 
@@ -2178,8 +2204,8 @@ $(document).ready(function() {
               return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
             });
           }
-          $('#outputCirclesCount').val(circlesCount());
-          avgPt = (countPointsInCircles()) / (circlesCount());
+          $('#outputCirclesCount').val(allCircles.length);
+          avgPt = (countPointsInCircles()) / (allCircles.length);
           $('#outputAvgPt').val(avgPt.toFixed(2));
         },
         complete: function() {
@@ -2196,8 +2222,8 @@ $(document).ready(function() {
           return text + (circleLatLng.lat + "," + circleLatLng.lng);
         });
       }
-      $('#outputCirclesCount').val(circlesCount());
-      avgPt = (countPointsInCircles()) / (circlesCount());
+      $('#outputCirclesCount').val(allCircles.length);
+      avgPt = (countPointsInCircles()) / (allCircles.length);
       $('#outputAvgPt').val(avgPt.toFixed(2));
     }
   });
@@ -2322,44 +2348,31 @@ $(document).on("click", ".getSpawnReport", function() {
   prepareData(layer._bounds);
   getSpawnReport(layer);
 });
+function getAllCircles() {
+  let allCircles = new L.FeatureGroup();
+  let instancesIncluded = $('#multi').multi_select('getSelectedValues');
+  instancesIncluded.forEach(function(instance) {
+    instances[instance].forEach(function(id) {
+      let layer = [];
+      if (circleLayer.getLayer(id) != undefined) {
+        layer = circleLayer.getLayer(id);
+      } else if (instanceLayer.getLayer(id) != undefined) {
+        layer = instanceLayer.getLayer(id);
+      }
+      layer.addTo(allCircles);  
+    });
+  });
+  return allCircles;
+}
 function countPointsInCircles(display) {
-  prepareData();
+  let allCircles = getAllCircles();
+  let bounds = allCircles.getBounds();
+  prepareData(bounds);
   var count = 0;
   var includedGyms = [];
   var includedStops = [];
   var includedSpawnpoints = [];
-  circleLayer.eachLayer(function(layer){
-    var radius = layer.getRadius();
-    var circleCenter = layer.getLatLng();  
-    if (settings.showGyms == true) {
-      gyms.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
-        if(circleCenter.distanceTo(point) <= radius && includedGyms.indexOf(item) === -1){
-          count++;
-          includedGyms.push(item);
-        }
-      });
-    }
-    if (settings.showPokestops == true) {
-      pokestops.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
-        if(circleCenter.distanceTo(point) <= radius && includedStops.indexOf(item) === -1){
-          count++;
-          includedStops.push(item);
-        }
-      });
-    }
-    if (settings.showSpawnpoints == true) {
-      spawnpoints.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
-        if(circleCenter.distanceTo(point) <= radius && includedSpawnpoints.indexOf(item) === -1){
-          count++;
-          includedSpawnpoints.push(item);
-        }
-      });
-    }
-  });
-  instanceLayer.eachLayer(function(layer){
+  allCircles.eachLayer(function(layer){
     var radius = layer.getRadius();
     var circleCenter = layer.getLatLng();  
     if (settings.showGyms == true) {
@@ -2667,15 +2680,6 @@ function getLanguage() {
     pokemon = enPokemon;
   }
 }
-function circlesCount() {
-  // Count all available circles.
-  var count = 0;
-  var allCircles = circleLayer.getLayers().concat(instanceLayer.getLayers());
-  for (i=0;i<allCircles.length;i++) {
-    count++
-  };
-  return count;
-}
 function storeSetting(key) {
   localStorage.setItem(key, JSON.stringify(settings[key]));
 }
@@ -2935,7 +2939,20 @@ $(document).on("click", "#generateNestFile", function () {
   link.href = makeTextFile(content);
   document.getElementById('downloadlink').click();
 });
-
+function newMultiSelect() {
+  let mySelect = [];
+  for (let i = 0; i < instances.length; i++) {
+    mySelect.push(instances[i].name);
+  }
+  if (mySelect != '') {
+    $('.multi').multi_select({
+      data: mySelect,
+      selectColor: "blue",
+      selectSize: "small",
+      selectText: "Select instances"
+    });
+  }
+}
 </script>
 
 </head>
@@ -3082,9 +3099,12 @@ $(document).on("click", "#generateNestFile", function () {
             </button>
           </div>
           <div class="modal-body">
+            <div class="input-group mb-3">
+              <div class="multi" id="multi" style="min-width: 300px;"></div>
+            </div>
             <label for="mapMode"><script type="text/javascript">document.write(subs.generatedRoute)</script></label>
             <div class="input-group mb-3">
-              <textarea id="outputCircles" style="height:200px;" class="form-control" aria-label="Route output"></textarea>
+              <textarea id="outputCircles" style="height:120px;" class="form-control" aria-label="Route output"></textarea>
             </div>
             <dl class="row">
               <dt class="col-sm-7"><script type="text/javascript">document.write(subs.countCircles)</script></dt>
