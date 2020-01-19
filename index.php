@@ -647,6 +647,8 @@ function initMap() {
       onClick: function (control){
         circleLayer.clearLayers();
         instanceLayer.clearLayers();
+        instances = [];
+        circleInstance = [];
       }
     }]
   });
@@ -681,7 +683,6 @@ function initMap() {
       icon: 'far fa-clipboard',
       title: subs.getOutput,
       onClick: function (control){
-        $('.multi-select').remove();
         $('#modalOutput').modal('show');
         newMultiSelect();
       }
@@ -1574,6 +1575,8 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
 function generateRoute() {
   circleLayer.clearLayers();
   instanceLayer.clearLayers();
+  circleInstance = [];
+  instances = [];
   let circleRadius;
   let lat = Math.abs(map.getCenter().lat);
   if (settings.circleSize != 'raid') {
@@ -1613,6 +1616,18 @@ function generateRoute() {
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
+          if (circleInstance == '') {
+            circleInstance.push(newCircle._leaflet_id);
+            if (instances.length != 'undefined') {
+              circleInstance.ID = instances.length;
+            } else {
+              circleInstance.ID = 0;
+            }
+            circleInstance.name = subs.drawnCircles;
+            instances.push(circleInstance);
+          } else {
+            instances[circleInstance.ID].push(newCircle._leaflet_id);
+          }
         }
         currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
         i++;
@@ -2947,6 +2962,13 @@ function newMultiSelect() {
   if (mySelect != '') {
     $('.multi').multi_select({
       data: mySelect,
+      selectColor: "blue",
+      selectSize: "small",
+      selectText: "Select instances"
+    });
+  } else {
+    $('.multi').multi_select({
+      data: '',
       selectColor: "blue",
       selectSize: "small",
       selectText: "Select instances"

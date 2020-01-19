@@ -119,7 +119,7 @@ var deSubs = {
   "exportPOIs": "Exportieren",
   "exportPOILabel": "Dein POI hat die folgenden Koordinaten:",
   "outputAvgPt": "durchschnittliche Punkte/Kreis: ",
-  "exportListCount": "Objekte zum Exportieren: ",
+  "exportListCount": "Polygone zum Exportieren: ",
   "chooseName": "Bitte wähle einen Namen!",
   "addToExport": "Zum Export hinzufügen",
   "removeFromExport": "Aus dem Export entfernen",
