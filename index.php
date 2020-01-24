@@ -1421,6 +1421,9 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     circleRadius,
     point;
   var pointsOut = [];
+  instanceLayer.clearLayers();
+  circleInstance = [];
+  instances = [];
   let lat = Math.abs(map.getCenter().lat);
   if (settings.circleSize != 'raid') {
     circleRadius = settings.circleSize;
@@ -1548,6 +1551,18 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
           }).bindPopup(function (layer) {
             return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
           }).addTo(circleLayer);
+          if (circleInstance == '') {
+            circleInstance.push(newCircle._leaflet_id);
+            if (instances.length != 'undefined') {
+              circleInstance.ID = instances.length;
+            } else {
+              circleInstance.ID = 0;
+            }
+            circleInstance.name = subs.drawnCircles;
+            instances.push(circleInstance);
+          } else {
+            instances[circleInstance.ID].push(newCircle._leaflet_id);
+          }
         });
       },
       complete: function() { }
@@ -2957,7 +2972,9 @@ $(document).on("click", "#generateNestFile", function () {
 function newMultiSelect() {
   let mySelect = [];
   for (let i = 0; i < instances.length; i++) {
-    mySelect.push(instances[i].name);
+    if (instances[i].length > 0) {
+      mySelect.push(instances[i].name);
+    }
   }
   if (mySelect != '') {
     $('.multi').multi_select({

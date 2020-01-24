@@ -119,7 +119,7 @@ var enSubs = {
   "exportPOIs": "Export",
   "exportPOILabel": "Your POI has the following coordinates:",
   "outputAvgPt": "Average points per circle: ",
-  "exportListCount": "Objects on exportlist: ",
+  "exportListCount": "Polygons on exportlist: ",
   "chooseName": "Please choose a name!",
   "addToExport": "Add to exportlist",
   "removeFromExport": "Remove from exportlist",
