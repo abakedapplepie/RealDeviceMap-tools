@@ -1,7 +1,7 @@
 <?php
 error_reporting(0);
 
-include('./config.php');
+include('config/config.php');
 
 if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 <html>
@@ -46,9 +46,9 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
-    <link rel="stylesheet" href="./leaflet-search.css" />
-    <link rel="stylesheet" href="./pick-a-color-1.2.3.min.css">
-    <link rel="stylesheet" href="./multi.select.css">
+    <link rel="stylesheet" href="css/leaflet-search.css" />
+    <link rel="stylesheet" href="css/pick-a-color-1.2.3.min.css">
+    <link rel="stylesheet" href="css/multi.select.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
@@ -66,27 +66,25 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.1.0/dist/L.Path.Drag.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
-    <script type="text/javascript" src="./en.js"></script>
-    <script type="text/javascript" src="./de.js"></script>
-    <script type="text/javascript" src="./fr.js"></script>
-    <script type="text/javascript" src="./salesman.js"></script>
-    <script type="text/javascript" src="./leaflet-search.js"></script>
-    <script src="./tinycolor-0.9.15.min.js"></script>
-    <script src="./pick-a-color-1.2.3.min.js"></script>
-    <script src="./multi.select.js"></script>
+    <script type="text/javascript" src="other/en.js"></script>
+    <script type="text/javascript" src="other/de.js"></script>
+    <script type="text/javascript" src="other/fr.js"></script>
+    <script type="text/javascript" src="other/salesman.js"></script>
+    <script type="text/javascript" src="other/leaflet-search.js"></script>
+    <script src="other/tinycolor-0.9.15.min.js"></script>
+    <script src="other/pick-a-color-1.2.3.min.js"></script>
+    <script src="other/multi.select.js"></script>
 
 <script type="text/javascript">
-var debug = false;
 //map and control vars
-var map;
-var manualCircle = false;
-var newPOI = false;
-var adBoundsLv = null;
-var csvImport = null;
-var copyOutput = null;
-var exportListCount = null;
-var subs = enSubs;
-var drawControl,
+let map;
+let manualCircle = false;
+let newPOI = false;
+let csvImport = null;
+let copyOutput = null;
+let exportListCount = null;
+let subs = enSubs;
+let drawControl,
   buttonManualCircle,
   buttonImportNests,
   buttonModalImportPolygon,
@@ -107,29 +105,31 @@ var drawControl,
   buttonShowUnknownPois,
   buttonSettingsModal,
   buttonClearSubs,
-  buttonViewCells,
   buttonNewPOI,
+  buttonShowRoute,
   barShowPolyOpts,
   barOutput,
   barWayfarer,
   barRightOpts,
   barMapMode;
 //data vars
-var gyms = [],
+let gyms = [],
   pokestops = [],
   pokestoprange = [],
   spawnpoints = [],
   spawnpoints_u = [],
   instances = [],
-  circleInstance = [];
+  circleInstance = [],
+  mySelect = [];
 //options vars
-var settings = {
+let settings = {
   showGyms: null,
   showPokestops: null,
   showPokestopsRange: null,
   showSpawnpoints: null,
   showUnknownPois: null,
   hideOldSpawnpoints: null,
+  showRoute: null,
   oldSpawnpointsTimestamp: null,
   circleSize: null,
   optimizationAttempts: null,
@@ -138,7 +138,6 @@ var settings = {
   mapMode: null,
   mapCenter: null,
   mapZoom: null,
-  viewCells: null,
   cellsLevel0: null,
   cellsLevel0Check: false,
   cellsLevel1: null,
@@ -152,11 +151,12 @@ var settings = {
   language: null
 };
 //map layer vars
-var gymLayer,
+let gymLayer,
   pokestopLayer,
   pokestopRangeLayer,
   spawnpointLayer,
   editableLayer,
+  admLayer,
   circleS2Layer,
   circleLayer,
   instanceLayer,
@@ -164,6 +164,7 @@ var gymLayer,
   nestLayer,
   viewCellLayer,
   subsLayer,
+  routingLayer,
   exportList;
 $(function(){
   loadSettings();
@@ -247,7 +248,7 @@ $(function(){
             included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
           }
-          var output = name +
+          let output = name +
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
@@ -271,13 +272,13 @@ $(function(){
     $('#modalImport').modal('hide');
   });
   $('#saveNestPolygon').on('click', function(event) {
-    var importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val()
+    let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
     if (importType == 'importPolygonDataTypeGeoJson') {
       geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
         geoJson.features.forEach(function(feature) {
           feature = turf.flip(feature);
-          var polygon = L.polygon(feature.geometry.coordinates, {
+          let polygon = L.polygon(feature.geometry.coordinates, {
             clickable: false,
             color: "#ff8833",
             fill: true,
@@ -316,7 +317,7 @@ $(function(){
               included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
             }
-            var output = name +
+            let output = name +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
@@ -336,19 +337,19 @@ $(function(){
   });
   $('#importSubmissions').on('click', function(event) {
     subsLayer.clearLayers();
-    var pointsData = [];
+    let pointsData = [];
     if (csvImport != null) {
-      pointsData = csvtoarray(csvImport);
+      pointsData = csvtoarray(csvImport, true);
       csvImport = null;
       $('#csvOpener').val('');
     } else {
       pointsData = csvtoarray($('#importSubmissionsData').val().trim());
       $('#importSubmissionsData').val('');
     }
-    var formatCheck = pointsData[0][0];
+    let formatCheck = pointsData[0][0];
     if (formatCheck != 'id'){
       pointsData.forEach(function(item) {      
-        var marker = L.marker([item[0], item[1]], {
+        let marker = L.marker([item[0], item[1]], {
           draggable: true
         }).bindPopup('<span>' + item[2] + '</span>').addTo(subsLayer);
         if ($('#submissionRangeCheck').is(':checked')) {
@@ -362,7 +363,7 @@ $(function(){
     } else if (formatCheck == 'id') {
       pointsData.shift();
       pointsData.forEach(function(item) {
-        var marker = L.marker([item[4], item[5]], {
+        let marker = L.marker([item[4], item[5]], {
           draggable: true
         }).bindPopup('<div style="max-width: 150px;"><p align="center">' + item[2] + '</p><img src="' + item[10] + '" width="150px"></div>').addTo(subsLayer);
         if ($('#submissionRangeCheck').is(':checked')) {
@@ -378,29 +379,41 @@ $(function(){
     }
   });
   $('#importInstance').on('click', function(event) {
-     var name = $("#importInstanceName" ).val();
-     var color = '#' + $("#instanceColor input").val();
-     getInstance(name,color);
-   });
+    let name = $("#importInstanceName" ).val();
+    let color = '#' + $("#instanceColor input").val();
+    getInstance(name,color);
+  });
+  $('#importCircles').on('click', function(event) {
+    let name = subs.importCirclesIns;
+    let color = '#' + $("#instanceColor input").val();
+    importCircles(name,color);
+  });
   $('#getOptimizedRoute').on('click', function(event) {
-    var optimizeForGyms = $('#optimizeForGyms').is(':checked');
-    var optimizeForPokestops = $('#optimizeForPokestops').is(':checked');
-    var optimizeForSpawnpoints = $('#optimizeForSpawnpoints').is(':checked');
-    var optimizeForUnknownSpawnpoints = $('#optimizeForUnknownSpawnpoints').is(':checked');
-    var optimizeNests = $('#optimizeNests').is(':checked');
-    var optimizePolygons = $('#optimizePolygons').is(':checked');
-    var optimizeCircles = $('#optimizeCircles').is(':checked');
+    let optimizeForGyms = $('#optimizeForGyms').is(':checked');
+    let optimizeForPokestops = $('#optimizeForPokestops').is(':checked');
+    let optimizeForSpawnpoints = $('#optimizeForSpawnpoints').is(':checked');
+    let optimizeForUnknownSpawnpoints = $('#optimizeForUnknownSpawnpoints').is(':checked');
+    let optimizeNests = $('#optimizeNests').is(':checked');
+    let optimizePolygons = $('#optimizePolygons').is(':checked');
+    let optimizeCircles = $('#optimizeCircles').is(':checked');
     generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles);
    });
   $('#getAdBounds').on('click', function(event) {
-    if ($('#adBoundsLv6').is(':checked')) {
+    let adBoundsLv = '';
+    if ($('#adBounds1').is(':checked')) {
       adBoundsLv = '6';
-    } else if ($('#adBoundsLv8').is(':checked')) {
+    } else if ($('#adBounds2_1').is(':checked')) {
+      adBoundsLv = '6';
+    } else if ($('#adBounds2_2').is(':checked')) {
       adBoundsLv = '8';
-    } else {
+    } else if ($('#adBounds3_1').is(':checked')) {
       adBoundsLv = '9';
-    }  
-    getAdBounds();
+    } else if ($('#adBounds3_2').is(':checked')) {
+      adBoundsLv = '10';
+    } else if ($('#adBounds3_3').is(':checked')) {
+      adBoundsLv = '11';
+    }
+    getAdBounds(adBoundsLv);
    });
   $('#modalSpawnReport').on('hidden.bs.modal', function(event) {
     $('#spawnReportTable > tbody').empty();
@@ -415,26 +428,37 @@ $(function(){
     $('#exportListCount').val(exportList.getLayers().length);
   });
   $('#modalSettings').on('hidden.bs.modal', function(event) {
-    var tileset = null;
-    var spawnReportLimit = $('#spawnReportLimit').val();
-    var optimizationAttempts = $('#optimizationAttempts').val();
-    var cellsLevel0 = $('#cellsLevel0').val();
-    var cellsLevel0Check = $('#cellsLevel0Check').is(":checked");
-    var cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
-    var cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
-    var s2CountPOICheck = $('#s2CountPOI').is(":checked");
-    var nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
-    var oldSpawnpointsTimestamp = moment($("#oldSpawnpointsTimestamp").datetimepicker('date')).local().format('X');
-    var oldTlChoice = settings.tlChoice;
-    var tlChoice = $('#tlChoice').val();
-    if (tlChoice == 'carto') {
-      tileset = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
-    } else if (tlChoice == 'own') {
-      tileset = '<?php echo OWN_TS ?>';
-    } else if (tlChoice == 'osm') {
-      tileset = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    } else if (tlChoice == 'sat') {
-      tileset = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+    let tileset = null;
+    let spawnReportLimit = $('#spawnReportLimit').val();
+    let optimizationAttempts = $('#optimizationAttempts').val();
+    let cellsLevel0 = $('#cellsLevel0').val();
+    let cellsLevel0Check = $('#cellsLevel0Check').is(":checked");
+    let cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
+    let cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
+    let s2CountPOICheck = $('#s2CountPOI').is(":checked");
+    let nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
+    let oldSpawnpointsTimestamp = moment($("#oldSpawnpointsTimestamp").datetimepicker('date')).local().format('X');
+    let oldTlChoice = settings.tlChoice;
+    let tlChoice = $('#tlChoice').val();
+    switch(tlChoice) {
+      case 'carto':
+        tileset = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
+      break;
+      case 'own':
+        tileset = '<?php echo OWN_TS ?>';
+      break;
+      case 'osm':
+        tileset = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      break;
+      case 'sat':
+        tileset = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+      break;
+      case 'topo':
+        tileset = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+      break;
+      case 'dark':
+        tileset = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
+      break;
     }
     let circleSize;
     let selectCircleRange = $("#modalSettings input[name=selectCircleRange]:checked").val()
@@ -445,8 +469,8 @@ $(function(){
     } else {
       circleSize = $('#circleSize').val();
     } 
-    var oldLang = settings.language;
-    var language = $('#language').val();
+    let oldLang = settings.language;
+    let language = $('#language').val();
     const newSettings = {
       circleSize: circleSize,
       optimizationAttempts: optimizationAttempts,
@@ -495,9 +519,9 @@ $(function(){
   });
 });
 function initMap() {
-  var attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
-  var attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
-  var osm = new L.TileLayer(
+  let attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
+  let attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
+  let osm = new L.TileLayer(
   settings.tlLink, {  
     attribution: [attrOsm, attrOverpass].join(', ')
   });
@@ -512,6 +536,8 @@ function initMap() {
   bgLayer.addTo(map);
   editableLayer = new L.FeatureGroup();
   editableLayer.addTo(map);
+  admLayer = new L.FeatureGroup();
+  admLayer.addTo(map);
   circleS2Layer = new L.FeatureGroup();
   circleS2Layer.addTo(map);
   gymLayer = new L.LayerGroup();
@@ -528,7 +554,7 @@ function initMap() {
   pokestopCellLayer.addTo(map);
   spawnpointCellLayer = new L.LayerGroup();
   spawnpointCellLayer.addTo(map);
-  nestLayer = new L.LayerGroup();
+  nestLayer = new L.FeatureGroup();
   nestLayer.addTo(map);
   subsLayer = new L.LayerGroup();
   subsLayer.addTo(map);
@@ -536,6 +562,8 @@ function initMap() {
   exportList.addTo(map);
   instanceLayer = new L.FeatureGroup();
   instanceLayer.addTo(map);
+  routingLayer = new L.FeatureGroup();
+  routingLayer.addTo(map);
   
   // Buttons left
   searchControl = new L.Control.Search({
@@ -624,6 +652,7 @@ function initMap() {
       icon: 'fas fa-draw-polygon',
       title: subs.importPolygon,
       onClick: function (control){
+        $('#importPolygonData').val('');
         $('#modalImportPolygon').modal('show');
       }
     }]
@@ -635,6 +664,7 @@ function initMap() {
       title: subs.importInstance,
       onClick: function (control){
         getInstance();
+        $('#importCircleData').val('');
         $('#modalImportInstance').modal('show');
       }
     }]
@@ -730,29 +760,7 @@ function initMap() {
       }
     }]
   });
-  buttonViewCells = L.easyButton({
-    id: 'viewCells',
-    states: [{
-      stateName: 'enableViewCells',
-      icon: 'fas fa-square',
-      title: subs.hideViewingCells,
-      onClick: function (btn) {
-        settings.viewCells = false;
-        storeSetting('viewCells');
-        setShowMode();
-        }
-    }, {
-      stateName: 'disableViewCells',
-      icon: 'far fa-square',
-      title: subs.showViewingCells,
-      onClick: function (btn) {
-        settings.viewCells = true;
-        storeSetting('viewCells');
-        setShowMode();
-      }
-    }]
-  });
-  barWayfarer = L.easyBar([buttonModalImportSubmissions, buttonNewPOI, buttonClearSubs, buttonViewCells], { position: 'topleft' }).addTo(map);
+  barWayfarer = L.easyBar([buttonModalImportSubmissions, buttonNewPOI, buttonClearSubs], { position: 'topleft' }).addTo(map);
 
   // Buttons right
   // Bar mapMode
@@ -773,7 +781,7 @@ function initMap() {
     id: 'enableMapModeRouteGenerator',
     states: [{
       stateName: 'enableMapModeRouteGenerator',
-      icon: 'fas fa-route',
+      icon: 'fas fa-shapes',
       title: subs.routeGenerator,
       onClick: function (btn) {
         settings.mapMode = 'RouteGenerator';
@@ -894,7 +902,7 @@ function initMap() {
         setShowMode();
       }
     }]
-  })
+  });
   buttonShowUnknownPois = L.easyButton({
     id: 'showUnknownPois',
     states:[{
@@ -917,7 +925,29 @@ function initMap() {
       }
     }]
   });
-  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois], { position: 'topright' }).addTo(map);
+  buttonShowRoute = L.easyButton({
+    id: 'showRoute',
+    states:[{
+      stateName: 'enableShowRoute',
+      icon: 'fas fa-route',
+      title: subs.hideRoute,
+      onClick: function (btn) {
+        settings.showRoute = false;
+        storeSetting('showRoute');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowRoute',
+      icon: 'fas fa-route',
+      title: subs.showRoute,
+      onClick: function (btn) {
+        settings.showRoute = true;
+        storeSetting('showRoute');
+        setShowMode();
+      }
+    }]
+  });
+  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois, buttonShowRoute], { position: 'topright' }).addTo(map);
 
   // Bar rightOpts
   buttonTrash = L.easyButton({
@@ -926,15 +956,7 @@ function initMap() {
       icon: 'fas fa-trash',
       title: subs.clearShapes,
       onClick: function (control){
-        bgLayer.clearLayers();
-        circleLayer.clearLayers();
-        instanceLayer.clearLayers();
-        editableLayer.clearLayers();
-        nestLayer.clearLayers();
-        subsLayer.clearLayers();
-        exportList.clearLayers();
-        circleInstance = [];
-        instances = [];
+        clearAllLayers();
       }
     }]
   });
@@ -965,6 +987,15 @@ function initMap() {
           $('#cellsLevel0').val(settings.cellsLevel0);
         } else {
           $('#cellsLevel0').val();
+        }
+        if (settings.cellsLevel0Check != false) {
+          $('#cellsLevel0Check').checked = settings.cellsLevel0Check;
+        }
+        if (settings.cellsLevel1Check != null) {
+          $('#cellsLevel1Check').checked = settings.cellsLevel1Check;
+        }
+        if (settings.cellsLevel2Check != null) {
+          $('#cellsLevel2Check').checked = settings.cellsLevel2Check;
         }
         if (settings.selectCircleRange != null) {
           document.getElementById(settings.selectCircleRange).checked = true;
@@ -1000,12 +1031,12 @@ function initMap() {
   });
 
   map.on('draw:created', function (e) {
-    var layer = e.layer;
+    let layer = e.layer;
     layer.addTo(editableLayer);
   });
 
   editableLayer.on('layeradd', function(e) {
-    var layer = e.layer;
+    let layer = e.layer;
     layer.tags = {};
     layer.tags.name = '';
     layer.tags.included = false;
@@ -1033,7 +1064,7 @@ function initMap() {
         included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
       }
-      var output = name +
+      let output = name +
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
@@ -1054,48 +1085,60 @@ function initMap() {
     }, {maxWidth: 500, minWidth: 300});
   });
   circleLayer.on('layerremove', function(e) {
-    var layer = e.layer;
+    let layer = e.layer;
     layer.s2cells.forEach(function(item) {
       circleS2Layer.removeLayer(parseInt(item));
     });
-    let id = circleInstance.ID;
+    let id = circleInstance.id;
     let name = circleInstance.name;
     circleInstance = removeArrayElement(circleInstance, layer._leaflet_id)
-    circleInstance.ID = id;
+    circleInstance.id = id;
     circleInstance.name = name;
     instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
-    instances[id].ID = id;
+    instances[id].id = id;
     instances[id].name = name;
   });
   circleLayer.on('layeradd', function(e) {
     drawCircleS2Cells(e.layer);
     circleLayer.removeFrom(map).addTo(map);
     e.layer.on('drag', function() {
-      drawCircleS2Cells(e.layer)
-    })
-    e.layer.on('drag', function() {
-    circleLayer.removeFrom(map).addTo(map);
+      drawCircleS2Cells(e.layer);
     })
   });
   instanceLayer.on('layerremove', function(e) {
     let layer = e.layer;
-    layer.s2cells.forEach(function(item) {
-      circleS2Layer.removeLayer(parseInt(item));
-    });
+    if (typeof layer.s2cells !== 'undefined') {
+      layer.s2cells.forEach(function(item) {
+        circleS2Layer.removeLayer(item);
+      });
+    }
     let id = layer.options.instanceID;
     let name = instances[id].name;
     instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
-    instances[id].ID = id;
+    instances[id].id = id;
     instances[id].name = name;
+    if (routingLayer.getLayers().length > 1) {
+      instances[id].forEach(function(item) {  
+        let x = instanceLayer.getLayer(parseInt(item)).lineID;
+        routingLayer.removeLayer(parseInt(x))
+      });
+      routingLayer.removeLayer(parseInt(layer.lineID));
+    }
+    if (instances[id].length > 0) {
+      drawRoute(instances[id]);
+    }
   });
   instanceLayer.on('layeradd', function(e) {
     drawCircleS2Cells(e.layer);
     instanceLayer.removeFrom(map).addTo(map);
     e.layer.on('drag', function() {
       drawCircleS2Cells(e.layer)
-    })
-    e.layer.on('drag', function() {
-    instanceLayer.removeFrom(map).addTo(map);
+      instances[e.layer.options.instanceID].forEach(function(item) {
+        let x = instanceLayer.getLayer(parseInt(item)).lineID;
+        routingLayer.removeLayer(parseInt(x))
+      });
+      instanceLayer.bringToFront();
+      drawRoute(instances[e.layer.options.instanceID]);
     })
   });
   map.on('moveend', function() {
@@ -1120,31 +1163,31 @@ function initMap() {
           radius = -13 * lat + 1225;
         }
       }
-      var newCircle = new L.circle(e.latlng, {
+      let newCircle = new L.circle(e.latlng, {
         color: 'red',
         fillColor: '#f03',
         fillOpacity: 0.2,
         draggable: true,
         radius: radius
       }).bindPopup(function (layer) {
-        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
       }).addTo(circleLayer);
       if (circleInstance == '') {
         circleInstance.push(newCircle._leaflet_id);
         if (instances.length != 'undefined') {
-          circleInstance.ID = instances.length;
+          circleInstance.id = instances.length;
         } else {
-          circleInstance.ID = 0;
+          circleInstance.id = 0;
         }
         circleInstance.name = subs.drawnCircles;
         instances.push(circleInstance);
       } else {
-        instances[circleInstance.ID].push(newCircle._leaflet_id);
+        instances[circleInstance.id].push(newCircle._leaflet_id);
       }
     }
   });
   subsLayer.on('layerremove', function(e) {
-    var layer = e.layer;
+    let layer = e.layer;
     layer.forEach(function(item) {
       subsLayer.removeLayer(parseInt(item));
     });
@@ -1181,27 +1224,27 @@ function drawCircleS2Cells(layer) {
       circleS2Layer.removeLayer(parseInt(item));
     });
   }
-  var center = layer.getLatLng()
-  var radius = layer.getRadius();
+  let center = layer.getLatLng()
+  let radius = layer.getRadius();
   layer.s2cells = [];
   function addPoly(cell) {
     const vertices = cell.getCornerLatLngs()
     const poly = L.polygon(vertices,{
-      color: 'black',
+      color: layer.options.color,
       opacity: 0.8,
       weight: 2,
       fillOpacity: 0.2
     });
-    var line = turf.polygonToLine(poly.toGeoJSON());
-    var point = turf.point([center.lng, center.lat]);
-    var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+    let line = turf.polygonToLine(poly.toGeoJSON());
+    let point = turf.point([center.lng, center.lat]);
+    let distance = turf.pointToLineDistance(point, line, { units: 'meters' });
     if (distance <= radius) {
       circleS2Layer.addLayer(poly);
       layer.s2cells.push(poly._leaflet_id);
     }
   }
   if (radius < 1000 && radius > 200) {
-    var count = 10;
+    let count = 10;
     let cell = S2.S2Cell.FromLatLng(layer.getLatLng(), 15)
     let steps = 1
     let direction = 0
@@ -1265,10 +1308,18 @@ function setShowMode() {
     buttonShowUnknownPois.state('disableShowUnknownPois');
     buttonShowUnknownPois.button.style.backgroundColor = '#E9B7B7';
   }
-  if (settings.viewCells !== false) {
-    buttonViewCells.state('enableViewCells');
+  if (settings.showRoute !== false) {
+    if (instances != '') {
+      instances.forEach(function(item){
+        drawRoute(item)
+      });  
+    }  
+    buttonShowRoute.state('enableShowRoute');
+    buttonShowRoute.button.style.backgroundColor = '#B7E9B7';
   } else {
-    buttonViewCells.state('disableViewCells');
+    routingLayer.clearLayers();
+    buttonShowRoute.state('disableShowRoute');
+    buttonShowRoute.button.style.backgroundColor = '#E9B7B7';
   }
   loadData();
 }
@@ -1301,15 +1352,13 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'get_instance_names': true,
     };
     const json = JSON.stringify(data);
-  if (debug !== false) { console.log(json) }
     $.ajax({
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-    if (debug !== false) { console.log(result) }
-        var select = $('#importInstanceName');
+        let select = $('#importInstanceName');
         select.empty();
         result.forEach(function(item) {
           select.append($("<option>").attr('value',item.name).text(item.name + " (" + item.type + ")"));
@@ -1323,9 +1372,9 @@ function getInstance(instanceName = null, color = '#1090fa') {
       'instance_name': instanceName
     };
     const json = JSON.stringify(data);
-    var polygonOptions = {
+    let polygonOptions = {
       clickable: false,
-      color: "#3388ff",
+      color: color,
       fill: true,
       fillColor: null,
       fillOpacity: 0.2,
@@ -1363,28 +1412,32 @@ function getInstance(instanceName = null, color = '#1090fa') {
               } else {
                 newCircle = L.circle(item, {
                   color: color,
-                  fillOpacity: 0.5,
+                  fillOpacity: 0.2,
                   draggable: true,
                   radius: radius,
                   instanceID: instance.id
                 }).bindPopup(function (layer) {
-                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
                 }).addTo(instanceLayer);
                 instance.push(newCircle._leaflet_id);
               }              
             });
             instances.push(instance);
+            drawRoute(instance);
           } else if (result.type == 'circle_raid') {
+            let instance = [];
+            instance.name = instanceName;
+            instance.id = instances.length;
             points.forEach(function(item) {
               let lat = Math.abs(item.lat);
               if (!($('#instanceRadiusCheck').is(":checked"))) {
-              if (lat <= 39) {
-                radius = 715;
-              } else if (lat >= 69) {
-                radius = 330;
-              } else {
-                radius = -13 * lat + 1225;
-              }
+                if (lat <= 39) {
+                  radius = 715;
+                } else if (lat >= 69) {
+                  radius = 330;
+                } else {
+                  radius = -13 * lat + 1225;
+                }
               }
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
@@ -1398,12 +1451,16 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   color: color,
                   fillOpacity: 0.2,
                   draggable: true,
-                  radius: radius
+                  radius: radius,
+                  instanceID: instance.id
                 }).bindPopup(function (layer) {
-                  return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
                 }).addTo(instanceLayer);
+                instance.push(newCircle._leaflet_id);
               }
             });
+            instances.push(instance);
+            drawRoute(instance);
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
             points.forEach(function(coords) {
               newPolygon = L.polygon(coords, polygonOptions).addTo(editableLayer);
@@ -1414,13 +1471,138 @@ function getInstance(instanceName = null, color = '#1090fa') {
     });
   }
 }
+function drawRoute(instance) {
+  let distanceAll = 0;
+  let color;
+  if (settings.showRoute != false && instance != '' && instance.name != subs.drawnCircles) {
+    for (i=0;i<instance.length-1;i++) {
+      let pointA = instanceLayer.getLayer(instance[i]);
+      let pointB = instanceLayer.getLayer(instance[i+1]);
+      let distance = parseInt(pointA.getLatLng().distanceTo(pointB.getLatLng()).toFixed(2));
+      if (distance <= pointA.getRadius()*4) {
+        color = 'green';
+      } else if (distance >= pointA.getRadius()*6) {
+        color = 'red';
+      } else {
+        color = 'darkorange';
+      }
+      let line = L.polyline([pointB.getLatLng(),pointA.getLatLng()], {color: color, weight: 2, opacity: 0.8});
+      line.addTo(routingLayer);
+      pointA.lineID = line._leaflet_id;
+      pointA.distanceToNext = distance;
+      distanceAll += distance;
+    }
+    let pointA = instanceLayer.getLayer(instance[instance.length-1]);
+    let pointB = instanceLayer.getLayer(instance[0]);
+    let distance = parseInt(pointA.getLatLng().distanceTo(pointB.getLatLng()).toFixed(2));
+    if (distance <= pointA.getRadius()*4) {
+      color = 'green';
+    } else if (distance >= pointA.getRadius()*6) {
+      color = 'red';
+    } else {
+      color = 'darkorange';
+    }
+    let line = L.polyline([pointB.getLatLng(),pointA.getLatLng()], {color: color, weight: 2, opacity: 0.8});
+    line.addTo(routingLayer);
+    pointA.lineID = line._leaflet_id;
+    pointA.distanceToNext = distance;
+    distanceAll += distance;
+    instance.distance = distanceAll;
+    instance.avgDistance = distanceAll/instance.length.toFixed(2);
+  }
+}
+function importCircles(instanceName = null, color = '#1090fa') {
+  let circleData = [];
+  let radius = 0;
+  let importReady = false;
+
+  if ($('#importCircleData').val() != '') {
+    circleData = csvtoarray($('#importCircleData').val());
+    importReady = true;
+  }  
+  if ($('#instanceRadiusCheck').is(":checked")) {
+    radius = $('#ownRadius').val();
+  }
+
+  if (circleData.length > 0 && importReady != false) {
+    if (settings.circleSize != 'raid') {
+      if (!($('#instanceRadiusCheck').is(":checked"))) {
+        radius = settings.circleSize;
+      }
+      let instance = [];
+      instance.name = instanceName;
+      instance.id = instances.length;
+      circleData.forEach(function(item) {
+        if ($('#instanceMode').is(':checked')) {
+          newCircle = L.circle(item, {
+            color: '#b410fa',
+            fillOpacity: 0.4,
+            draggable: false,
+            radius: radius
+          }).addTo(bgLayer);
+        } else {
+          newCircle = L.circle(item, {
+            color: color,
+            fillOpacity: 0.2,
+            draggable: true,
+            radius: radius,
+            instanceID: instance.id
+          }).bindPopup(function (layer) {
+            return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+          }).addTo(instanceLayer);
+          instance.push(newCircle._leaflet_id);
+        }              
+      });
+      instances.push(instance);
+      drawRoute(instance);
+    } else if (settings.circleSize == 'raid') {
+      let instance = [];
+      instance.name = instanceName;
+      instance.id = instances.length;
+      circleData.forEach(function(item) {
+        let lat = Math.abs(item.lat);
+        if (!($('#instanceRadiusCheck').is(":checked"))) {
+          if (lat <= 39) {
+            radius = 715;
+          } else if (lat >= 69) {
+            radius = 330;
+          } else {
+            radius = -13 * lat + 1225;
+          }
+        }
+        if ($('#instanceMode').is(':checked')) {
+          newCircle = L.circle(item, {
+            color: '#b410fa',
+            fillOpacity: 0.4,
+            draggable: false,
+            radius: radius
+          }).addTo(bgLayer);
+        } else {
+          newCircle = L.circle(item, {
+            color: color,
+            fillOpacity: 0.2,
+            draggable: true,
+            radius: radius,
+            instanceID: instance.id
+          }).bindPopup(function (layer) {
+            return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+          }).addTo(instanceLayer);
+          instance.push(newCircle._leaflet_id);
+        }
+      });
+      instances.push(instance);
+      drawRoute(instance);
+    }
+  }
+}
+
 function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
   $("#modalLoading").modal('show');
-  var newCircle,
+  let newCircle,
     currentLatLng,
     circleRadius,
     point;
-  var pointsOut = [];
+  let pointsOut = [];
   instanceLayer.clearLayers();
   circleInstance = [];
   instances = [];
@@ -1436,17 +1618,17 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       circleRadius = -13 * lat + 1225;
     }
   }
-  var data = {
+  let data = {
     'get_optimization': true,
     'circle_size': circleRadius,
     'optimization_attempts': settings.optimizationAttempts,
     'do_tsp': false,
     'points': []
   };
-  var routeLayers = function(layer) {
-    var points = [];
-    var poly = layer.toGeoJSON();
-    var line = turf.polygonToLine(poly);
+  let routeLayers = function(layer) {
+    let points = [];
+    let poly = layer.toGeoJSON();
+    let line = turf.polygonToLine(poly);
     if (optimizeForGyms == true) {
       gyms.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
@@ -1483,15 +1665,15 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       getRoute(points);
     }
   }
-  var routeCircles = function(layer) {
-    var points = []
-    var radius = layer.getRadius();
-    var bounds = layer.getBounds();
-    var center = bounds.getCenter();
+  let routeCircles = function(layer) {
+    let points = []
+    let radius = layer.getRadius();
+    let bounds = layer.getBounds();
+    let center = bounds.getCenter();
     if (optimizeForGyms == true) {
       gyms.forEach(function(item) {
-        var workingLatLng = L.latLng(item.lat, item.lng);
-        var distance = workingLatLng.distanceTo(center)
+        let workingLatLng = L.latLng(item.lat, item.lng);
+        let distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
           points.push(item);
         }
@@ -1499,8 +1681,8 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     }
     if (optimizeForPokestops == true) {
       pokestops.forEach(function(item) {
-        var workingLatLng = L.latLng(item.lat, item.lng);
-        var distance = workingLatLng.distanceTo(center)
+        let workingLatLng = L.latLng(item.lat, item.lng);
+        let distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
           points.push(item);
         }
@@ -1508,8 +1690,8 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     }
     if (optimizeForSpawnpoints == true) {
       spawnpoints.forEach(function(item) {
-        var workingLatLng = L.latLng(item.lat, item.lng);
-        var distance = workingLatLng.distanceTo(center)
+        let workingLatLng = L.latLng(item.lat, item.lng);
+        let distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
           points.push(item);
         }
@@ -1517,8 +1699,8 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     }
     if (optimizeForUnknownSpawnpoints == true) {
       spawnpoints_u.forEach(function(item) {
-        var workingLatLng = L.latLng(item.lat, item.lng);
-        var distance = workingLatLng.distanceTo(center)
+        let workingLatLng = L.latLng(item.lat, item.lng);
+        let distance = workingLatLng.distanceTo(center)
         if (distance <= radius) {
           points.push(item);
         }
@@ -1528,10 +1710,9 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       return points;
     }
   }
-  var getRoute = function(points) {
+  let getRoute = function(points) {
     data.points = _.uniq(points);
     const json = JSON.stringify(data);
-    if (debug !== false) { console.log(data) }
     $.ajax({
       beforeSend: function() {
       },
@@ -1540,7 +1721,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-        if (debug !== false) { console.log(result) }
           result.bestAttempt.forEach(function(point) {
            newCircle = L.circle([point.lat, point.lng], {
             color: 'red',
@@ -1549,19 +1729,19 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
             draggable: true,
             radius: circleRadius
           }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
           }).addTo(circleLayer);
           if (circleInstance == '') {
             circleInstance.push(newCircle._leaflet_id);
             if (instances.length != 'undefined') {
-              circleInstance.ID = instances.length;
+              circleInstance.id = instances.length;
             } else {
-              circleInstance.ID = 0;
+              circleInstance.id = 0;
             }
             circleInstance.name = subs.drawnCircles;
             instances.push(circleInstance);
           } else {
-            instances[circleInstance.ID].push(newCircle._leaflet_id);
+            instances[circleInstance.id].push(newCircle._leaflet_id);
           }
         });
       },
@@ -1605,22 +1785,22 @@ function generateRoute() {
       circleRadius = -13 * lat + 1225;
     }
   }  
-  var xMod = Math.sqrt(0.75);
-  var yMod = Math.sqrt(0.568);
-  var route = function(layer) {
-    var poly = layer.toGeoJSON();
-    var line = turf.polygonToLine(poly);
-    var newCircle;
-    var currentLatLng = layer.getBounds().getNorthEast();
-    var startLatLng = L.GeometryUtil.destination(currentLatLng, 90, circleRadius*1.5);
-    var endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, circleRadius*1.5), 180, circleRadius);
-    var row = 0;
-    var heading = 270;
-    var i = 0;
+  let xMod = Math.sqrt(0.75);
+  let yMod = Math.sqrt(0.568);
+  let route = function(layer) {
+    let poly = layer.toGeoJSON();
+    let line = turf.polygonToLine(poly);
+    let newCircle;
+    let currentLatLng = layer.getBounds().getNorthEast();
+    let startLatLng = L.GeometryUtil.destination(currentLatLng, 90, circleRadius*1.5);
+    let endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, circleRadius*1.5), 180, circleRadius);
+    let row = 0;
+    let heading = 270;
+    let i = 0;
     while(currentLatLng.lat > endLatLng.lat) {
       do {
-        var point = turf.point([currentLatLng.lng, currentLatLng.lat]);
-        var distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+        let point = turf.point([currentLatLng.lng, currentLatLng.lat]);
+        let distance = turf.pointToLineDistance(point, line, { units: 'meters' });
         if (distance <= circleRadius || distance == 0 || turf.inside(point, poly)) {
           newCircle = L.circle(currentLatLng, {
             color: 'red',
@@ -1629,19 +1809,19 @@ function generateRoute() {
             draggable: true,
             radius: circleRadius
           }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>';
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div></div>';
           }).addTo(circleLayer);
           if (circleInstance == '') {
             circleInstance.push(newCircle._leaflet_id);
             if (instances.length != 'undefined') {
-              circleInstance.ID = instances.length;
+              circleInstance.id = instances.length;
             } else {
-              circleInstance.ID = 0;
+              circleInstance.id = 0;
             }
             circleInstance.name = subs.drawnCircles;
             instances.push(circleInstance);
           } else {
-            instances[circleInstance.ID].push(newCircle._leaflet_id);
+            instances[circleInstance.id].push(newCircle._leaflet_id);
           }
         }
         currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
@@ -1713,10 +1893,10 @@ function prepareData(layerBounds) {
   });
 }
 function getSpawnReport(layer) {
-  var reportStops = [],
+  let reportStops = [],
     reportSpawns = [];
-  var poly = layer.toGeoJSON();
-  var line = turf.polygonToLine(poly);
+  let poly = layer.toGeoJSON();
+  let line = turf.polygonToLine(poly);
   pokestops.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
     if (turf.inside(point, poly)) {
@@ -1737,7 +1917,6 @@ function getSpawnReport(layer) {
     'spawns': reportSpawns
   };
   const json = JSON.stringify(data);
-  if (debug !== false) { console.log(json) }
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -1747,8 +1926,6 @@ function getSpawnReport(layer) {
     dataType: 'json',
     data: {'data': json},
     success: function (result) {
-      console.log(result)
-      if (debug !== false) { console.log(result) }
       if (result.spawns !== null) {
         result.spawns.forEach(function(item) {
           if (typeof layer.tags !== 'undefined') {
@@ -1769,31 +1946,41 @@ function getSpawnReport(layer) {
     }
   });
 }
-function getAdBounds() {
+function clearAllLayers() {
   bgLayer.clearLayers();
   circleLayer.clearLayers();
   instanceLayer.clearLayers();
   editableLayer.clearLayers();
+  admLayer.clearLayers();
   nestLayer.clearLayers();
+  subsLayer.clearLayers();
+  routingLayer.clearLayers();
+  exportList.clearLayers();
+  circleS2Layer.clearLayers();
+  circleInstance = [];
+  instances = [];
+}
+function getAdBounds(adBoundsLv) {
+  clearAllLayers();
   const bounds = map.getBounds();
   const overpassApiEndpoint = 'https://overpass-api.de/api/interpreter';
-  var queryBbox = [ // s, e, n, w
+  let queryBbox = [ // s, e, n, w
     bounds.getSouthWest().lat,
     bounds.getSouthWest().lng,
     bounds.getNorthEast().lat,
     bounds.getNorthEast().lng
   ].join(',');
-  var queryDate = "2019-02-16T00:00:00Z";
-  var queryOptions = [
+  let queryDate = new Date().toISOString();
+  let queryOptions = [
     '[out:json]',
     '[timeout:620]',
     '[bbox:' + queryBbox + ']',
     '[date:"' + queryDate + '"]'
   ].join('');
-  var queryAdBounds = [
+  let queryAdBounds = [
     'relation[admin_level=' + adBoundsLv + '];',
   ].join('');
-  var overPassQuery = queryOptions + ';(' + queryAdBounds + ')' + ';out;>;out skel qt;';
+  let overPassQuery = queryOptions + ';(' + queryAdBounds + ')' + ';out;>;out skel qt;';
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -1803,11 +1990,11 @@ function getAdBounds() {
     dataType: 'json',
     data: {'data': overPassQuery},
     success: function (result) {
-      var geoJsonFeatures = osmtogeojson(result);
+      let geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
         if (feature.geometry.type == 'Polygon' || feature.geometry.type == 'MultiPolygon') { 
           feature = turf.flip(feature);
-          var polygon = L.polygon(feature.geometry.coordinates, {
+          let polygon = L.polygon(feature.geometry.coordinates, {
           clickable: false,
           color: "#a83297",
           fill: true,
@@ -1821,7 +2008,6 @@ function getAdBounds() {
           polygon.tags.name = feature.properties.tags.name;
           polygon.tags.osmid = feature.properties.id;
           polygon.tags.included = false;
-          polygon.addTo(editableLayer);
           let name = '';
           let included = '';
           polygon.bindPopup(function (layer) {
@@ -1829,31 +2015,31 @@ function getAdBounds() {
               name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
             }
             if (layer.tags.included == true) {
-              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="editableLayer" data-layer-id=' +
+              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeFromExport + '</span></div></div>';
             } else {
-              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
+              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
-          }
-            var output = name +
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' +
+            }
+            let output = name +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
 
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="editableLayer" data-layer-id=' +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
 
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="editableLayer" data-layer-id=' +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm exportPoints" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportVP + '</span></div></div>' +
 
-                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
                   included;
             return output;
-          }, {maxWidth: 500, minWidth: 300});
+          }, {maxWidth: 500, minWidth: 300}).addTo(admLayer);
         }
       });
     },
@@ -1863,26 +2049,22 @@ function getAdBounds() {
   });
 }
 function getNests() {
-  bgLayer.clearLayers();
-  circleLayer.clearLayers();
-  instanceLayer.clearLayers();
-  editableLayer.clearLayers();
-  nestLayer.clearLayers();
+  clearAllLayers();
   const bounds = map.getBounds();
   const overpassApiEndpoint = 'https://overpass-api.de/api/interpreter';
-  var queryBbox = [ // s, e, n, w
+  let queryBbox = [ // s, e, n, w
     bounds.getSouthWest().lat,
     bounds.getSouthWest().lng,
     bounds.getNorthEast().lat,
     bounds.getNorthEast().lng
   ].join(',');
-  var queryDate = "2019-02-16T00:00:00Z";
-  var queryOptions = [
+  let queryDate = "2019-02-16T00:00:00Z";
+  let queryOptions = [
     '[out:json]',
     '[bbox:' + queryBbox + ']',
     '[date:"' + queryDate + '"]'
   ].join('');
-  var queryNestWays = [
+  let queryNestWays = [
     'way["leisure"="park"];',
     'way["leisure"="recreation_ground"];',
     'way["leisure"="pitch"];',
@@ -1892,8 +2074,7 @@ function getNests() {
     'way["landuse"="meadow"];',
     'way["landuse"="grass"];',
   ].join('');
-  var overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
-  if (debug !== false) { console.log(overPassQuery) }
+  let overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -1903,10 +2084,10 @@ function getNests() {
     dataType: 'json',
     data: {'data': overPassQuery},
     success: function (result) {
-      var geoJsonFeatures = osmtogeojson(result);
+      let geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
         feature = turf.flip(feature);
-        var polygon = L.polygon(feature.geometry.coordinates, {
+        let polygon = L.polygon(feature.geometry.coordinates, {
           clickable: false,
           color: "#ff8833",
           fill: true,
@@ -1945,7 +2126,7 @@ function getNests() {
             included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
           }
-          var output = name +
+          let output = name +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
@@ -1966,11 +2147,12 @@ function getNests() {
   });
 }
 function splitCsv(str){
-  var result = [];
-  var strBuf = '';
-  var start = 0 ;
-  var marker = false;
-  for (var i = 0; i< str.length; i++){
+  let result = [];
+  let strBuf = '';
+  let start = 0 ;
+  let marker = false;
+  let i;
+  for (i = 0; i< str.length; i++){
 
     if (str[i] === '"'){
       marker = !marker;
@@ -1983,8 +2165,8 @@ function splitCsv(str){
   if (start <= str.length){
     result.push(str.substr(start, i - start));
   }
-  for (var r = 0; r < result.length; r++) {
-    for (var j = 0; j < result[r].length; j++) {
+  for (let r = 0; r < result.length; r++) {
+    for (let j = 0; j < result[r].length; j++) {
       if (result[r][j] === '"') {
         result[r] = result[r].slice(1,-1);
       }
@@ -1992,11 +2174,15 @@ function splitCsv(str){
   }
   return result;
 };
-function csvtoarray(dataString) {
-  var lines = dataString
+function csvtoarray(dataString, wf = false) {
+  let lines = dataString
     .split(/\n/)           // Convert to one string per line
     .map(function(lineStr) {
-      return splitCsv(lineStr);   // Convert each line to array (,)
+      if (wf == true) {
+        return splitCsv(lineStr);   // Convert considering ("") 
+      } else {
+        return lineStr.split(",");   // Convert each line to array (,)
+      }
     })
   return lines;
 }
@@ -2032,10 +2218,10 @@ function loadData() {
       if (result.gyms != null && settings.showGyms === true) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
-          var radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             if(item.ex == 1){
-              var marker = L.circleMarker([item.lat, item.lng], {
+              let marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'maroon',
               radius: radius,
@@ -2048,7 +2234,7 @@ function loadData() {
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "</span>").addTo(gymLayer);
             }
             else{
-              var marker = L.circleMarker([item.lat, item.lng], {
+              let marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'orange',
               radius: radius,
@@ -2065,9 +2251,9 @@ function loadData() {
       if (result.pokestops != null && settings.showPokestops === true) {
         result.pokestops.forEach(function(item) {
           pokestops.push(item);
-          var radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-            var marker = L.circleMarker([item.lat, item.lng], {
+          let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'green',
               radius: radius,
@@ -2083,7 +2269,7 @@ function loadData() {
       if (result.pokestops != null && settings.showPokestopsRange === true) {
         result.pokestops.forEach(function(item) {
           pokestoprange.push(item);
-            var marker = L.circle([item.lat, item.lng], {
+            let marker = L.circle([item.lat, item.lng], {
               color: 'green',
               radius: 70,
               opacity: 0.2
@@ -2095,7 +2281,7 @@ function loadData() {
       }
       if (result.spawnpoints != null && settings.showSpawnpoints === true) {
         if (settings.hideOldSpawnpoints != false){ 
-          var oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
+          let oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
           result.spawnpoints.forEach(function(item) {
             if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
               spawnpoints.push(item);
@@ -2103,11 +2289,11 @@ function loadData() {
               spawnpoints_u.push(item);
               spawnpoints.push(item);
             }
-            var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-            var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             if (settings.showSpawnpoints === true){
               if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
-                var marker = L.circleMarker([item.lat, item.lng], {
+                let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
                   fillColor: 'blue',
                   radius: radius,
@@ -2117,10 +2303,10 @@ function loadData() {
                 }).addTo(map);
                 marker.tags = {};
                 marker.tags.id = item.id;
-                var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
+                let despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
                 marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
               } else if (item.updated >= oldSpawnpointsTimestamp) {
-                var marker = L.circleMarker([item.lat, item.lng], {
+                let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
                   fillColor: 'red',
                   radius: radius,
@@ -2142,11 +2328,11 @@ function loadData() {
               spawnpoints_u.push(item);
               spawnpoints.push(item);
             }
-            var radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-            var weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             if (settings.showSpawnpoints === true){
               if (item.despawn_sec != null){
-                var marker = L.circleMarker([item.lat, item.lng], {
+                let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
                   fillColor: 'blue',
                   radius: radius,
@@ -2156,10 +2342,10 @@ function loadData() {
                 }).addTo(map);
                 marker.tags = {};
                 marker.tags.id = item.id;
-                var despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
+                let despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
                 marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
               } else {
-                var marker = L.circleMarker([item.lat, item.lng], {
+                let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
                   fillColor: 'red',
                   radius: radius,
@@ -2201,66 +2387,158 @@ $(document).ready(function() {
       $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
     }
   });
-    $('#getOutput').click(function() {
-    $('#outputCircles').val('');
-    let allCircles = getAllCircles().getLayers();
-    var avgPt = 0;
-    var exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
-    if (exportType == 'sorted') {
-      $.ajax({
-        beforeSend: function() {
-          $("#modalLoading").modal('show');
-        },
-        success: function() {
-          var points = [];
-          for (i=0;i<allCircles.length;i++) {
-            var circle = allCircles[i].getLatLng();
-            var Point = {
-              x: circle.lat,
-              y: circle.lng
-            }
-            points.push(Point);
-          };
-          var temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
-          var temp2 = Math.ceil(allCircles.length/10);
-          var temp_coeff = '0.99999' + temp1 + temp2;
-          var solution = solve(points, temp_coeff); 
-          var orderedPoints = solution.map(i => points [i]); 
-          for (i=0;i<orderedPoints.length;i++) {
-            $('#outputCircles').val(function(index, text) {
-              if (i != orderedPoints.length-1) {
-                return text + (orderedPoints[i].x + "," + orderedPoints[i].y) + "\n" ;
-              }
-              return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
-            });
-          }
-          $('#outputCirclesCount').val(allCircles.length);
-          avgPt = (countPointsInCircles()) / (allCircles.length);
-          $('#outputAvgPt').val(avgPt.toFixed(2));
-        },
-        complete: function() {
-          $("#modalLoading").modal('hide');
-        }
-      });
+  $(document).on("click", ".sortInstance", function() {
+    let container = $(this).attr('data-layer-container');
+    let id = $(this).attr('data-layer-id');
+    let sourceCircle;
+    let oldInstance;
+    if (container != 'circleLayer') {
+      sourceCircle = instanceLayer.getLayer(parseInt(id));
+      oldInstance = instances[sourceCircle.options.instanceID];
     } else {
-      for (i=0;i<allCircles.length;i++) {
-        var circleLatLng = allCircles[i].getLatLng();
-        $('#outputCircles').val(function(index, text) {
-          if (i != allCircles.length-1) {
-            return text + (circleLatLng.lat + "," + circleLatLng.lng) + "\n" ;
+      let instance = [];
+      instance.id = instances.length;
+      instance.name = subs.drawnCircles + ' ' + instance.id;
+      sourceCircle = circleLayer.getLayer(parseInt(id));
+      sourceCircle.options.instanceID = instance.id;
+      let radius = sourceCircle.getRadius();
+      let color = sourceCircle.options.color;
+      circleLayer.getLayers().forEach(function(item) {
+        let newLayer;
+        circle = L.circle([item.getLatLng().lat, item.getLatLng().lng], {
+          color: color,
+          fillOpacity: 0.2,
+          draggable: true,
+          radius: radius,
+          instanceID: instance.id
+        }).bindPopup(function (layer) {
+          return '<div class="input-group mb-3"><label class="form-check-label">' + instance.name + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+        }).addTo(instanceLayer);
+        circleLayer.removeLayer(parseInt(item._leaflet_id));
+        instance.push(circle._leaflet_id);
+      });
+      instances.push(instance);
+      oldInstance = instance;
+     }
+    let allCircles = [];
+    oldInstance.forEach(function(item) {
+      circle = instanceLayer.getLayer(item);
+      allCircles.push(circle);
+    });
+    allCircles.forEach(function(item) {
+      instanceLayer.removeLayer(item._leaflet_id);
+    })
+    instances[sourceCircle.options.instanceID] = [];
+    let newInstance = [];
+    newInstance.name = oldInstance.name;
+    newInstance.id = instances.length;
+    let radius = sourceCircle.getRadius();
+    let color = sourceCircle.options.color;
+    $.ajax({
+      beforeSend: function() {
+        $("#modalLoading").modal('show');
+      },
+      success: function() {
+        let points = [];
+        for (i=0;i<allCircles.length;i++) {
+          let circle = allCircles[i].getLatLng();
+          let Point = {
+            x: circle.lat,
+            y: circle.lng
           }
-          return text + (circleLatLng.lat + "," + circleLatLng.lng);
+          points.push(Point);
+        };
+        let temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
+        let temp2 = Math.ceil(allCircles.length/10);
+        let temp_coeff = '0.99999' + temp1 + temp2;
+        let solution = solve(points, temp_coeff); 
+        let orderedPoints = solution.map(i => points [i]);
+        orderedPoints.forEach(function(item) {
+          newCircle = L.circle([item.x, item.y], {
+            color: color,
+            fillOpacity: 0.2,
+            draggable: true,
+            radius: radius,
+            instanceID: newInstance.id
+          }).bindPopup(function (layer) {
+            return '<div class="input-group mb-3"><label class="form-check-label">' + newInstance.name + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+          }).addTo(instanceLayer);
+          newInstance.push(newCircle._leaflet_id);              
         });
+        instances.push(newInstance);
+        drawRoute(newInstance);
+        instanceLayer.bringToFront();
+      },
+      complete: function() {
+        $("#modalLoading").modal('hide');
       }
-      $('#outputCirclesCount').val(allCircles.length);
-      avgPt = (countPointsInCircles()) / (allCircles.length);
-      $('#outputAvgPt').val(avgPt.toFixed(2));
+    });
+  })
+  $('#getOutput').click(function() {
+    if (($('#multi').multi_select('getSelectedValues')).length > 0) {
+      $('#outputCircles').val('');
+      let allCircles = getAllCircles().getLayers();
+      let avgPt = 0;
+      let exportType = $("#modalOutput input[name=exportCoordsType]:checked").val()
+      if (exportType == 'sorted') {
+        $.ajax({
+          beforeSend: function() {
+            $("#modalLoading").modal('show');
+          },
+          success: function() {
+            let points = [];
+            for (i=0;i<allCircles.length;i++) {
+              let circle = allCircles[i].getLatLng();
+              let Point = {
+                x: circle.lat,
+                y: circle.lng
+              }
+              points.push(Point);
+            };
+            let temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
+            let temp2 = Math.ceil(allCircles.length/10);
+            let temp_coeff = '0.99999' + temp1 + temp2;
+            let solution = solve(points, temp_coeff); 
+            let orderedPoints = solution.map(i => points [i]); 
+            for (i=0;i<orderedPoints.length;i++) {
+              $('#outputCircles').val(function(index, text) {
+                if (i != orderedPoints.length-1) {
+                  return text + (orderedPoints[i].x + "," + orderedPoints[i].y) + "\n" ;
+                }
+                return text + (orderedPoints[i].x + "," + orderedPoints[i].y);
+              });
+            }
+            $('#outputCirclesCount').val(allCircles.length);
+            avgPt = (countPointsInCircles()) / (allCircles.length);
+            $('#outputAvgPt').val(avgPt.toFixed(2));
+          },
+          complete: function() {
+            $("#modalLoading").modal('hide');
+          }
+        });
+      } else {
+        for (i=0;i<allCircles.length;i++) {
+          let circleLatLng = allCircles[i].getLatLng();
+          $('#outputCircles').val(function(index, text) {
+            if (i != allCircles.length-1) {
+              return text + (circleLatLng.lat + "," + circleLatLng.lng) + "\n" ;
+            }
+            return text + (circleLatLng.lat + "," + circleLatLng.lng);
+          });
+        }
+        $('#outputCirclesCount').val(allCircles.length);
+        avgPt = (countPointsInCircles()) / (allCircles.length);
+        $('#outputAvgPt').val(avgPt.toFixed(2));
+      }
+    } else {
+      $('#outputCirclesCount').val('n/a');
+      console.log('No instances chosen')
     }
   });
 });
 $(document).on("click", ".deleteLayer", function() {
-  var id = $(this).attr('data-layer-id');
-  var container = $(this).attr('data-layer-container');
+  let id = $(this).attr('data-layer-id');
+  let container = $(this).attr('data-layer-container');
   switch (container) {
     case 'circleLayer':
       circleLayer.removeLayer(parseInt(id));
@@ -2324,8 +2602,12 @@ $(document).on("click", ".addToExport", function() {
       layer = nestLayer.getLayer(parseInt(id));
       lG = nestLayer;
       break;
+    case 'admLayer':
+      layer = admLayer.getLayer(parseInt(id));
+      lG = admLayer;
+      break;  
   }
-  if ((layer.tags.name == undefined && container == 'nestLayer') || (layer.tags.name == '' && container == 'editableLayer')) {
+  if ((layer.tags.name == undefined && container == 'nestLayer') || (layer.tags.name == '' && container == 'editableLayer') || (layer.tags.name == '' && container == 'admLayer')) {
     let newName = $('#polygonName').val();
     if (newName == '') {
       alert(subs.chooseName);
@@ -2355,6 +2637,10 @@ $(document).on("click", ".removeFromExport", function() {
       layer = nestLayer.getLayer(parseInt(id));
       lG = nestLayer;
       break;
+    case 'admLayer':
+      layer = admLayer.getLayer(parseInt(id));
+      lG = admLayer;
+      break;
   }
   exportList.removeLayer(layer);
   layer.options.color = '#ff8833';
@@ -2364,9 +2650,9 @@ $(document).on("click", ".removeFromExport", function() {
   $('#exportListCount').text(exportListCount);
 });
 $(document).on("click", ".getSpawnReport", function() {
-  var id = $(this).attr('data-layer-id');
-  var layer;
-  var container = $(this).attr('data-layer-container');
+  let id = $(this).attr('data-layer-id');
+  let layer;
+  let container = $(this).attr('data-layer-container');
   switch (container) {
     case 'editableLayer':
       layer = editableLayer.getLayer(parseInt(id));
@@ -2380,7 +2666,16 @@ $(document).on("click", ".getSpawnReport", function() {
 });
 function getAllCircles() {
   let allCircles = new L.FeatureGroup();
-  let instancesIncluded = $('#multi').multi_select('getSelectedValues');
+  let instancesIncluded = [];
+  let choice = $('#multi').multi_select('getSelectedValues');
+  choice.forEach(function(item){
+    let x = mySelect[item];
+    for (i = 0; i < instances.length; i++) {
+      if (instances[i].name == x) {
+        instancesIncluded.push(instances[i].id)
+      }
+    }
+  });
   instancesIncluded.forEach(function(instance) {
     instances[instance].forEach(function(id) {
       let layer = [];
@@ -2396,18 +2691,23 @@ function getAllCircles() {
 }
 function countPointsInCircles(display) {
   let allCircles = getAllCircles();
-  let bounds = allCircles.getBounds();
+  let bounds = [];
+  if (allCircles != undefined) {
+    bounds = allCircles.getBounds();
+  } else {
+    bounds = map.getBounds();
+  }
   prepareData(bounds);
-  var count = 0;
-  var includedGyms = [];
-  var includedStops = [];
-  var includedSpawnpoints = [];
+  let count = 0;
+  let includedGyms = [];
+  let includedStops = [];
+  let includedSpawnpoints = [];
   allCircles.eachLayer(function(layer){
-    var radius = layer.getRadius();
-    var circleCenter = layer.getLatLng();  
+    let radius = layer.getRadius();
+    let circleCenter = layer.getLatLng();  
     if (settings.showGyms == true) {
       gyms.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
+        let point =  L.latLng(item.lat,item.lng);
         if(circleCenter.distanceTo(point) <= radius && includedGyms.indexOf(item) === -1){
           count++;
           includedGyms.push(item);
@@ -2416,7 +2716,7 @@ function countPointsInCircles(display) {
     }
     if (settings.showPokestops == true) {
       pokestops.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
+        let point =  L.latLng(item.lat,item.lng);
         if(circleCenter.distanceTo(point) <= radius && includedStops.indexOf(item) === -1){
           count++;
           includedStops.push(item);
@@ -2425,7 +2725,7 @@ function countPointsInCircles(display) {
     }
     if (settings.showSpawnpoints == true) {
       spawnpoints.forEach(function(item) {
-        var point =  L.latLng(item.lat,item.lng);
+        let point =  L.latLng(item.lat,item.lng);
         if(circleCenter.distanceTo(point) <= radius && includedSpawnpoints.indexOf(item) === -1){
           count++;
           includedSpawnpoints.push(item);
@@ -2445,13 +2745,13 @@ $(document).on("click", "#getCirclesCount", function() {
 $(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {
   $("#modalLoading").modal('show');
-  prepareData();
+  prepareData(nestLayer.getBounds());
   nestLayer.eachLayer(function(layer) {
-    var reportStops = [],
+    let reportStops = [],
       reportSpawns = [];
-    var center = layer.getBounds().getCenter()
-    var poly = layer.toGeoJSON();
-    var line = turf.polygonToLine(poly);
+    let center = layer.getBounds().getCenter()
+    let poly = layer.toGeoJSON();
+    let line = turf.polygonToLine(poly);
     pokestops.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
       if (turf.inside(point, poly)) {
@@ -2472,14 +2772,12 @@ $(document).on("click", "#getAllNests", function() {
       'spawns': reportSpawns
     };
     const json = JSON.stringify(data);
-    if (debug !== false) { console.log(json) }
     $.ajax({
       url: this.href,
       type: 'POST',
       dataType: 'json',
       data: {'data': json},
       success: function (result) {
-        if (debug !== false) { console.log(result) }
         if (result.spawns !== null) {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
@@ -2493,7 +2791,7 @@ $(document).on("click", "#getAllNests", function() {
           if (typeof layer.tags.name !== 'undefined') {
             $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           } else {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + sub.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
+            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + subs.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
           }
         }
       },
@@ -2508,9 +2806,9 @@ $(document).on("click", "#getAllNests", function() {
 });
 $(document).on("click", ".exportLayer", function() {
   $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
-  var id = $(this).attr('data-layer-id');
-  var layer;
-  var container = $(this).attr('data-layer-container');
+  let id = $(this).attr('data-layer-id');
+  let layer;
+  let container = $(this).attr('data-layer-container');
   switch (container) {
     case 'editableLayer':
       layer = editableLayer.getLayer(parseInt(id));
@@ -2520,23 +2818,23 @@ $(document).on("click", ".exportLayer", function() {
       break;
   }
   // geojson
-  var polyjson = JSON.stringify(layer.toGeoJSON());
+  let polyjson = JSON.stringify(layer.toGeoJSON());
   $('#exportPolygonDataGeoJson').val(polyjson);
   // simple coords
-  var polycoords = '';
+  let polycoords = '';
   turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
     polycoords += item[0] + ',' + item[1] + "\n";
   });
   $('#exportPolygonDataCoordsList').val(polycoords);
   // poracle
-  var po_start = '  {\n    "name": "polygon",\n    "color": "#6CB1E1",\n    "id": 0,\n    "path": [\n';
-  var po_end = '    ]\n  }';
-  var po_coords = '';
+  let po_start = '  {\n    "name": "polygon",\n    "color": "#6CB1E1",\n    "id": 0,\n    "path": [\n';
+  let po_end = '    ]\n  }';
+  let po_coords = '';
   turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
     po_coords += '      [\n        ' + item[0] + ',\n        ' + item[1] + '\n      ],\n';
   });
   po_coords = po_coords.slice(0, -2) + '\n';
-  var poracle = po_start + po_coords + po_end;
+  let poracle = po_start + po_coords + po_end;
   $('#exportPolygonDataPoracle').val(poracle);
   $('#exportPolygonDataGeoJson').hide();
   $('#exportPolygonDataPoracle').hide();
@@ -2550,9 +2848,9 @@ $(document).on("click", ".exportPOIs", function() {
   alert(subs.exportPOILabel + '\n' + poicoords)
 });
 $(document).on("click", ".exportPoints", function() {
-  var id = $(this).attr('data-layer-id');
-  var layer;
-  var container = $(this).attr('data-layer-container');
+  let id = $(this).attr('data-layer-id');
+  let layer;
+  let container = $(this).attr('data-layer-container');
   switch (container) {
     case 'editableLayer':
       layer = editableLayer.getLayer(parseInt(id));
@@ -2561,11 +2859,11 @@ $(document).on("click", ".exportPoints", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-  var poly = layer.toGeoJSON();
-  var line = turf.polygonToLine(poly);
-  var gymcoords = '';
-  var stopcoords = '';
-  var spawncoords = '';
+  let poly = layer.toGeoJSON();
+  let line = turf.polygonToLine(poly);
+  let gymcoords = '';
+  let stopcoords = '';
+  let spawncoords = '';
   if (settings.showGyms == true) {
     gyms.forEach(function(item) {
       point = turf.point([item.lng, item.lat]);
@@ -2647,7 +2945,7 @@ $(document).on("click", ".countPoints", function() {
   alert(subs.countTotal + count + '\n' + subs.countGyms + gymCount + '\n' + subs.countStops + stopCount + '\n' + subs.countSpawnpoints + spawnpointCount);
 });
 function cellCount(poly) {
-  var points = 0;
+  let points = 0;
   cell = poly.toGeoJSON();
   gyms.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
@@ -2671,6 +2969,7 @@ function loadSettings() {
     showSpawnpoints: false,
     showUnknownPois: false,
     hideOldSpawnpoints: false,
+    showRoute: false,
     circleSize: 70,
     selectCircleRange: 'circleIV',
     optimizationAttempts: 10,
@@ -2678,9 +2977,12 @@ function loadSettings() {
     oldSpawnpointsTimestamp: 1569438000,
     spawnReportLimit: 10,
     mapMode: 'RouteGenerator',
-    mapCenter: [42.548197, -83.14684],
+    mapCenter: [48.85293727329977, 2.3499734637407377],
     mapZoom: 13,
-    viewCells: false,
+    cellsLevel0: 13,
+    cellsLevel0Check: false,
+    cellsLevel0Check: false,
+    cellsLevel0Check: false,
     tlLink: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     tlChoice: 'osm',
     language: 'en'
@@ -2714,7 +3016,7 @@ function storeSetting(key) {
   localStorage.setItem(key, JSON.stringify(settings[key]));
 }
 function retrieveSetting(key) {
-  var value;
+  let value;
   if (localStorage.getItem(key) !== 'undefined') {
     value = JSON.parse(localStorage.getItem(key));
   } else {
@@ -2722,14 +3024,14 @@ function retrieveSetting(key) {
   }
   return value;
 }
-function showS2Cells0(level, style, mp) {
+function showS2Cells0(level, style) {
   // Credit goes to the PMSF project
-  const bounds = map.getBounds()
+  let bounds = map.getBounds();
   const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
-  const count = (2 ** level * size >> 11)/mp
+  const count = 2 ** level * size >> 11
   function addPoly(cell) {
     const vertices = cell.getCornerLatLngs()
-    const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
+    const poly = L.polygon(vertices, Object.assign({opacity: 1.0, fillOpacity: 0.0}, style))
     if (cell.level === settings.cellsLevel0) {
       viewCellLayer.addLayer(poly)
     }
@@ -2753,18 +3055,20 @@ function showS2Cells0(level, style, mp) {
 }
 function showS2Cells1(level, style) {
   // Credit goes to the PMSF project
-  const bounds = map.getBounds()
+  let bounds = map.getBounds();
   const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
   const count = 2 ** level * size >> 11
+  if (settings.s2CountPOI != false) {
+    prepareData(bounds)
+  }
   function addPoly(cell) {
     const vertices = cell.getCornerLatLngs()
-    const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
+    const poly = L.polygon(vertices, Object.assign({opacity: 1.0, fillOpacity: 0.0}, style))
     if (cell.level === settings.cellsLevel1) {
       viewCellLayer.addLayer(poly)
       if (settings.s2CountPOI != false) {
-        prepareData(poly._bounds);  
-        var poiCount = cellCount(poly).toString();
-        var marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
+        let poiCount = cellCount(poly).toString();
+        let marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
         marker.bindTooltip(poiCount, {permanent: true, textOnly: true, opacity: 0.8, direction: 'center', offset: [25, -20] })
         viewCellLayer.addLayer(marker);
       }
@@ -2788,71 +3092,75 @@ function showS2Cells1(level, style) {
   } while (steps < count)
 }
 function showS2Cells2(level, style) {
-    // Credit goes to the PMSF project
-    const bounds = map.getBounds()
-    const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
-    const count = 2 ** level * size >> 11
-    function addPoly(cell) {
-        const vertices = cell.getCornerLatLngs()
-        const poly = L.polygon(vertices, Object.assign({opacity: 0.5, fillOpacity: 0.0}, style))
-        if (cell.level === settings.cellsLevel2) {
-            viewCellLayer.addLayer(poly)
-        }
+  // Credit goes to the PMSF project
+  const bounds = map.getBounds()
+  const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 4000 + 1 | 0
+  const count = 2 ** level * size >> 11
+  function addPoly(cell) {
+    const vertices = cell.getCornerLatLngs()
+    const poly = L.polygon(vertices, Object.assign({opacity: 1.0, fillOpacity: 0.0}, style))
+    if (cell.level === settings.cellsLevel2) {
+      viewCellLayer.addLayer(poly)
     }
-    // add cells spiraling outward
-    let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
-    let steps = 1
-    let direction = 0
-    do {
-        for (let i = 0; i < 2; i++) {
-            for (let i = 0; i < steps; i++) {
-                if (bounds.intersects(cell.getCornerLatLngs())) {
-                  addPoly(cell)
-                }
-                cell = cell.getNeighbors()[direction % 4]
-            }
-            direction++
+  }
+  // add cells spiraling outward
+  let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level)
+  let steps = 1
+  let direction = 0
+  do {
+    for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < steps; i++) {
+        if (bounds.intersects(cell.getCornerLatLngs())) {
+          addPoly(cell)
         }
-        steps++
-    } while (steps < count)
+        cell = cell.getNeighbors()[direction % 4]
+      }
+      direction++
+    }
+    steps++
+  } while (steps < count)
+}
+function zoomIn(factor) {
+  map.setZoom(factor)
 }
 function updateS2Overlay() {
-    if (settings.viewCells && (map.getZoom() >= 13.5) && (settings.cellsLevel0 < 20)) {
-        viewCellLayer.clearLayers()
-        if (settings.cellsLevel0Check != false) {
-          showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1}, 1)
-        }
-        if ((settings.cellsLevel1Check != false) && (settings.s2CountPOI == false)) {
-          showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
-        }
-        if ((settings.cellsLevel1Check != false) && (settings.s2CountPOI != false)) {
-          viewCellLayer.clearLayers()
-          if (map.getZoom() < 14.5){
-            map.setZoom(14.5)
-            console.log('Zoom adapted for L14 cells with POI Count')
-          }
-          showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
-        }  
-        if (settings.cellsLevel2Check != false) {
-          showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
-        }        
-        editableLayer.removeFrom(map).addTo(map);
-        nestLayer.removeFrom(map).addTo(map);
-        circleLayer.removeFrom(map).addTo(map);
-        instanceLayer.removeFrom(map).addTo(map);
-    } else if (settings.viewCells && (map.getZoom() < 13.0)) {
-        viewCellLayer.clearLayers()
-        console.log('View cells are currently hidden, zoom in')
-    } else if (settings.viewCells && (settings.cellsLevel0 > 19) && (settings.cellsLevel0Check != false)) {
-        viewCellLayer.clearLayers()
-        if (map.getZoom() < 17.5){
-          map.setZoom(17.5)
-          console.log('Zoom adapted for L20 cells')
-        } 
-        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 0.5}, 8)        
-    } else {
-        viewCellLayer.clearLayers()
+  if (map.getZoom() >= 13.5) {
+    viewCellLayer.clearLayers()
+    if (settings.cellsLevel0Check != false  && settings.cellsLevel0 < 20) {
+      showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 1})
+    } else if (settings.cellsLevel0Check != false && settings.cellsLevel0 > 19) {
+      viewCellLayer.clearLayers()
+      if (map.getZoom() < 17.5){
+        zoomIn(17.5)
+        console.log('Zoom adapted for L20 cells')
+      } else {
+        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 0.5}) 
+      }       
     }
+    if (settings.cellsLevel1Check != false && settings.s2CountPOI == false) {
+      showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
+    } else if (settings.cellsLevel1Check != false && settings.s2CountPOI != false) {
+      viewCellLayer.clearLayers()
+      if (map.getZoom() < 14.5){
+        zoomIn(14.5)
+        console.log('Zoom adapted for L14 cells with POI Count')
+      } else {
+        showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
+      }
+    }  
+    if (settings.cellsLevel2Check != false) {
+      showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
+    }        
+    editableLayer.removeFrom(map).addTo(map);
+    nestLayer.removeFrom(map).addTo(map);
+    circleLayer.removeFrom(map).addTo(map);
+    instanceLayer.removeFrom(map).addTo(map);
+  } else {
+    viewCellLayer.clearLayers()
+    if (settings.cellsLevel0Check != false || settings.cellsLevel1Check != false || settings.cellsLevel2Check != false) {
+      console.log('View cells are currently hidden, zoom in')
+    }
+  }
 }
 function makeTextFile (text) {
   let textFile = null;
@@ -2970,7 +3278,7 @@ $(document).on("click", "#generateNestFile", function () {
   document.getElementById('downloadlink').click();
 });
 function newMultiSelect() {
-  let mySelect = [];
+  mySelect = [];
   for (let i = 0; i < instances.length; i++) {
     if (instances[i].length > 0) {
       mySelect.push(instances[i].name);
@@ -2981,14 +3289,14 @@ function newMultiSelect() {
       data: mySelect,
       selectColor: "blue",
       selectSize: "small",
-      selectText: "Select instances"
+      selectText: subs.selectInstances
     });
   } else {
     $('.multi').multi_select({
       data: '',
       selectColor: "blue",
       selectSize: "small",
-      selectText: "Select instances"
+      selectText: subs.selectInstances
     });
   }
 }
@@ -2998,7 +3306,7 @@ function newMultiSelect() {
   <body>
     <div id="map"></div>
 
-    <div class="modal" id="modalSettings" tabindex="-1" role="dialog">
+    <div class="modal" id="modalSettings" tabindex="-1" role="dialog" style="min-width: 400px;">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -3019,33 +3327,30 @@ function newMultiSelect() {
               </div>
             </div>
 
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells0);</script></span>
+            <div class="input-group mb">              
+              <div class="input-group">
+                <label class="form-check-label"><script type="text/javascript">document.write("S2 Cells");</script></label>
               </div>
-              <input id="cellsLevel0" name="cellsLevel0" type="text" aria-label="cells Level 0" style="padding-left: 10px; width: 40px;">
-              <div>
-                <input type="checkbox" name="cellsLevel0Check" id="cellsLevel0Check" style="margin-left: 15px; vertical-align: bottom;">
+            </div>
+            
+            <div class="input-group mb-3">
+              <div class="input-group-text" style="background-color: white; border-width: 0px;">
+                <span class="form-check-label"><script type="text/javascript">document.write(subs.s2cells1);</script>
+                <input type="checkbox" name="cellsLevel1Check" id="cellsLevel1Check" style="margin-left: 10px; margin-right: 25px;">
+                <script type="text/javascript">document.write(subs.s2CountPOI);</script>
+                <input type="checkbox" name="s2CountPOI" id="s2CountPOI" style="margin-left: 10px;"></span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <div>
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells1);</script><br>
-                <script type="text/javascript">document.write(subs.s2CountPOI);</script></span>
+              <div class="input-group-text" style="background-color: white; border-width: 0px;">
+                <span class="form-check-label"><script type="text/javascript">document.write(subs.s2cells2);</script></span>
+                <input type="checkbox" name="cellsLevel2Check" id="cellsLevel2Check" style="margin-left: 10px;">
               </div>
-              <div>
-                  <input type="checkbox" name="cellsLevel1Check" id="cellsLevel1Check" style="margin-left: 15px; vertical-align: bottom;"><br>
-                  <input type="checkbox" name="s2CountPOI" id="s2CountPOI" style="margin-left: 15px; vertical-align: -0.8em;">
-              </div>
-            </div>
-
-            <div class="input-group mb-3">
-              <div>
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.s2cells2);</script></span>
-              </div>
-              <div>
-                  <input type="checkbox" name="cellsLevel2Check" id="cellsLevel2Check" style="margin-left: 15px; vertical-align: bottom;">
+              <div class="input-group-text" style="background-color: white; border-width: 0px; margin-left: 7px">
+                <span class="form-check-label"><script type="text/javascript">document.write(subs.s2cells0);</script></span>
+                <input id="cellsLevel0" name="cellsLevel0" type="text" aria-label="cells Level 0" style="margin-left: 10px; width: 60px;">
+                <input type="checkbox" name="cellsLevel0Check" id="cellsLevel0Check" style="margin-left: 10px;">
               </div>
             </div>
 
@@ -3117,6 +3422,8 @@ function newMultiSelect() {
                 <option value="carto">Lite</option>
                 <option value="sat">Satellite</option>
                 <option value="own"><script type="text/javascript">document.write(subs.ownTileset);</script></option>
+                <option value="topo">Topographic</option>
+                <option value="dark">Dark</option>
               </select>
             </div>
 
@@ -3241,7 +3548,15 @@ function newMultiSelect() {
               </div>
               <input id="ownRadius" name="ownRadius" type="text" aria-label="Own radius for instance import" style="padding-left: 10px; width: 80px;">
             </div>
-            <div class="input-group" style="margin-bottom: 15px;">
+
+            <div>
+              <label for="importCircleData"><script type="text/javascript">document.write(subs.importCirclesHl);</script></label>
+              <div class="input-group mb">
+                <textarea name="importCircleData" id="importCircleData" style="height:120px;" class="form-control" aria-label="Circle data"></textarea>
+              </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 15px; margin-top: 10px;">
               <div>
                 <label><script type="text/javascript">document.write(subs.instanceMode);</script></label>
               </div>
@@ -3258,7 +3573,8 @@ function newMultiSelect() {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" id="importInstance" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.importInstance);</script></button>
+            <button type="button" id="importInstance" class="btn btn-primary"><script type="text/javascript">document.write(subs.importInstance);</script></button>
+            <button type="button" id="importCircles" class="btn btn-primary"><script type="text/javascript">document.write(subs.importCirclesBtn);</script></button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
@@ -3325,9 +3641,9 @@ function newMultiSelect() {
               <label for="csvOpener"><script type="text/javascript">document.write(subs.csvOpener);</script></label>
               <input id="csvOpener" type='file' accept='text/csv' onchange='openFile(event)'>
                 <script>
-                  var openFile = function(event) {
-                    var input = event.target;
-                    var reader = new FileReader();
+                  let openFile = function(event) {
+                    let input = event.target;
+                    let reader = new FileReader();
                     reader.onload = function(){
                       csvImport = reader.result;
                     };
@@ -3482,18 +3798,41 @@ function newMultiSelect() {
           </div>
           <div class="modal-body">
             <div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv6">
-                <label class="form-check-label" for="adBoundsLv6"><script type="text/javascript">document.write(subs.adBoundsLv6);</script></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv8">
-                <label class="form-check-label" for="adBoundsLv8"><script type="text/javascript">document.write(subs.adBoundsLv8);</script></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBoundsLv9" checked>
-                <label class="form-check-label" for="adBoundsLv9"><script type="text/javascript">document.write(subs.adBoundsLv9);</script></label>
-              </div>
+              <table>
+                <tr>
+                  <td>
+                    <label class="form-check-label" style="margin-right: 40px;"><script type="text/javascript">document.write(subs.adBounds1);</script></label>
+                  </td>
+                  <td>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds1">
+                    <label class="form-check-label" for="adBounds1">Lv. 6</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label class="form-check-label" style="margin-right: 40px;"><script type="text/javascript">document.write(subs.adBounds2);</script></label>
+                  </td>
+                  <td>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_1">
+                    <label class="form-check-label" for="adBounds2_1" style="margin-right: 30px;">Lv. 6</label>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_2" checked>
+                    <label class="form-check-label" for="adBounds2_2">Lv. 8</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label class="form-check-label" style="margin-right: 40px;"><script type="text/javascript">document.write(subs.adBounds3);</script></label> 
+                  </td>
+                  <td>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds3_1">
+                    <label class="form-check-label" for="adBounds3_1" style="margin-right: 30px;">Lv. 9</label>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds3_2">
+                    <label class="form-check-label" for="adBounds3_2" style="margin-right: 30px;">Lv. 10</label>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds3_3">
+                    <label class="form-check-label" for="adBounds3_3">Lv. 11</label>
+                  </td>
+                </tr>
+              </table>
             </div>
           </div>
           <div class="modal-footer">
@@ -3636,10 +3975,10 @@ function getSpawnData($args) {
     try {
      $stmt->execute($binds);
      } catch (PDOException $e) {
-      //var_dump($e);
-      var_dump(array('sql_spawnpoint' => $sql_spawn));
-      var_dump(array('binds_count' => count($binds), 'stop_count' => count($args->stops), 'spawn_count' => count($args->spawns)));
-      var_dump($args);
+      //let_dump($e);
+      let_dump(array('sql_spawnpoint' => $sql_spawn));
+      let_dump(array('binds_count' => count($binds), 'stop_count' => count($args->stops), 'spawn_count' => count($args->spawns)));
+      let_dump($args);
     }
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
