@@ -3411,7 +3411,7 @@ function newMultiSelect() {
               <select class="form-control" id="language">
                 <option value="en">English</option>
                 <option value="de">Deutsch</option>
-                <option value="fr" disabled>Français</option>
+                <option value="fr">Français</option>
               </select>
             </div>
 
