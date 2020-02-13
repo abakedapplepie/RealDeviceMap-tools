@@ -2816,6 +2816,9 @@ $(document).on("click", ".exportLayer", function() {
     case 'nestLayer':
       layer = nestLayer.getLayer(parseInt(id));
       break;
+    case 'admLayer':
+      layer = admLayer.getLayer(parseInt(id));
+      break;
   }
   // geojson
   let polyjson = JSON.stringify(layer.toGeoJSON());
