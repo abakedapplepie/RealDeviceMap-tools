@@ -103,6 +103,7 @@ let drawControl,
   buttonShowSpawnpoints,
   buttonHideOldSpawnpoints,
   buttonShowUnknownPois,
+  buttonShowUnknownQuests,
   buttonSettingsModal,
   buttonClearSubs,
   buttonNewPOI,
@@ -129,6 +130,7 @@ let settings = {
   showSpawnpoints: null,
   showUnknownPois: null,
   hideOldSpawnpoints: null,
+  showUnknownQuests: false,
   showRoute: null,
   oldSpawnpointsTimestamp: null,
   circleSize: null,
@@ -925,6 +927,29 @@ function initMap() {
       }
     }]
   });
+  buttonShowUnknownQuests = L.easyButton({
+    id: 'showUnknownQuests',
+    states:[{
+      stateName: 'enableShowUnknownQuests',
+      icon: 'fas fa-paw',
+      title: 'show stops with undone quests',
+      onClick: function (btn) {
+        $('#modalQuestInstances').modal('show');
+        settings.showUnknownQuests = false;
+        storeSetting('showUnknownQuests');
+        setShowMode();
+      }
+    }, {
+      stateName: 'disableShowUnknownQuests',
+      icon: 'fas fa-paw',
+      title: 'hide stops with undone quests',
+      onClick: function (btn) {
+        settings.showUnknownQuests = true;
+        storeSetting('showUnknownQuests');
+        setShowMode();
+      }
+    }]
+  });
   buttonShowRoute = L.easyButton({
     id: 'showRoute',
     states:[{
@@ -947,7 +972,7 @@ function initMap() {
       }
     }]
   });
-  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois, buttonShowRoute], { position: 'topright' }).addTo(map);
+  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois, buttonShowUnknownQuests, buttonShowRoute], { position: 'topright' }).addTo(map);
 
   // Bar rightOpts
   buttonTrash = L.easyButton({
@@ -1307,6 +1332,13 @@ function setShowMode() {
   } else {
     buttonShowUnknownPois.state('disableShowUnknownPois');
     buttonShowUnknownPois.button.style.backgroundColor = '#E9B7B7';
+  }
+  if (settings.showUnknownQuests !== false) {
+    buttonShowUnknownQuests.state('enableShowUnknownQuests');
+    buttonShowUnknownQuests.button.style.backgroundColor = '#B7E9B7';
+  } else {
+    buttonShowUnknownQuests.state('disableShowUnknownQuests');
+    buttonShowUnknownQuests.button.style.backgroundColor = '#E9B7B7';
   }
   if (settings.showRoute !== false) {
     if (instances != '') {
@@ -2972,6 +3004,7 @@ function loadSettings() {
     showSpawnpoints: false,
     showUnknownPois: false,
     hideOldSpawnpoints: false,
+    showUnknownQuests:false,
     showRoute: false,
     circleSize: 70,
     selectCircleRange: 'circleIV',
@@ -3519,6 +3552,28 @@ function newMultiSelect() {
                 </div>
               </div>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modalQuestInstances" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><script type="text/javascript">document.write('Quest instances to be checked');</script></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <div class="multi" id="multiQuest" style="min-width: 300px;"></div>
+            </div>
+            <label for="mapMode"><script type="text/javascript">document.write('Choose quest instances')</script></label>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
