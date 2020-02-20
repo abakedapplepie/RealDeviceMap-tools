@@ -103,7 +103,7 @@ let drawControl,
   buttonShowSpawnpoints,
   buttonHideOldSpawnpoints,
   buttonShowUnknownPois,
-  buttonShowUnknownQuests,
+  buttonShowMissingQuests,
   buttonSettingsModal,
   buttonClearSubs,
   buttonNewPOI,
@@ -121,7 +121,8 @@ let gyms = [],
   spawnpoints_u = [],
   instances = [],
   circleInstance = [],
-  mySelect = [];
+  mySelect = [],
+  myQuestSelect = [];
 //options vars
 let settings = {
   showGyms: null,
@@ -130,7 +131,7 @@ let settings = {
   showSpawnpoints: null,
   showUnknownPois: null,
   hideOldSpawnpoints: null,
-  showUnknownQuests: false,
+  showMissingQuests: false,
   showRoute: null,
   oldSpawnpointsTimestamp: null,
   circleSize: null,
@@ -162,6 +163,7 @@ let gymLayer,
   circleS2Layer,
   circleLayer,
   instanceLayer,
+  questLayer,
   bgLayer,
   nestLayer,
   viewCellLayer,
@@ -564,6 +566,8 @@ function initMap() {
   exportList.addTo(map);
   instanceLayer = new L.FeatureGroup();
   instanceLayer.addTo(map);
+  questLayer = new L.FeatureGroup();
+  questLayer.addTo(map);
   routingLayer = new L.FeatureGroup();
   routingLayer.addTo(map);
   
@@ -716,7 +720,7 @@ function initMap() {
       title: subs.getOutput,
       onClick: function (control){
         $('#modalOutput').modal('show');
-        newMultiSelect();
+        newMSInstances();
       }
     }]
   });
@@ -927,26 +931,25 @@ function initMap() {
       }
     }]
   });
-  buttonShowUnknownQuests = L.easyButton({
-    id: 'showUnknownQuests',
+  buttonShowMissingQuests = L.easyButton({
+    id: 'showMissingQuests',
     states:[{
-      stateName: 'enableShowUnknownQuests',
-      icon: 'fas fa-paw',
-      title: 'show stops with undone quests',
+      stateName: 'enableShowMissingQuests',
+      icon: 'fab fa-searchengin',
+      title: subs.hideQuests,
       onClick: function (btn) {
-        $('#modalQuestInstances').modal('show');
-        settings.showUnknownQuests = false;
-        storeSetting('showUnknownQuests');
+        settings.showMissingQuests = false;
+        storeSetting('showMissingQuests');
+        questLayer.clearLayers();
         setShowMode();
       }
     }, {
-      stateName: 'disableShowUnknownQuests',
-      icon: 'fas fa-paw',
-      title: 'hide stops with undone quests',
+      stateName: 'disableShowMissingQuests',
+      icon: 'fab fa-searchengin',
+      title: subs.showQuests,
       onClick: function (btn) {
-        settings.showUnknownQuests = true;
-        storeSetting('showUnknownQuests');
-        setShowMode();
+        $('#modalQuestInstances').modal('show');
+        newMSQuests();
       }
     }]
   });
@@ -972,7 +975,7 @@ function initMap() {
       }
     }]
   });
-  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois, buttonShowUnknownQuests, buttonShowRoute], { position: 'topright' }).addTo(map);
+  barShowPOIs = L.easyBar([buttonShowGyms, buttonShowPokestops, buttonShowPokestopsRange, buttonShowSpawnpoints, buttonHideOldSpawnpoints, buttonShowUnknownPois, buttonShowMissingQuests, buttonShowRoute], { position: 'topright' }).addTo(map);
 
   // Bar rightOpts
   buttonTrash = L.easyButton({
@@ -1166,6 +1169,10 @@ function initMap() {
       drawRoute(instances[e.layer.options.instanceID]);
     })
   });
+  questLayer.on('layerremove', function() {
+    settings.showMissingQuests = false;
+    storeSetting('showMissingQuests');
+  });
   map.on('moveend', function() {
     settings.mapCenter = map.getCenter();
     storeSetting('mapCenter');
@@ -1333,12 +1340,12 @@ function setShowMode() {
     buttonShowUnknownPois.state('disableShowUnknownPois');
     buttonShowUnknownPois.button.style.backgroundColor = '#E9B7B7';
   }
-  if (settings.showUnknownQuests !== false) {
-    buttonShowUnknownQuests.state('enableShowUnknownQuests');
-    buttonShowUnknownQuests.button.style.backgroundColor = '#B7E9B7';
+  if (settings.showMissingQuests !== false) {
+    buttonShowMissingQuests.state('enableShowMissingQuests');
+    buttonShowMissingQuests.button.style.backgroundColor = '#B7E9B7';
   } else {
-    buttonShowUnknownQuests.state('disableShowUnknownQuests');
-    buttonShowUnknownQuests.button.style.backgroundColor = '#E9B7B7';
+    buttonShowMissingQuests.state('disableShowMissingQuests');
+    buttonShowMissingQuests.button.style.backgroundColor = '#E9B7B7';
   }
   if (settings.showRoute !== false) {
     if (instances != '') {
@@ -1989,6 +1996,7 @@ function clearAllLayers() {
   routingLayer.clearLayers();
   exportList.clearLayers();
   circleS2Layer.clearLayers();
+  questLayer.clearLayers();
   circleInstance = [];
   instances = [];
 }
@@ -2506,8 +2514,19 @@ $(document).ready(function() {
       }
     });
   })
+  $(document).on('click', '#showMissingQuests', function() {
+    let selection = $('#multiQuest').multi_select('getSelectedValues');
+    let choice = [];
+    selection.forEach(function(item){
+      let x = myQuestSelect[item];
+      choice.push(x)
+    });
+    showMissingQuests(choice);
+    setShowMode();
+    $('#modalQuestInstances').modal('hide')
+  })
   $('#getOutput').click(function() {
-    if (($('#multi').multi_select('getSelectedValues')).length > 0) {
+    if (($('#multiInstances').multi_select('getSelectedValues')).length > 0) {
       $('#outputCircles').val('');
       let allCircles = getAllCircles().getLayers();
       let avgPt = 0;
@@ -2696,10 +2715,102 @@ $(document).on("click", ".getSpawnReport", function() {
   prepareData(layer._bounds);
   getSpawnReport(layer);
 });
+function showMissingQuests(choice) {
+  if (choice.length > 0) {
+    settings.showMissingQuests = true;
+  }
+  choice.forEach(function(item) {
+    const data = {
+      'get_instance_data': true,
+      'instance_name': item
+    };
+    const json = JSON.stringify(data);
+    let weight;
+    if ($('#instanceBorders').is(':checked')) {
+      weight = 2;
+    } else {
+      weight = 0;
+    }
+    let polygonOptions = {
+      clickable: false,
+      color: 'black',
+      fill: true,
+      fillColor: null,
+      fillOpacity: 0.0,
+      opacity: 1.0,
+      stroke: true,
+      weight: weight
+    };
+    $.ajax({
+      url: this.href,
+      type: 'POST',
+      async: false,
+      dataType: 'json',
+      data: {'data': json},
+      success: function (result) {
+        points = result.data.area;
+        if (points.length > 0 ) {       
+          points.forEach(function(coords) {
+            newPolygon = L.polygon(coords, polygonOptions).addTo(questLayer);
+          });
+        }
+      }
+    });
+  })
+  let bounds = questLayer.getBounds();
+  const data = {
+    'get_data': true,
+    'min_lat': bounds.getSouthWest().lat,
+    'max_lat': bounds.getNorthEast().lat,
+    'min_lng': bounds.getSouthWest().lng,
+    'max_lng': bounds.getNorthEast().lng,
+    'show_gyms': false,
+    'show_pokestops': true,
+    'show_spawnpoints': false,
+    'show_unknownpois': false
+  };
+  const json = JSON.stringify(data);
+  $.ajax({
+    url: this.href,
+    type: 'POST',
+    async: false,
+    dataType: 'json',
+    data: {'data': json},
+    success: function (result) {
+      if (result.quests != null && settings.showMissingQuests === true) {
+        questLayer.getLayers().forEach(function(layer) {
+          let poly = layer.toGeoJSON();
+          let line = turf.polygonToLine(poly);
+          result.quests.forEach(function(item) {
+            point = turf.point([item.lng, item.lat]);
+            if (turf.inside(point, poly)) {
+              let radius = (6/8) + ((8/8) * (map.getZoom() - 9)) // Depends on Zoomlevel
+              let weight = (1/8) + ((1/8) * (map.getZoom() - 10)) // Depends on Zoomlevel
+              let marker = L.circleMarker([item.lat, item.lng], {
+                color: 'black',
+                fillColor: 'red',
+                radius: radius,
+                weight: weight,
+                opacity: 1,
+                fillOpacity: 0.8
+              }).addTo(map);
+              marker.tags = {};
+              marker.tags.id = item.id;
+              marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(questLayer);
+            }
+          });
+        });
+      }
+    },
+    error: function () {
+      alert('Something went horribly wrong');
+    }
+  });
+}
 function getAllCircles() {
   let allCircles = new L.FeatureGroup();
   let instancesIncluded = [];
-  let choice = $('#multi').multi_select('getSelectedValues');
+  let choice = $('#multiInstances').multi_select('getSelectedValues');
   choice.forEach(function(item){
     let x = mySelect[item];
     for (i = 0; i < instances.length; i++) {
@@ -3004,7 +3115,7 @@ function loadSettings() {
     showSpawnpoints: false,
     showUnknownPois: false,
     hideOldSpawnpoints: false,
-    showUnknownQuests:false,
+    showMissingQuests: false,
     showRoute: false,
     circleSize: 70,
     selectCircleRange: 'circleIV',
@@ -3027,6 +3138,7 @@ function loadSettings() {
     storedSetting = retrieveSetting(key);
     if (storedSetting !== null) {
       settings[key] = storedSetting;
+      settings.showMissingQuests = false;
     } else {
       settings[key] = defaultSettings[key];
       storeSetting(key)
@@ -3313,7 +3425,7 @@ $(document).on("click", "#generateNestFile", function () {
   link.href = makeTextFile(content);
   document.getElementById('downloadlink').click();
 });
-function newMultiSelect() {
+function newMSInstances() {
   mySelect = [];
   for (let i = 0; i < instances.length; i++) {
     if (instances[i].length > 0) {
@@ -3321,20 +3433,47 @@ function newMultiSelect() {
     }
   }
   if (mySelect != '') {
-    $('.multi').multi_select({
+    $('.multi_0').multi_select({
       data: mySelect,
       selectColor: "blue",
       selectSize: "small",
       selectText: subs.selectInstances
     });
   } else {
-    $('.multi').multi_select({
+    $('.multi_0').multi_select({
       data: '',
       selectColor: "blue",
       selectSize: "small",
       selectText: subs.selectInstances
     });
   }
+}
+function newMSQuests() {
+  const data = {
+    'get_instance_names': true,
+  };
+  myQuestSelect = [];
+  const json = JSON.stringify(data);
+  $.ajax({
+    url: this.href,
+    type: 'POST',
+    async: false,
+    dataType: 'json',
+    data: {'data': json},
+    success: function (result) {
+      result.forEach(function(item) {
+        if (item.type == 'auto_quest') {
+          myQuestSelect.push(item.name)
+        }
+      });
+    }
+  });
+  $('.multi_1').multi_select({
+    data: myQuestSelect,
+    selectColor: "blue",
+    selectSize: "small",
+    selectText: subs.selectInstances
+  });
 }
 </script>
 
@@ -3482,7 +3621,7 @@ function newMultiSelect() {
           </div>
           <div class="modal-body">
             <div class="input-group mb-3">
-              <div class="multi" id="multi" style="min-width: 300px;"></div>
+              <div class="multi_0" id="multiInstances" style="min-width: 300px;"></div>
             </div>
             <label for="mapMode"><script type="text/javascript">document.write(subs.generatedRoute)</script></label>
             <div class="input-group mb-3">
@@ -3564,18 +3703,26 @@ function newMultiSelect() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title"><script type="text/javascript">document.write('Quest instances to be checked');</script></h5>
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.questCheck);</script></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <div class="input-group mb-3">
-              <div class="multi" id="multiQuest" style="min-width: 300px;"></div>
+              <div class="multi_1" id="multiQuest" style="min-width: 300px;"></div>
             </div>
-            <label for="mapMode"><script type="text/javascript">document.write('Choose quest instances')</script></label>
+          </div>
+          <div class="input-group" style="margin-bottom: 15px; margin-top: 10px;">
+            <div>
+              <input type="checkbox" name="instanceBorders" id="instanceBorders" style="margin-left: 20px; margin-right: 10px">
+            </div>
+            <div>
+              <label><script type="text/javascript">document.write(subs.showBorders);</script></label>
+            </div>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="showMissingQuests"><script type="text/javascript">document.write(subs.questCheckButton);</script></button>
             <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
@@ -4058,11 +4205,15 @@ function getData($args) {
   $stmt = $db->prepare($sql_pokestop);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $sql_quest = "SELECT id, lat, lon as lng, name FROM pokestop WHERE quest_type is NULL AND lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $stmt = $db->prepare($sql_quest);
+  $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
+  $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
   $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, updated FROM spawnpoint WHERE " . $show_unknown_mod_sp . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_spawnpoint);
   $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
   $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'spawnpoints' => $spawns, 'sql_gym' => $sql_gym, 'sql_pokestop' => $sql_pokestop, 'sql_spawnpoint' => $sql_spawnpoint ));
+  echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'quests' => $quests, 'spawnpoints' => $spawns, 'sql_gym' => $sql_gym, 'sql_pokestop' => $sql_pokestop, 'sql_quest' => $sql_quest, 'sql_spawnpoint' => $sql_spawnpoint ));
 }
 function getOptimization($args) {
   global $db;
