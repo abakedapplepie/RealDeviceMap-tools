@@ -151,7 +151,8 @@ let settings = {
   selectCircleRange: null,
   tlLink: null,
   tlChoice: null,
-  language: null
+  language: null,
+  generateWithS2Cells: false
 };
 //map layer vars
 let gymLayer,
@@ -169,6 +170,7 @@ let gymLayer,
   viewCellLayer,
   subsLayer,
   routingLayer,
+  bootstrapLayer,
   exportList;
 $(function(){
   loadSettings();
@@ -440,6 +442,7 @@ $(function(){
     let cellsLevel1Check = $('#cellsLevel1Check').is(":checked");
     let cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
     let s2CountPOICheck = $('#s2CountPOI').is(":checked");
+    let generateS2Check = $('#generateWithS2Cells').is(":checked");
     let nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
     let oldSpawnpointsTimestamp = moment($("#oldSpawnpointsTimestamp").datetimepicker('date')).local().format('X');
     let oldTlChoice = settings.tlChoice;
@@ -485,6 +488,7 @@ $(function(){
       cellsLevel2: 17,
       cellsLevel2Check: cellsLevel2Check,
       s2CountPOI: s2CountPOICheck,
+      generateWithS2Cells: generateS2Check,
       selectCircleRange: selectCircleRange,
       tlChoice: tlChoice,
       tlLink: tileset,
@@ -570,6 +574,8 @@ function initMap() {
   questLayer.addTo(map);
   routingLayer = new L.FeatureGroup();
   routingLayer.addTo(map);
+  bootstrapLayer = new L.featureGroup();
+  bootstrapLayer.addTo(map);
   
   // Buttons left
   searchControl = new L.Control.Search({
@@ -682,6 +688,7 @@ function initMap() {
       title: subs.clearRoute,
       onClick: function (control){
         circleLayer.clearLayers();
+        bootstrapLayer.clearLayers();
         instanceLayer.clearLayers();
         instances = [];
         circleInstance = [];
@@ -1024,6 +1031,9 @@ function initMap() {
         }
         if (settings.cellsLevel2Check != null) {
           $('#cellsLevel2Check').checked = settings.cellsLevel2Check;
+        }
+        if (settings.generateWithS2Cells != false) {
+          $('#generateWithS2Cells').checked = true;
         }
         if (settings.selectCircleRange != null) {
           document.getElementById(settings.selectCircleRange).checked = true;
@@ -1807,8 +1817,18 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
   $("#modalLoading").modal('hide');
 }
 function generateRoute() {
+  let targetLayer;
+  let targetLayerName;
+  if (settings.generateWithS2Cells != false) {
+    targetLayer = circleLayer;
+    targetLayerName = 'circleLayer';
+  } else {
+    targetLayer = bootstrapLayer;
+    targetLayerName = 'bootstrapLayer';
+  }
   circleLayer.clearLayers();
   instanceLayer.clearLayers();
+  bootstrapLayer.clearLayers();
   circleInstance = [];
   instances = [];
   let circleRadius;
@@ -1836,7 +1856,7 @@ function generateRoute() {
     let row = 0;
     let heading = 270;
     let i = 0;
-    while(currentLatLng.lat > endLatLng.lat) {
+    while (currentLatLng.lat > endLatLng.lat) {
       do {
         let point = turf.point([currentLatLng.lng, currentLatLng.lat]);
         let distance = turf.pointToLineDistance(point, line, { units: 'meters' });
@@ -1848,8 +1868,8 @@ function generateRoute() {
             draggable: true,
             radius: circleRadius
           }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div></div>';
-          }).addTo(circleLayer);
+            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="' + targetLayerName + '" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="' + targetLayerName + '" data-layer-id="' + layer._leaflet_id + '" type="button">' + subs.newRoute + '</button></div></div>';
+          }).addTo(targetLayer);
           if (circleInstance == '') {
             circleInstance.push(newCircle._leaflet_id);
             if (instances.length != 'undefined') {
@@ -1857,7 +1877,7 @@ function generateRoute() {
             } else {
               circleInstance.id = 0;
             }
-            circleInstance.name = subs.drawnCircles;
+            circleInstance.name = 'bootstrap';
             instances.push(circleInstance);
           } else {
             instances[circleInstance.id].push(newCircle._leaflet_id);
@@ -1865,7 +1885,7 @@ function generateRoute() {
         }
         currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
         i++;
-      }while((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
+      } while ((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
       currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*circleRadius*2));
       rem = row%2;
       if (rem == 1) {
@@ -1878,10 +1898,10 @@ function generateRoute() {
     }
   }
   editableLayer.eachLayer(function (layer) {
-     route(layer);
+    route(layer);
   });
   nestLayer.eachLayer(function (layer) {
-     route(layer);
+    route(layer);
   });
 }
 function removeArrayElement(arr, value) {
@@ -1997,6 +2017,7 @@ function clearAllLayers() {
   exportList.clearLayers();
   circleS2Layer.clearLayers();
   questLayer.clearLayers();
+  bootstrapLayer.clearLayers();
   circleInstance = [];
   instances = [];
 }
@@ -2431,19 +2452,25 @@ $(document).ready(function() {
     let container = $(this).attr('data-layer-container');
     let id = $(this).attr('data-layer-id');
     let sourceCircle;
+    let sourceLayer = [];
     let oldInstance;
-    if (container != 'circleLayer') {
+    if (container == 'circleLayer') {
+      sourceLayer = circleLayer;
+    } else if (container == 'bootstrapLayer') {
+      sourceLayer = bootstrapLayer;
+    }
+    if (container == 'instanceLayer') {
       sourceCircle = instanceLayer.getLayer(parseInt(id));
       oldInstance = instances[sourceCircle.options.instanceID];
     } else {
       let instance = [];
       instance.id = instances.length;
       instance.name = subs.drawnCircles + ' ' + instance.id;
-      sourceCircle = circleLayer.getLayer(parseInt(id));
+      sourceCircle = sourceLayer.getLayer(parseInt(id));
       sourceCircle.options.instanceID = instance.id;
       let radius = sourceCircle.getRadius();
       let color = sourceCircle.options.color;
-      circleLayer.getLayers().forEach(function(item) {
+      sourceLayer.getLayers().forEach(function(item) {
         let newLayer;
         circle = L.circle([item.getLatLng().lat, item.getLatLng().lng], {
           color: color,
@@ -2454,12 +2481,13 @@ $(document).ready(function() {
         }).bindPopup(function (layer) {
           return '<div class="input-group mb-3"><label class="form-check-label">' + instance.name + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
         }).addTo(instanceLayer);
-        circleLayer.removeLayer(parseInt(item._leaflet_id));
+        sourceLayer.removeLayer(parseInt(item._leaflet_id));
         instance.push(circle._leaflet_id);
       });
+      instances[sourceCircle.options.instanceID-1] = [];
       instances.push(instance);
       oldInstance = instance;
-     }
+    }
     let allCircles = [];
     oldInstance.forEach(function(item) {
       circle = instanceLayer.getLayer(item);
@@ -2608,6 +2636,9 @@ $(document).on("click", ".deleteLayer", function() {
       let rangeID = subsLayer.getLayer(markerID).rangeID;
       subsLayer.removeLayer(markerID);
       subsLayer.removeLayer(rangeID);
+      break;
+    case 'bootstrapLayer':
+      bootstrapLayer.removeLayer(parseInt(id));
       break;
   }
 });
@@ -2826,6 +2857,8 @@ function getAllCircles() {
         layer = circleLayer.getLayer(id);
       } else if (instanceLayer.getLayer(id) != undefined) {
         layer = instanceLayer.getLayer(id);
+      } else if (bootstrapLayer.getLayer(id) != undefined) {
+        layer = bootstrapLayer.getLayer(id);
       }
       layer.addTo(allCircles);  
     });
@@ -3132,7 +3165,8 @@ function loadSettings() {
     cellsLevel0Check: false,
     tlLink: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     tlChoice: 'osm',
-    language: 'en'
+    language: 'en',
+    generateWithS2Cells: false
   }
   Object.keys(settings).forEach(function(key) {
     storedSetting = retrieveSetting(key);
@@ -3528,7 +3562,14 @@ function newMSQuests() {
                 <input type="checkbox" name="cellsLevel0Check" id="cellsLevel0Check" style="margin-left: 10px;">
               </div>
             </div>
-
+            <div class="input-group" style="margin-bottom: 15px; margin-top: 10px;">
+              <div>
+                <input type="checkbox" name="generateWithS2Cells" id="generateWithS2Cells" style="margin-left: 10px; margin-right: 10px">
+              </div>
+              <div>
+                <label><script type="text/javascript">document.write(subs.generateWithS2Cells);</script></label>
+              </div>
+            </div>
             <div class="input-group mb">              
               <div class="input-group">
                 <label class="form-check-label"><script type="text/javascript">document.write(subs.circleRadius);</script></label>
