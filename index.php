@@ -2279,6 +2279,7 @@ function loadData() {
       if (result.gyms != null && settings.showGyms === true) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
+          let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
           let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             if(item.ex == 1){
@@ -2292,7 +2293,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(gymLayer);
             }
             else{
               let marker = L.circleMarker([item.lat, item.lng], {
@@ -2305,13 +2306,14 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(gymLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(gymLayer);
             }
         });
       }
       if (result.pokestops != null && settings.showPokestops === true) {
         result.pokestops.forEach(function(item) {
           pokestops.push(item);
+          let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
           let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
           let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             let marker = L.circleMarker([item.lat, item.lng], {
@@ -2324,7 +2326,7 @@ function loadData() {
             }).addTo(map);
             marker.tags = {};
             marker.tags.id = item.id;
-            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(pokestopLayer);
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(pokestopLayer);
         });
       }
       if (result.pokestops != null && settings.showPokestopsRange === true) {
@@ -4238,11 +4240,11 @@ function getData($args) {
     $show_unknown_mod_sp = "despawn_sec IS NULL AND ";
     $binds[] = null;
   }
-  $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name, updated FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_gym);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_pokestop = "SELECT id, lat, lon as lng, name FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_pokestop = "SELECT id, lat, lon as lng, name, updated FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_pokestop);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
