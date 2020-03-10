@@ -2312,10 +2312,11 @@ function loadData() {
       }
       if (result.pokestops != null && settings.showPokestops === true) {
         result.pokestops.forEach(function(item) {
-          pokestops.push(item);
-          let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
-          let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          if (item.deleted != 1) {
+            pokestops.push(item);
+            let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
+            let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             let marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
               fillColor: 'green',
@@ -2327,11 +2328,13 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(pokestopLayer);
+          }
         });
       }
       if (result.pokestops != null && settings.showPokestopsRange === true) {
         result.pokestops.forEach(function(item) {
-          pokestoprange.push(item);
+          if (item.deleted != 1) {
+            pokestoprange.push(item);
             let marker = L.circle([item.lat, item.lng], {
               color: 'green',
               radius: 70,
@@ -2340,6 +2343,7 @@ function loadData() {
             marker.tags = {};
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopRangeLayer);
+          }
         });
       }
       if (result.spawnpoints != null && settings.showSpawnpoints === true) {
@@ -2815,6 +2819,7 @@ function showMissingQuests(choice) {
           let poly = layer.toGeoJSON();
           let line = turf.polygonToLine(poly);
           result.quests.forEach(function(item) {
+            let stop_deleted = (item.deleted == 1) ? '<br>' + subs.stop_deleted : '';
             point = turf.point([item.lng, item.lat]);
             if (turf.inside(point, poly)) {
               let radius = (6/8) + ((8/8) * (map.getZoom() - 9)) // Depends on Zoomlevel
@@ -2829,7 +2834,7 @@ function showMissingQuests(choice) {
               }).addTo(map);
               marker.tags = {};
               marker.tags.id = item.id;
-              marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "</span>").addTo(questLayer);
+              marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + stop_deleted + "</span>").addTo(questLayer);
             }
           });
         });
@@ -4244,11 +4249,11 @@ function getData($args) {
   $stmt = $db->prepare($sql_gym);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_pokestop = "SELECT id, lat, lon as lng, name, updated FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_pokestop = "SELECT id, lat, lon as lng, name, updated, deleted FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_pokestop);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_quest = "SELECT id, lat, lon as lng, name FROM pokestop WHERE quest_type is NULL AND lat > ? AND lon > ? AND lat < ? AND lon < ?";
+  $sql_quest = "SELECT id, lat, lon as lng, name, deleted FROM pokestop WHERE quest_type is NULL AND lat > ? AND lon > ? AND lat < ? AND lon < ?";
   $stmt = $db->prepare($sql_quest);
   $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
   $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
