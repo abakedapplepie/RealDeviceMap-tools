@@ -1,0 +1,5 @@
+Options -Indexes
+AuthType Basic
+AuthName "Restricted content"
+AuthUserFile /var/www/html/config/.htpasswd
+Require valid-user
