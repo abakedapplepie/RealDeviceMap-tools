@@ -577,6 +577,12 @@ function initMap() {
   bootstrapLayer = new L.featureGroup();
   bootstrapLayer.addTo(map);
   
+  // changing predefined tooltips
+  L.drawLocal.draw.toolbar.buttons.polygon = subs.drawPolygon;
+  L.drawLocal.draw.toolbar.buttons.circle = subs.drawCircle;
+  L.drawLocal.edit.toolbar.buttons.edit = subs.editEdit;
+  L.drawLocal.edit.toolbar.buttons.editDisabled = subs.editEditDisabled;
+
   // Buttons left
   searchControl = new L.Control.Search({
     url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
@@ -586,12 +592,17 @@ function initMap() {
     marker: false,
     autoCollapse: true,
     autoType: false,
-    minLength: 2
+    minLength: 2,
+    textErr: subs.searchErr, 
+    textCancel: subs.searchCancel,
+    textPlaceholder: subs.searchPlaceholder
   }).addTo(map);
   buttonLocate = L.control.locate({
     id: 'getOwnLocation',
     position: 'topleft',
-    title: subs.getOwnLocation,
+    strings: {
+      title: subs.getOwnLocation
+    },
     setView: 'once',
     drawCircle: false,
     drawMarker: false,
@@ -605,7 +616,11 @@ function initMap() {
           clickable: false
         }
       },
-      circle: false,
+      circle: {
+        shapeOptions: {
+          color: '#662d91'
+        }
+      },
       rectangle: false,
       circlemarker: false,
       marker: false
@@ -1102,7 +1117,15 @@ function initMap() {
         included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
       }
-      let output = name +
+      let output;
+      if (layer.getRadius != undefined) {
+//        Kreis-Popup
+        let latOut = layer.getLatLng().lat.toFixed(5);
+        let lonOut = layer.getLatLng().lng.toFixed(5);
+        let radiusOut = layer.getRadius().toFixed(2);
+        output = '<div align="center"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="editableLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div>' + '<p style="padding-left: 70px;">Radius: ' + radiusOut + 'm<br>' + subs.coords + ':<br>' + latOut + ', ' + lonOut + '</p></div>';
+      } else {
+        output = name +
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
@@ -1119,8 +1142,9 @@ function initMap() {
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
                    nameInput + included;
+      }
       return output;
-    }, {maxWidth: 500, minWidth: 300});
+    }, {maxWidth: 500, minWidth: 250});
   });
   circleLayer.on('layerremove', function(e) {
     let layer = e.layer;
@@ -1192,6 +1216,8 @@ function initMap() {
   });
   map.on('click', function(e) {
     let lat = Math.abs(e.latlng.lat);
+    let latOut = lat.toFixed(5);
+    let lonOut = Math.abs(e.latlng.lng).toFixed(5);
     let radius;
     if (manualCircle === true) {
       if (settings.circleSize != 'raid') {
@@ -1205,6 +1231,7 @@ function initMap() {
           radius = -13 * lat + 1225;
         }
       }
+      let radiusOut = radius.toFixed(2);
       let newCircle = new L.circle(e.latlng, {
         color: 'red',
         fillColor: '#f03',
@@ -1212,7 +1239,7 @@ function initMap() {
         draggable: true,
         radius: radius
       }).bindPopup(function (layer) {
-        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>' + '<p>Radius: ' + radiusOut + 'm<br>' + subs.coords + ':<br>' + latOut + ', ' + lonOut + '</p>';
       }).addTo(circleLayer);
       if (circleInstance == '') {
         circleInstance.push(newCircle._leaflet_id);
