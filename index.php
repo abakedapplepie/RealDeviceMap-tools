@@ -473,8 +473,11 @@ $(function(){
       circleSize = 70;
     } else if (selectCircleRange == 'circleRaid') {
       circleSize = 'raid';
+    } else if (selectCircleRange == 'circle1gb') {
+      circleSize = '1gb';
     } else {
-      circleSize = $('#circleSize').val();
+      let csTemp = $('#circleSize').val();
+      circleSize = parseInt(csTemp);
     } 
     let oldLang = settings.language;
     let language = $('#language').val();
@@ -1220,9 +1223,7 @@ function initMap() {
     let lonOut = Math.abs(e.latlng.lng).toFixed(5);
     let radius;
     if (manualCircle === true) {
-      if (settings.circleSize != 'raid') {
-        radius = settings.circleSize;
-      } else {
+      if (settings.circleSize == 'raid' ) {
         if (lat <= 39) {
           radius = 715;
         } else if (lat >= 69) {
@@ -1230,6 +1231,17 @@ function initMap() {
         } else {
           radius = -13 * lat + 1225;
         }
+      } else if (settings.circleSize == '1gb') {
+        if (lat <= 39) {
+          radius = 715;
+        } else if (lat >= 69) {
+          radius = 330;
+        } else {
+          radius = -13 * lat + 1225;
+        }
+        radius = radius/2;
+      } else {
+        radius = settings.circleSize;
       }
       let radiusOut = radius.toFixed(2);
       let newCircle = new L.circle(e.latlng, {
@@ -1601,7 +1613,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
   }
 
   if (circleData.length > 0 && importReady != false) {
-    if (settings.circleSize != 'raid') {
+    if (settings.circleSize != 'raid' && settings.circleSize != '1gb') {
       if (!($('#instanceRadiusCheck').is(":checked"))) {
         radius = settings.circleSize;
       }
@@ -1631,7 +1643,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
       });
       instances.push(instance);
       drawRoute(instance);
-    } else if (settings.circleSize == 'raid') {
+    } else if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
       let instance = [];
       instance.name = instanceName;
       instance.id = instances.length;
@@ -1644,6 +1656,9 @@ function importCircles(instanceName = null, color = '#1090fa') {
             radius = 330;
           } else {
             radius = -13 * lat + 1225;
+          }
+          if (settings.circleSize == '1gb') {
+            radius = radius/2;
           }
         }
         if ($('#instanceMode').is(':checked')) {
@@ -1683,9 +1698,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
   circleInstance = [];
   instances = [];
   let lat = Math.abs(map.getCenter().lat);
-  if (settings.circleSize != 'raid') {
-    circleRadius = settings.circleSize;
-  } else {
+  if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
     if (lat <= 39) {
       circleRadius = 715;
     } else if (lat >= 69) {
@@ -1693,6 +1706,11 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     } else {
       circleRadius = -13 * lat + 1225;
     }
+    if (settings.circleSize == '1gb') {
+      circleRadius = circleRadius/2;
+    }
+  } else {
+    circleRadius = settings.circleSize;
   }
   let data = {
     'get_optimization': true,
@@ -1860,9 +1878,7 @@ function generateRoute() {
   instances = [];
   let circleRadius;
   let lat = Math.abs(map.getCenter().lat);
-  if (settings.circleSize != 'raid') {
-    circleRadius = settings.circleSize;
-  } else {
+  if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
     if (lat <= 39) {
       circleRadius = 715;
     } else if (lat >= 69) {
@@ -1870,7 +1886,12 @@ function generateRoute() {
     } else {
       circleRadius = -13 * lat + 1225;
     }
-  }  
+    if (settings.circleSize == '1gb') {
+      circleRadius = circleRadius/2;
+    }
+  } else {
+    circleRadius = settings.circleSize;
+  }
   let xMod = Math.sqrt(0.75);
   let yMod = Math.sqrt(0.568);
   let route = function(layer) {
@@ -3619,10 +3640,14 @@ function newMSQuests() {
                 <label class="form-check-label" for="circleRaid"><script type="text/javascript">document.write('Raid (auto)');</script></label>
               </div>
               <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
+                <input class="form-check-input" type="radio" name="selectCircleRange" id="circle1gb" value="circle1gb">
+                <label class="form-check-label" for="circle1gb"><script type="text/javascript">document.write(subs.oldDevices + ' (auto)');</script></label>
+              </div>
+              <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
                 <input class="form-check-input" type="radio" name="selectCircleRange" id="circleOwn" value="circleOwn">
                 <label class="form-check-label" for="circleOwn"><script type="text/javascript">document.write(subs.other);</script></label>
               </div>
-              <input id="circleSize" name="circleSize" type="text" size="3" class="form-control" aria-label="Circle Radius (in meters)">
+              <input id="circleSize" name="circleSize" type="text" size="3" class="form-control" aria-label="Circle radius (in meters)" placeholder="500">
               <div class="input-group-append">
                 <span class="input-group-text"><script type="text/javascript">document.write('m');</script></span>
               </div>
