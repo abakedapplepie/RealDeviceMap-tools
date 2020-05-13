@@ -973,6 +973,8 @@ function initMap() {
       icon: 'fab fa-searchengin',
       title: subs.showQuests,
       onClick: function (btn) {
+        settings.showMissingQuests = true;
+        storeSetting('showMissingQuests');
         $('#modalQuestInstances').modal('show');
         newMSQuests();
       }
@@ -1971,16 +1973,17 @@ function prepareData(layerBounds) {
   } else {
     bounds = map.getBounds();
   }
+  console.log(bounds)
   const data = {
     'get_data': true,
     'min_lat': bounds.getSouthWest().lat,
     'max_lat': bounds.getNorthEast().lat,
     'min_lng': bounds.getSouthWest().lng,
     'max_lng': bounds.getNorthEast().lng,
-    'show_gyms': false,
-    'show_pokestops': false,
+    'show_gyms': true,
+    'show_pokestops': true,
     'show_spawnpoints': true,
-    'show_unknownpois': false
+    'show_quests': false
   };
   const json = JSON.stringify(data);
   $.ajax({
@@ -2303,10 +2306,10 @@ function loadData() {
     'max_lat': bounds.getNorthEast().lat,
     'min_lng': bounds.getSouthWest().lng,
     'max_lng': bounds.getNorthEast().lng,
-    'show_gyms': true,
-    'show_pokestops': true,
-    'show_spawnpoints': true,
-    'show_unknownpois': settings.showUnknownPois
+    'show_gyms': settings.showGyms,
+    'show_pokestops': settings.showPokestops,
+    'show_spawnpoints': settings.showSpawnpoints,
+    'show_quests': settings.showMissingQuests
   };
   const json = JSON.stringify(data);
   $.ajax({
@@ -2327,9 +2330,10 @@ function loadData() {
       if (result.gyms != null && settings.showGyms === true) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
-          let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
-          let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-          let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+          if (settings.showUnknownPois == false) {  
+            let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
+            let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             if(item.ex == 1){
               let marker = L.circleMarker([item.lat, item.lng], {
               color: 'black',
@@ -2356,11 +2360,59 @@ function loadData() {
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(gymLayer);
             }
+          } else if (settings.showUnknownPois == true && item.name == null) {
+            let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
+            let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            if(item.ex == 1){
+              let marker = L.circleMarker([item.lat, item.lng], {
+              color: 'black',
+              fillColor: 'maroon',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + subs.exEligible + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(gymLayer);
+            }
+            else{
+              let marker = L.circleMarker([item.lat, item.lng], {
+              color: 'black',
+              fillColor: 'orange',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(gymLayer);
+            }
+          }
         });
       }
       if (result.pokestops != null && settings.showPokestops === true) {
         result.pokestops.forEach(function(item) {
           if (item.deleted != 1) {
+          if (settings.showUnknownPois == false) {
+            pokestops.push(item);
+            let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
+            let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
+            let marker = L.circleMarker([item.lat, item.lng], {
+              color: 'black',
+              fillColor: 'green',
+              radius: radius,
+              weight: weight,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(pokestopLayer);
+          } else if (settings.showUnknownPois == true && item.name == null) {
             pokestops.push(item);
             let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
             let radius = (6/8) + ((6/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
@@ -2377,9 +2429,10 @@ function loadData() {
             marker.tags.id = item.id;
             marker.bindPopup("<span>ID: " + item.id + "<br>" + item.name + "<br>" + subs.lastUpdate + lastUpdate + "</span>").addTo(pokestopLayer);
           }
+          }
         });
       }
-      if (result.pokestops != null && settings.showPokestopsRange === true) {
+      if (result.pokestops != null && settings.showPokestopsRange === true && settings.showUnknownPois == false) {
         result.pokestops.forEach(function(item) {
           if (item.deleted != 1) {
             pokestoprange.push(item);
@@ -2393,9 +2446,23 @@ function loadData() {
             marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopRangeLayer);
           }
         });
+      } else if (result.pokestops != null && settings.showPokestopsRange === true && settings.showUnknownPois == true) {
+        result.pokestops.forEach(function(item) {
+          if (item.deleted != 1 && item.name == null) {
+            pokestoprange.push(item);
+            let marker = L.circle([item.lat, item.lng], {
+              color: 'green',
+              radius: 70,
+              opacity: 0.2
+            }).addTo(map);
+            marker.tags = {};
+            marker.tags.id = item.id;
+            marker.bindPopup("<span>ID: " + item.id + "</span>").addTo(pokestopRangeLayer);
+          }
+        });
       }
       if (result.spawnpoints != null && settings.showSpawnpoints === true) {
-        if (settings.hideOldSpawnpoints != false){ 
+        if (settings.hideOldSpawnpoints == true){ 
           let oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
           result.spawnpoints.forEach(function(item) {
             if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
@@ -2406,7 +2473,7 @@ function loadData() {
             }
             let radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-            if (settings.showSpawnpoints === true){
+            if (settings.showUnknownPois == false){
               if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
                 let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
@@ -2420,7 +2487,7 @@ function loadData() {
                 marker.tags.id = item.id;
                 let despawn_time = new Date(parseInt(item.despawn_sec)*1000).toISOString().slice(-10, -5);
                 marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.despawnTime + despawn_time).addTo(spawnpointLayer);
-              } else if (item.updated >= oldSpawnpointsTimestamp) {
+              } else if (item.despawn_sec == null && item.updated >= oldSpawnpointsTimestamp) {
                 let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
                   fillColor: 'red',
@@ -2433,6 +2500,18 @@ function loadData() {
                 marker.tags.id = item.id;
                 marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
               }
+            } else if (settings.showUnknownPois == true && item.despawn_sec == null && item.updated >= oldSpawnpointsTimestamp){
+              let marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'red',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
             }
           });
         } else {
@@ -2445,7 +2524,7 @@ function loadData() {
             }
             let radius = (6/8) + ((4/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
-            if (settings.showSpawnpoints === true){
+            if (settings.showSpawnpoints === true && settings.showUnknownPois == false) {
               if (item.despawn_sec != null){
                 let marker = L.circleMarker([item.lat, item.lng], {
                   color: 'black',
@@ -2472,6 +2551,18 @@ function loadData() {
                 marker.tags.id = item.id;
                 marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
               }
+            } else if (settings.showSpawnpoints === true && settings.showUnknownPois == true && item.despawn_sec == null) {
+                let marker = L.circleMarker([item.lat, item.lng], {
+                  color: 'black',
+                  fillColor: 'red',
+                  radius: radius,
+                  weight: weight,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).addTo(map);
+                marker.tags = {};
+                marker.tags.id = item.id;
+                marker.bindPopup("<span>ID: " + item.id + "</span>\n" + subs.unknownDespawnTime).addTo(spawnpointLayer);
             }
           });
         }
@@ -2849,10 +2940,10 @@ function showMissingQuests(choice) {
     'max_lat': bounds.getNorthEast().lat,
     'min_lng': bounds.getSouthWest().lng,
     'max_lng': bounds.getNorthEast().lng,
-    'show_gyms': false,
-    'show_pokestops': true,
-    'show_spawnpoints': false,
-    'show_unknownpois': false
+    'show_gyms': settings.showGyms,
+    'show_pokestops': settings.showPokestops,
+    'show_spawnpoints': settings.showSpawnpoints,
+    'show_quests': settings.showMissingQuests
   };
   const json = JSON.stringify(data);
   $.ajax({
@@ -2974,65 +3065,72 @@ $(document).on("click", "#getCirclesCount", function() {
   countPointsInCircles(display);
 });          
 $(document).load("#modalContent", getLanguage());
-$(document).on("click", "#getAllNests", function() {
-  $("#modalLoading").modal('show');
-  prepareData(nestLayer.getBounds());
-  nestLayer.eachLayer(function(layer) {
-    let reportStops = [],
+$(document).on("click", "#getAllNests", function() {     
+  $.when($("#modalLoading").modal('show')).then(function() {
+    prepareData(nestLayer.getBounds());
+    nestLayer.eachLayer(function(layer) {
+      let reportStops = [],
       reportSpawns = [];
-    let center = layer.getBounds().getCenter()
-    let poly = layer.toGeoJSON();
-    let line = turf.polygonToLine(poly);
-    pokestops.forEach(function(item) {
-      point = turf.point([item.lng, item.lat]);
-      if (turf.inside(point, poly)) {
-        reportStops.push(item.id);
-      }
-    });
-    spawnpoints.forEach(function(item) {
-      point = turf.point([item.lng, item.lat]);
-      if (turf.inside(point, poly)) {
-        reportSpawns.push(item.id);
-      }
-    });
-    const data = {
-      'get_spawndata': true,
-      'nest_migration_timestamp': settings.nestMigrationDate,
-      'spawn_report_limit': settings.spawnReportLimit,
-      'stops': reportStops,
-      'spawns': reportSpawns
-    };
-    const json = JSON.stringify(data);
-    $.ajax({
-      url: this.href,
-      type: 'POST',
-      dataType: 'json',
-      data: {'data': json},
-      success: function (result) {
-        if (result.spawns !== null) {
-          if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
-          } else {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
-          }
-          result.spawns.forEach(function(item) {
-            $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
-          });
-        } else {
-          if (typeof layer.tags.name !== 'undefined') {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
-          } else {
-            $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + subs.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
-          }
+      let center = layer.getBounds().getCenter()
+      let poly = layer.toGeoJSON();
+      let line = turf.polygonToLine(poly);
+      pokestops.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
+        if (turf.inside(point, poly)) {
+          reportStops.push(item.id);
         }
-      },
-      complete: function() {
-        $("#modalLoading").modal('hide');
-        $('#modalSpawnReport  .modal-title').text(subs.nestReport);
-        $('#modalSettings').modal('hide');
-        $('#modalSpawnReport').modal('show');
-      }
+      });
+      spawnpoints.forEach(function(item) {
+        point = turf.point([item.lng, item.lat]);
+        if (turf.inside(point, poly)) {
+          reportSpawns.push(item.id);
+        }
+      });
+      const data = {
+        'get_spawndata': true,
+        'nest_migration_timestamp': settings.nestMigrationDate,
+        'spawn_report_limit': settings.spawnReportLimit,
+        'stops': reportStops,
+        'spawns': reportSpawns
+      };
+      const json = JSON.stringify(data);
+      $.ajax({
+        url: this.href,
+        type: 'POST',
+        dataType: 'json',
+        data: {'data': json},
+        success: function (result) {
+          if (result.spawns !== null) {
+            if (typeof layer.tags.name !== 'undefined') {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            } else {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
+            }
+            result.spawns.forEach(function(item) {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
+            });
+          } else {
+            if (typeof layer.tags.name !== 'undefined') {
+              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
+            } else {
+              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + subs.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
+            }
+          }
+        },
+        error: function() {
+          alert("Something went horribly wrong!");
+        },
+        complete: function() {
+          $('#modalOutput').modal('hide');
+          $('#modalSpawnReport  .modal-title').text(subs.nestReport);
+          $('#modalSpawnReport').modal('show');
+        }
+      });
     });
+    
+    
+  }).then(function() {
+    $("#modalLoading").modal('hide');
   });
 });
 $(document).on("click", ".exportLayer", function() {
@@ -3693,7 +3791,7 @@ function newMSQuests() {
             <div class="form-group">
               <label for="tlChoice"><script type="text/javascript">document.write(subs.chooseTileset);</script></label>
               <select class="form-control" id="tlChoice">
-                <option value="osm">Standard</option>
+                <option value="osm">Standard (OSM)</option>
                 <option value="carto">Lite</option>
                 <option value="sat">Satellite</option>
                 <option value="own"><script type="text/javascript">document.write(subs.ownTileset);</script></option>
@@ -4292,28 +4390,36 @@ function getSpawnData($args) {
 function getData($args) {
   global $db;
   $binds = array();
-  if ($args->show_unknownpois === true) {
-    $show_unknown_mod = "name IS ? AND ";
-    $show_unknown_mod_sp = "despawn_sec IS NULL AND ";
-    $binds[] = null;
+  
+  if ($args->show_gyms === true) {
+    $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name, updated FROM gym WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    $stmt = $db->prepare($sql_gym);
+    $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
+    $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
-  $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name, updated FROM gym WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
-  $stmt = $db->prepare($sql_gym);
-  $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
-  $gyms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_pokestop = "SELECT id, lat, lon as lng, name, updated, deleted FROM pokestop WHERE " . $show_unknown_mod . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
-  $stmt = $db->prepare($sql_pokestop);
-  $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
-  $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_quest = "SELECT id, lat, lon as lng, name, deleted FROM pokestop WHERE quest_type is NULL AND lat > ? AND lon > ? AND lat < ? AND lon < ?";
-  $stmt = $db->prepare($sql_quest);
-  $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
-  $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, updated FROM spawnpoint WHERE " . $show_unknown_mod_sp . "lat > ? AND lon > ? AND lat < ? AND lon < ?";
-  $stmt = $db->prepare($sql_spawnpoint);
-  $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
-  $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'quests' => $quests, 'spawnpoints' => $spawns, 'sql_gym' => $sql_gym, 'sql_pokestop' => $sql_pokestop, 'sql_quest' => $sql_quest, 'sql_spawnpoint' => $sql_spawnpoint ));
+
+  if ($args->show_pokestops === true) {
+    $sql_pokestop = "SELECT id, lat, lon as lng, name, updated, deleted FROM pokestop WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    $stmt = $db->prepare($sql_pokestop);
+    $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
+    $stops = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  if ($args->show_quests === true) {
+    $sql_quest = "SELECT id, lat, lon as lng, name, deleted FROM pokestop WHERE quest_type is NULL AND lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    $stmt = $db->prepare($sql_quest);
+    $stmt->execute(array_merge($binds, [$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]));
+    $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  if ($args->show_spawnpoints === true) {
+    $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, updated FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    $stmt = $db->prepare($sql_spawnpoint);
+    $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
+    $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'quests' => $quests, 'spawnpoints' => $spawns ));
 }
 function getOptimization($args) {
   global $db;
