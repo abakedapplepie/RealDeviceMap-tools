@@ -3006,7 +3006,9 @@ function getAllCircles() {
       } else if (bootstrapLayer.getLayer(id) != undefined) {
         layer = bootstrapLayer.getLayer(id);
       }
-      layer.addTo(allCircles);  
+      if (layer.length != 0) {
+        layer.addTo(allCircles);
+      }
     });
   });
   return allCircles;
