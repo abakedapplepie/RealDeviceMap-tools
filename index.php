@@ -1974,7 +1974,6 @@ function prepareData(layerBounds) {
   } else {
     bounds = map.getBounds();
   }
-  console.log(bounds)
   const data = {
     'get_data': true,
     'min_lat': bounds.getSouthWest().lat,
@@ -2186,6 +2185,14 @@ function getNests() {
     'way["landuse"="recreation_ground"];',
     'way["landuse"="meadow"];',
     'way["landuse"="grass"];',
+    'relation["leisure"="park"];',
+    'relation["leisure"="recreation_ground"];',
+    'relation["leisure"="pitch"];',
+    'relation["leisure"="playground"];',
+    'relation["leisure"="golf_course"];',
+    'relation["landuse"="recreation_ground"];',
+    'relation["landuse"="meadow"];',
+    'relation["landuse"="grass"];',
   ].join('');
   let overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
   $.ajax({
@@ -2785,6 +2792,9 @@ $(document).on("click", ".deleteLayer", function() {
       break;
     case 'bootstrapLayer':
       bootstrapLayer.removeLayer(parseInt(id));
+      break;
+    case 'admLayer':
+      admLayer.removeLayer(parseInt(id));
       break;
   }
 });
