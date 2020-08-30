@@ -540,6 +540,7 @@ function initMap() {
     zoomDelta: 0.25,
     zoomSnap: 0.25,
     zoomControl: true,
+    worldCopyJump: true,
     wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
@@ -3192,6 +3193,9 @@ $(document).on("click", ".exportPoints", function() {
     case 'nestLayer':
       layer = nestLayer.getLayer(parseInt(id));
       break;
+    case 'admLayer':
+      layer = admLayer.getLayer(parseInt(id));
+      break;
   }
   let poly = layer.toGeoJSON();
   let line = turf.polygonToLine(poly);
@@ -3240,6 +3244,9 @@ $(document).on("click", ".countPoints", function() {
       break;
     case 'nestLayer':
       layer = nestLayer.getLayer(parseInt(id));
+      break;
+    case 'admLayer':
+      layer = admLayer.getLayer(parseInt(id));
       break;
   }
   let count = 0;
