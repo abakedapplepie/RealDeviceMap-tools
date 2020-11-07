@@ -1627,7 +1627,6 @@ function importCircles(instanceName = null, color = '#1090fa') {
       circleData.forEach(function(item) {
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
-            route_counter: circle_route_counter,
             color: '#b410fa',
             fillOpacity: 0.4,
             draggable: false,
