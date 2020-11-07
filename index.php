@@ -1695,7 +1695,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
 }
 
 function getCircleHtml(instance_name, layer, subs) {
-  const htmlString = '<div class="input-group mb-3"><label class="form-check-label">' + instance_name + '<br>Circle ID: ' + layer._leaflet_id + '<br>Route Counter: ' + layer.options.route_counter + '<br>lat,lon: ' + layer._latlng.lat + ',' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+  const htmlString = '<div class="input-group mb-3"><label class="form-check-label">' + instance_name + '<br>Circle ID: ' + layer._leaflet_id + '<br>Circle Counter: ' + layer.options.route_counter + '<br>lat,lon: ' + layer._latlng.lat + ',' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
   return htmlString
 }
 
