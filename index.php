@@ -1495,6 +1495,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             points.forEach(function(item) {
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
+                  route_counter: points.length,
                   color: '#b410fa',
                   fillOpacity: 0.4,
                   draggable: false,
@@ -1502,6 +1503,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                 }).addTo(bgLayer);
               } else {
                 newCircle = L.circle(item, {
+                  route_counter: points.length,
                   color: color,
                   fillOpacity: 0.2,
                   draggable: true,
@@ -1532,6 +1534,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
               }
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
+                  route_counter: points.length,
                   color: '#b410fa',
                   fillOpacity: 0.4,
                   draggable: false,
@@ -1539,6 +1542,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                 }).addTo(bgLayer);
               } else {
                 newCircle = L.circle(item, {
+                  route_counter: points.length,
                   color: color,
                   fillOpacity: 0.2,
                   draggable: true,
@@ -1621,12 +1625,12 @@ function importCircles(instanceName = null, color = '#1090fa') {
         radius = settings.circleSize;
       }
       let instance = [];
-      let circle_route_counter = 1;
       instance.name = instanceName;
       instance.id = instances.length;
       circleData.forEach(function(item) {
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
+            route_counter: circleData.length,
             color: '#b410fa',
             fillOpacity: 0.4,
             draggable: false,
@@ -1634,7 +1638,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
           }).addTo(bgLayer);
         } else {
           newCircle = L.circle(item, {
-            route_counter: circle_route_counter,
+            route_counter: circleData.length,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
@@ -1644,8 +1648,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
             return getCircleHtml(instanceName, layer, subs);
           }).addTo(instanceLayer);
           instance.push(newCircle._leaflet_id);
-        }
-        circle_route_counter += 1;
+        }         
       });
       instances.push(instance);
       drawRoute(instance);
@@ -1694,7 +1697,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
 }
 
 function getCircleHtml(instance_name, layer, subs) {
-  const htmlString = '<div class="input-group mb-3"><label class="form-check-label">' + instance_name + '<br>Circle ID: ' + layer._leaflet_id + '<br>Circle Counter: ' + layer.options.route_counter + '<br>lat,lon: ' + layer._latlng.lat + ',' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+  const htmlString = '<div class="input-group mb-3"><label class="form-check-label"><b>' + instance_name + '</b><br>' + subs.countCircles + ' ' + layer.options.route_counter + '<br>' + subs.circleID + ' ' + layer._leaflet_id + '<br>' + subs.circleRadius + ' ' + layer.options.radius + 'm<br>' + subs.coords + ' (lat,lon):<br>' + layer._latlng.lat + ', ' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
   return htmlString
 }
 
@@ -2634,6 +2637,7 @@ $(document).ready(function() {
       sourceLayer.getLayers().forEach(function(item) {
         let newLayer;
         circle = L.circle([item.getLatLng().lat, item.getLatLng().lng], {
+          route_counter: sourceLayer.length,
           color: color,
           fillOpacity: 0.2,
           draggable: true,
@@ -2684,6 +2688,7 @@ $(document).ready(function() {
         let orderedPoints = solution.map(i => points [i]);
         orderedPoints.forEach(function(item) {
           newCircle = L.circle([item.x, item.y], {
+            route_counter: allCircles.length,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
@@ -2692,7 +2697,7 @@ $(document).ready(function() {
           }).bindPopup(function (layer) {
             return getCircleHtml(newInstance.name, layer, subs);
           }).addTo(instanceLayer);
-          newInstance.push(newCircle._leaflet_id);              
+          newInstance.push(newCircle._leaflet_id);  
         });
         instances.push(newInstance);
         drawRoute(newInstance);
