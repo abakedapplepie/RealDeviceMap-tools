@@ -1508,7 +1508,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   radius: radius,
                   instanceID: instance.id
                 }).bindPopup(function (layer) {
-                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+                  return getCircleHtml(instanceName, layer, subs);
                 }).addTo(instanceLayer);
                 instance.push(newCircle._leaflet_id);
               }              
@@ -1545,7 +1545,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   radius: radius,
                   instanceID: instance.id
                 }).bindPopup(function (layer) {
-                  return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+                  return getCircleHtml(instanceName, layer, subs);
                 }).addTo(instanceLayer);
                 instance.push(newCircle._leaflet_id);
               }
@@ -1621,6 +1621,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
         radius = settings.circleSize;
       }
       let instance = [];
+      let circle_route_counter = 1;
       instance.name = instanceName;
       instance.id = instances.length;
       circleData.forEach(function(item) {
@@ -1633,16 +1634,18 @@ function importCircles(instanceName = null, color = '#1090fa') {
           }).addTo(bgLayer);
         } else {
           newCircle = L.circle(item, {
+            route_counter: circle_route_counter,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
             radius: radius,
             instanceID: instance.id
           }).bindPopup(function (layer) {
-            return '<div class="input-group mb-3"><label class="form-check-label">' + instanceName + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+            return getCircleHtml(instanceName, layer, subs);
           }).addTo(instanceLayer);
           instance.push(newCircle._leaflet_id);
-        }              
+        }
+        circle_route_counter += 1;
       });
       instances.push(instance);
       drawRoute(instance);
@@ -1688,6 +1691,11 @@ function importCircles(instanceName = null, color = '#1090fa') {
       drawRoute(instance);
     }
   }
+}
+
+function getCircleHtml(instance_name, layer, subs) {
+  const htmlString = '<div class="input-group mb-3"><label class="form-check-label">' + instance_name + '<br>Circle ID: ' + layer._leaflet_id + '<br>Circle Counter: ' + layer.options.route_counter + '<br>lat,lon: ' + layer._latlng.lat + ',' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+  return htmlString
 }
 
 function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
@@ -2632,7 +2640,7 @@ $(document).ready(function() {
           radius: radius,
           instanceID: instance.id
         }).bindPopup(function (layer) {
-          return '<div class="input-group mb-3"><label class="form-check-label">' + instance.name + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+          return getCircleHtml(instance.name, layer, subs);
         }).addTo(instanceLayer);
         sourceLayer.removeLayer(parseInt(item._leaflet_id));
         instance.push(circle._leaflet_id);
@@ -2682,7 +2690,7 @@ $(document).ready(function() {
             radius: radius,
             instanceID: newInstance.id
           }).bindPopup(function (layer) {
-            return '<div class="input-group mb-3"><label class="form-check-label">' + newInstance.name + '<br>Circle ID: ' + layer._leaflet_id + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+            return getCircleHtml(newInstance.name, layer, subs);
           }).addTo(instanceLayer);
           newInstance.push(newCircle._leaflet_id);              
         });
