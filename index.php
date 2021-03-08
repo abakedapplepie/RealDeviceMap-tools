@@ -201,9 +201,13 @@ $(function(){
     } else if (importType == 'importPolygonDataTypeGeoJson') {
       let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
-        geoJson.features.forEach(function(feature) {
+        let counter = 0;
+        geoJson.features.forEach(function(feature) {          
           if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
             polygonData.push(turf.flip(feature).geometry.coordinates);
+            polygonData[counter].id = feature.id;
+            polygonData[counter].name = feature.properties.name;
+            counter++;
             importReady = true;
           } else {
             importReady = false;
@@ -212,6 +216,7 @@ $(function(){
       } else {
         if (geoJson.type == 'Feature' && geoJson.geometry.type == 'Polygon') {
           polygonData.push(turf.flip(geoJson).geometry.coordinates);
+          polygonData[0].id = geoJson.id;
           importReady = true;
         }
       }
@@ -232,7 +237,10 @@ $(function(){
       };
       polygonData.forEach(function(polygon) {
         let layer = L.polygon(polygon, polygonOptions).addTo(editableLayer);
-
+        layer.tags.osmid = polygon.id;
+        if (polygon.name != undefined && polygon.name != 'Unknown Parkname') {
+          layer.tags.name = polygon.name;
+        }
         layer.bindPopup(function (layer) {
           if (layer.tags.name == '') {
             name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
