@@ -90,6 +90,7 @@ let drawControl,
   buttonModalImportPolygon,
   buttonModalImportSubmissions,
   buttonModalImportInstance,
+  buttonModalNestOptions,
   buttonTrash,
   buttonTrashRoute,
   buttonGenerateRoute,
@@ -122,7 +123,8 @@ let gyms = [],
   instances = [],
   circleInstance = [],
   mySelect = [],
-  myQuestSelect = [];
+  myQuestSelect = [],
+  spawnReport = [];
 //options vars
 let settings = {
   showGyms: null,
@@ -207,6 +209,9 @@ $(function(){
             polygonData.push(turf.flip(feature).geometry.coordinates);
             polygonData[counter].id = feature.id;
             polygonData[counter].name = feature.properties.name;
+            polygonData[counter].path = JSON.stringify(turf.flip(feature).geometry.coordinates);
+            polygonData[counter].centerLat = feature.properties.area_center_point.coordinates[1];
+            polygonData[counter].centerLon = feature.properties.area_center_point.coordinates[0];
             counter++;
             importReady = true;
           } else {
@@ -216,7 +221,13 @@ $(function(){
       } else {
         if (geoJson.type == 'Feature' && geoJson.geometry.type == 'Polygon') {
           polygonData.push(turf.flip(geoJson).geometry.coordinates);
-          polygonData[0].id = geoJson.id;
+          polygonData[0].id = geoJson.id ? geoJson.id : 0;
+          polygonData[0].name = geoJson.properties.name ? geoJson.properties.name : '' ;
+          polygonData[0].path = JSON.stringify(turf.flip(geoJson).geometry.coordinates);
+          if (geoJson.properties.area_center_point != undefined) {
+            polygonData[0].centerLat = geoJson.properties.area_center_point.coordinates[1];
+            polygonData[0].centerLon = geoJson.properties.area_center_point.coordinates[0];
+          }
           importReady = true;
         }
       }
@@ -240,7 +251,12 @@ $(function(){
         layer.tags.osmid = polygon.id;
         if (polygon.name != undefined && polygon.name != 'Unknown Parkname') {
           layer.tags.name = polygon.name;
+        } else {
+          layer.tags.name = '';
         }
+        layer.tags.path = polygon.path;
+        layer.tags.centerLat = polygon.centerLat;
+        layer.tags.centerLon = polygon.centerLon;
         layer.bindPopup(function (layer) {
           if (layer.tags.name == '') {
             name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
@@ -303,8 +319,15 @@ $(function(){
             weight: 4
           });
           polygon.tags = {};
-          polygon.tags.name = feature.properties.name;
-          polygon.tags.osmid = feature.properties.id;
+          polygon.tags.osmid = feature.id;
+          if (feature.properties.name != undefined && feature.properties.name != 'Unknown Parkname') {
+            polygon.tags.name = feature.properties.name;
+          } else {
+            polygon.tags.name = '';
+          }
+          polygon.tags.path = JSON.stringify(turf.flip(feature).geometry.coordinates);
+          polygon.tags.centerLat = feature.properties.area_center_point.coordinates[1];
+          polygon.tags.centerLon = feature.properties.area_center_point.coordinates[0];
           polygon.tags.included = false;
           polygon.addTo(nestLayer);
           let name = '';
@@ -433,6 +456,7 @@ $(function(){
     $('#spawnReportTable > tbody').empty();
     $('#spawnReportTableMissed > tbody').empty();
     $('#modalSpawnReport .modal-title').text();
+    $("#modalSpawnReport .writeNest").text(subs.writeToDB);
   });
   $('#modalOutput').on('hidden.bs.modal', function(event) {
     $('#outputCircles').val('');
@@ -708,6 +732,17 @@ function initMap() {
       }
     }]
   });
+  buttonModalNestOptions = L.easyButton({
+    states: [{
+      stateName: 'openNestOptionsModal',
+      icon: 'fa fa-bug',
+      title: subs.nestOptions,
+      onClick: function (control){
+        $("#modalNests .updateButton").text(subs.writeAllToDB);
+        $('#modalNests').modal('show');
+      }
+    }]
+  });
   buttonTrashRoute = L.easyButton({
     states: [{
       stateName: 'clearMapRoute',
@@ -722,7 +757,7 @@ function initMap() {
       }
     }]
   });
-  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
+  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonModalNestOptions, buttonTrashRoute], { position: 'topleft' }).addTo(map);
   
   // barOutput
   buttonGenerateRoute = L.easyButton({
@@ -1979,12 +2014,125 @@ function removeArrayElement(arr, value) {
     return ele != value;
   });
 }
+function writeNests(nestId, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path) {
+  const data = {
+    'set_nest_data': true,
+    'nest_id': nestId,
+    'nest_pokemon': nestPokemon,
+    'avg_spawns': avgSpawns,
+    'updated': nowUt,
+    'pokemon_count': pkmCount,
+    'name': nestName,
+    'lat': lat,
+    'lon': lon,
+    'path': path
+  }
+  const json = JSON.stringify(data);
+  $.ajax({
+    url: this.href,
+    type: 'POST',
+//    async: false,
+    dataType: 'json',
+    data: {'data': json},
+    success: function (result) {
+      if (result == 1) {
+        $("#modalSpawnReport .writeNest").text(subs.writeSuccess);
+      }
+    },
+    error: function () {
+      console.log('Something went horribly wrong')
+    }
+  });
+}
+function importNests() {
+  nestLayer.clearLayers();
+  const data = {
+    'get_nest_data': true,
+  }
+  const json = JSON.stringify(data);
+  $.ajax({
+    url: this.href,
+    type: 'POST',
+    async: false,
+    dataType: 'json',
+    data: {'data': json},
+    success: function (result) {
+        result.nests.forEach(function(feature) {
+          let gjFeature = turf.polygon(JSON.parse(feature.polygon_path));
+          let coordinates = (turf.flip(gjFeature)).geometry.coordinates;
+          let polygon = L.polygon(coordinates, {
+            clickable: false,
+            color: "#ff8833",
+            fill: true,
+            fillColor: null,
+            fillOpacity: 0.2,
+            opacity: 0.5,
+            stroke: true,
+            weight: 4
+          });
+          polygon.tags = {};
+          polygon.tags.osmid = feature.nest_id;
+          if (feature.name != undefined && feature.name != 'Unknown Parkname') {
+            polygon.tags.name = feature.name;
+          } else {
+            polygon.tags.name = '';
+          }
+          polygon.tags.path = feature.polygon_path;
+          polygon.tags.centerLat = JSON.parse(feature.lat);
+          polygon.tags.centerLon = JSON.parse(feature.lon);
+          polygon.tags.included = false;
+          polygon.addTo(nestLayer);
+          let name = '';
+          let nameInput = '';
+          let included = '';
+          polygon.bindPopup(function (layer) {
+            if (typeof layer.tags.name !== 'undefined') {
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
+              nameInput = '<hr>';
+            } else {
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+              nameInput = '<hr><div class="input-group mb-3">' +
+                              '<div class="input-group-prepend">' +
+                                '<span class="input-group-text">' + subs.name + '</span>' +
+                              '</div>' +
+                              '<input id="polygonName" name="polygonName" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="text" class="form-control" aria-label="Polygon name">' +
+                            '</div>';
+            }
+            if (layer.tags.included == true) {
+              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeFromExport + '</span></div></div>';
+            } else {
+              included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
+            }
+            let output = name +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.getSpawnReport + '</span></div></div>' +
+                  '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.removeMap + '</span></div></div>' +
+                  '<div class="input-group"><button class="btn btn-secondary btn-sm exportLayer" data-layer-container="nestLayer" data-layer-id=' +
+                  layer._leaflet_id +
+                  ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
+                  nameInput + included;
+            return output;
+          }, {maxWidth: 500, minWidth: 300});
+        });
+      
+    },
+    error: function () {
+      console.log('Something went horribly wrong')
+    }
+  });
+}
 function prepareData(layerBounds) {
   spawnpoints = [];
   pokestops = [];
   gyms = [];
   let bounds;
-  if (layerBounds != undefined) {
+  if (layerBounds._northEast != undefined) {
     bounds = layerBounds;
   } else if (circleLayer.getLayers().length > 1) {
     bounds = circleLayer.getBounds();
@@ -1995,17 +2143,17 @@ function prepareData(layerBounds) {
   }
   const data = {
     'get_data': true,
-    'min_lat': bounds.getSouthWest().lat,
-    'max_lat': bounds.getNorthEast().lat,
-    'min_lng': bounds.getSouthWest().lng,
-    'max_lng': bounds.getNorthEast().lng,
+    'min_lat': bounds._southWest.lat,
+    'max_lat': bounds._northEast.lat,
+    'min_lng': bounds._southWest.lng,
+    'max_lng': bounds._northEast.lng,
     'show_gyms': true,
     'show_pokestops': true,
     'show_spawnpoints': true,
     'show_quests': false
   };
   const json = JSON.stringify(data);
-  $.ajax({
+  const result = $.ajax({
     url: this.href,
     type: 'POST',
     async: false,
@@ -2015,47 +2163,71 @@ function prepareData(layerBounds) {
       pokestops = result.pokestops;
       spawnpoints = result.spawnpoints;
       gyms = result.gyms;
-    },
-    error: function () {
-      alert('Something went horribly wrong');
     }
   });
+  return result;
 }
-function getSpawnReport(layer) {
+async function getSpawnReport(layer, auto) {
   let reportStops = [],
     reportSpawns = [];
   let poly = layer.toGeoJSON();
   let line = turf.polygonToLine(poly);
-  pokestops.forEach(function(item) {
+  const preparedData = await prepareData(layer._bounds)
+  preparedData.pokestops.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
     if (turf.inside(point, poly)) {
       reportStops.push(item.id);
     }
   });
-  spawnpoints.forEach(function(item) {
+  preparedData.spawnpoints.forEach(function(item) {
     point = turf.point([item.lng, item.lat]);
     if (turf.inside(point, poly)) {
       reportSpawns.push(item.id);
     }
   });
+  let srl = auto ? 1 : settings.spawnReportLimit;
   const data = {
     'get_spawndata': true,
     'nest_migration_timestamp': settings.nestMigrationDate,
-    'spawn_report_limit': settings.spawnReportLimit,
-    'stops': reportStops,
+    'spawn_report_limit': srl,
+    'stops': [],
     'spawns': reportSpawns
   };
   const json = JSON.stringify(data);
-  $.ajax({
-    beforeSend: function() {
-      $("#modalLoading").modal('show');
-    },
+  const result = await $.ajax({
     url: this.href,
     type: 'POST',
     dataType: 'json',
     data: {'data': json},
-    success: function (result) {
+  });
+  return result;
+}
+function generateSpawnReport(result, layer) {
+  spawnReport = [];
       if (result.spawns !== null) {
+        if (result.spawns[0] != undefined) {
+          let osmid = layer.tags.osmid;
+          let nestPokemon = result.spawns[0].pokemon_id;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = result.spawns[0].count;
+          let avgSpawns = (pkmCount / ((nowUt - settings.nestMigrationDate) / 3600 / 60)).toFixed(2);
+          let nestName = layer.tags.name;
+          let lat = layer.tags.centerLat;
+          let lon = layer.tags.centerLon;
+          let path = layer.tags.path;
+          spawnReport.push([osmid, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path])
+        } else {
+          let osmid = layer.tags.osmid;
+          let nestPokemon = 0;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = 0;
+          let avgSpawns = 0;
+          let nestName = layer.tags.name;
+          let lat = layer.tags.centerLat;
+          let lon = layer.tags.centerLon;
+          let path = layer.tags.path;
+          spawnReport.push([osmid, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path])
+        }
         result.spawns.forEach(function(item) {
           if (typeof layer.tags !== 'undefined') {
             $('#modalSpawnReport  .modal-title').text(subs.spawnReport + layer.tags.name);
@@ -2068,12 +2240,8 @@ function getSpawnReport(layer) {
         }
         $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2">' + subs.noData + '</td></tr>');
       }
-    },
-    complete: function() {
-      $("#modalLoading").modal('hide');
+      $("#modalSpawnReport .writeNest").text(subs.writeToDB);
       $('#modalSpawnReport').modal('show');
-    }
-  });
 }
 function clearAllLayers() {
   bgLayer.clearLayers();
@@ -2204,14 +2372,14 @@ function getNests() {
     'way["landuse"="recreation_ground"];',
     'way["landuse"="meadow"];',
     'way["landuse"="grass"];',
-    'relation["leisure"="park"];',
-    'relation["leisure"="recreation_ground"];',
-    'relation["leisure"="pitch"];',
-    'relation["leisure"="playground"];',
-    'relation["leisure"="golf_course"];',
-    'relation["landuse"="recreation_ground"];',
-    'relation["landuse"="meadow"];',
-    'relation["landuse"="grass"];',
+//    'relation["leisure"="park"];',
+//    'relation["leisure"="recreation_ground"];',
+//    'relation["leisure"="pitch"];',
+//    'relation["leisure"="playground"];',
+//    'relation["leisure"="golf_course"];',
+//    'relation["landuse"="recreation_ground"];',
+//    'relation["landuse"="meadow"];',
+//    'relation["landuse"="grass"];',
   ].join('');
   let overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
   $.ajax({
@@ -2908,7 +3076,7 @@ $(document).on("click", ".removeFromExport", function() {
   exportListCount = exportList.getLayers().length;
   $('#exportListCount').text(exportListCount);
 });
-$(document).on("click", ".getSpawnReport", function() {
+$(document).on("click", ".getSpawnReport", async function() {
   let id = $(this).attr('data-layer-id');
   let layer;
   let container = $(this).attr('data-layer-container');
@@ -2920,8 +3088,62 @@ $(document).on("click", ".getSpawnReport", function() {
       layer = nestLayer.getLayer(parseInt(id));
       break;
   }
-  prepareData(layer._bounds);
-  getSpawnReport(layer);
+  const srData = await getSpawnReport(layer)
+  generateSpawnReport(srData, layer);
+});
+$(document).on("click", ".writeNest", function() {
+  if (spawnReport != undefined) {
+    spawnReport.forEach(function(item) {
+      let nestId = item[0];
+      let nestPokemon = item[1];
+      let avgSpawns = item[2];
+      let nowUt = item[3];
+      let pkmCount = item[4];
+      let nestName = item[5];
+      let lat = item[6];
+      let lon = item[7];
+      let path = item[8];
+    writeNests(nestId, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path)
+    });
+    spawnReport = [];
+  }
+});
+$(document).on("click", "#importNests", function() {
+  importNests()
+});
+$(document).on("click", "#updateDb", function() {
+  nestLayer.eachLayer(async function(item) {
+    let auto = true;
+    let result = await getSpawnReport(item, auto);
+    if (result.spawns !== null) {
+      if (result.spawns[0] != undefined) {
+          let nestId = item.tags.osmid;
+          let nestPokemon = result.spawns[0].pokemon_id;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = result.spawns[0].count;
+          let avgSpawns = (pkmCount / ((nowUt - settings.nestMigrationDate) / 3600 / 60)).toFixed(2);
+          let nestName = item.tags.name;
+          let lat = item.tags.centerLat;
+          let lon = item.tags.centerLon;
+          let path = item.tags.path;
+          writeNests(nestId, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path)
+          console.log(nestName)
+      } else {
+          let nestId = item.tags.osmid;
+          let nestPokemon = 0;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = 0;
+          let avgSpawns = 0;
+          let nestName = item.tags.name;
+          let lat = item.tags.centerLat;
+          let lon = item.tags.centerLon;
+          let path = item.tags.path;
+          writeNests(nestId, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path)
+          console.log(nestName)
+      }     
+    }
+  });
+  $("#modalNests .updateButton").text(subs.writeSuccess);
 });
 function showMissingQuests(choice) {
   if (choice.length > 0) {
@@ -3100,21 +3322,21 @@ $(document).on("click", "#getCirclesCount", function() {
 });          
 $(document).load("#modalContent", getLanguage());
 $(document).on("click", "#getAllNests", function() {     
-  $.when($("#modalLoading").modal('show')).then(function() {
-    prepareData(nestLayer.getBounds());
-    nestLayer.eachLayer(function(layer) {
+  $.when($("#modalLoading").modal('show')).then(async function() {
+    const preparedData = await prepareData(nestLayer.getBounds());
+    nestLayer.eachLayer(async function(layer) {
       let reportStops = [],
       reportSpawns = [];
       let center = layer.getBounds().getCenter()
       let poly = layer.toGeoJSON();
       let line = turf.polygonToLine(poly);
-      pokestops.forEach(function(item) {
+      preparedData.pokestops.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           reportStops.push(item.id);
         }
       });
-      spawnpoints.forEach(function(item) {
+      preparedData.spawnpoints.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           reportSpawns.push(item.id);
@@ -3124,49 +3346,75 @@ $(document).on("click", "#getAllNests", function() {
         'get_spawndata': true,
         'nest_migration_timestamp': settings.nestMigrationDate,
         'spawn_report_limit': settings.spawnReportLimit,
-        'stops': reportStops,
+        'stops': [],
         'spawns': reportSpawns
       };
       const json = JSON.stringify(data);
-      $.ajax({
+      const result = Promise.resolve($.ajax({
         url: this.href,
         type: 'POST',
         dataType: 'json',
         data: {'data': json},
-        success: function (result) {
-          if (result.spawns !== null) {
-            if (typeof layer.tags.name !== 'undefined') {
-              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
-            } else {
-              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '</em></td></tr>');
-            }
-            result.spawns.forEach(function(item) {
-              $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
-            });
-          } else {
-            if (typeof layer.tags.name !== 'undefined') {
-              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
-            } else {
-              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + subs.unnamed + '</strong> ' + subs.at + ' ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + subs.skipped + '</em></td></tr>');
-            }
-          }
-        },
-        error: function() {
-          alert("Something went horribly wrong!");
-        },
-        complete: function() {
-          $('#modalOutput').modal('hide');
-          $('#modalSpawnReport  .modal-title').text(subs.nestReport);
-          $('#modalSpawnReport').modal('show');
+        error: function(error) {
+          console.log("meh");
         }
+      })).then(e => {
+        generateAllNestReports(e, layer);
       });
     });
-    
+    $('#modalOutput').modal('hide');
+    $('#modalSpawnReport .modal-title').text(subs.nestReport);
+    $("#modalSpawnReport .writeNest").text(subs.writeToDB);
+    $('#modalSpawnReport').modal('show');
     
   }).then(function() {
     $("#modalLoading").modal('hide');
   });
 });
+function generateAllNestReports(result, layer) {
+  $("#modalSpawnReport .writeNest").text(subs.writeToDB);
+      if (result.spawns !== null) {
+        if (result.spawns[0] != undefined) {
+          let osmid = layer.tags.osmid;
+          let nestPokemon = result.spawns[0].pokemon_id;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = result.spawns[0].count;
+          let avgSpawns = (pkmCount / ((nowUt - settings.nestMigrationDate) / 3600 / 60)).toFixed(2);
+          let nestName = layer.tags.name;
+          let lat = layer.tags.centerLat;
+          let lon = layer.tags.centerLon;
+          let path = layer.tags.path;
+          spawnReport.push([osmid, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path])
+        } else {
+          let osmid = layer.tags.osmid;
+          let nestPokemon = 0;
+          let nowUt = Math.floor(Date.now() / 1000);
+          let pkmCount = 0;
+          let avgSpawns = 0;
+          let nestName = layer.tags.name;
+          let lat = layer.tags.centerLat;
+          let lon = layer.tags.centerLon;
+          let path = layer.tags.path;
+          spawnReport.push([osmid, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path])
+        }
+      }
+  if (result.spawns !== null) {
+            if (typeof layer.tags.name !== 'undefined') {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + layer.tags.name + '</strong> <em style="font-size:xx-small">' + subs.at + ' ' + layer.tags.centerLat.toFixed(4) + ', ' + layer.tags.centerLon.toFixed(4) + '</em></td></tr>');
+            } else {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td colspan="2"><strong>' + subs.spawnReport + subs.unnamed + '</strong> ' + subs.at + ' <em style="font-size:xx-small">' + layer.tags.centerLat.toFixed(4) + ', ' + layer.tags.centerLon.toFixed(4) + '</em></td></tr>');
+            }
+            result.spawns.forEach(function(item) {
+              $('#spawnReportTable > tbody:last-child').append('<tr><td>' + pokemon[item.pokemon_id-1] + '</td><td>' + item.count + '</td></tr>');
+            });
+  } else {
+            if (typeof layer.tags.name !== 'undefined') {
+              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + layer.tags.name + '</strong> ' + subs.at + ' ' + layer.tags.centerLat.toFixed(4) + ', ' + layer.tags.centerLon.toFixed(4) + subs.skipped + '</em></td></tr>');
+            } else {
+              $('#spawnReportTableMissed > tbody:last-child').append('<tr><td colspan="2"><em style="font-size:xx-small"><strong>' + subs.unnamed + '</strong> ' + subs.at + ' ' + layer.tags.centerLat.toFixed(4) + ', ' + layer.tags.centerLon.toFixed(4) + subs.skipped + '</em></td></tr>');
+            }
+  }
+}
 $(document).on("click", ".exportLayer", function() {
   $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
   let id = $(this).attr('data-layer-id');
@@ -3184,7 +3432,17 @@ $(document).on("click", ".exportLayer", function() {
       break;
   }
   // geojson
-  let polyjson = JSON.stringify(layer.toGeoJSON());
+  let tempLayer = layer.toGeoJSON();
+  tempLayer.id = layer.tags.osmid;
+  tempLayer.properties.name = layer.tags.name;
+  tempLayer.properties.area_center_point = {
+    "type": "Point",
+    "coordinates": [
+      layer._bounds._northEast.lng-((layer._bounds._northEast.lng-layer._bounds._southWest.lng)/2),
+      layer._bounds._northEast.lat-((layer._bounds._northEast.lat-layer._bounds._southWest.lat)/2)
+    ]
+  }
+  let polyjson = JSON.stringify(tempLayer);
   $('#exportPolygonDataGeoJson').val(polyjson);
   // simple coords
   let polycoords = '';
@@ -3891,9 +4149,6 @@ function newMSQuests() {
             </div>
             <div class="btn-toolbar" style="margin-bottom: 20px;">
               <div class="btn-group" role="group" aria-label="">
-                <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.getAllNests);</script></button>
-              </div>
-              <div class="btn-group" role="group" aria-label="">
                 <button id="getCirclesCount" class="btn btn-primary float-right" type="button"><script type="text/javascript">document.write(subs.countPoints);</script></button>
               </div>
             </div>
@@ -3929,6 +4184,43 @@ function newMSQuests() {
                 </div>
               </div>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modalNests" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><script type="text/javascript">document.write(subs.nestOptions);</script></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="btn-toolbar" style="margin-bottom: 20px;">
+              <div class="btn-group" role="group" aria-label="">
+                <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.getAllNests);</script></button>
+              </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px;">
+              <label class="col-sm-7"><script type="text/javascript">document.write(subs.manualdbHint)</script></label>
+            </div>
+            <div class="btn-toolbar" style="margin-bottom: 20px;">
+              <div class="btn-group" role="group" aria-label="">
+                <button id="importNests" class="btn btn-primary float-left" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.importFromDB);</script></button>
+              </div>
+            </div>
+            <div class="btn-toolbar" style="margin-bottom: 20px;">
+              <div class="btn-group" role="group" aria-label="">
+                <button id="updateDb" class="btn btn-primary float-left updateButton" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.writeAllToDB);</script></button>
+              </div>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
@@ -4285,7 +4577,7 @@ function newMSQuests() {
       </div>
     </div>
 
-    <div class="modal" id="modalSpawnReport" tabindex="-1" role="dialog">
+    <div class="modal" id="modalSpawnReport" tabindex="-1" role="dialog" style="overflow: auto;">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -4311,7 +4603,8 @@ function newMSQuests() {
             </table>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
+            <button type="button" class="btn btn-secondary writeNest"><script type="text/javascript">document.write(subs.writeToDB);</script></button>
+            <button type="button" class="btn btn-secondary closeSr"  data-dismiss="modal"><script type="text/javascript">document.write(subs.close);</script></button>
           </div>
         </div>
       </div>
@@ -4339,9 +4632,21 @@ function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
   $pdo = new PDO($dsn, $DB_USER, $DB_PSWD, $options);
   return $pdo;
 }
+function initMDB($MDB_HOST, $MDB_USER, $MDB_PSWD, $MDB_NAME, $MDB_PORT) {
+  $dsn = "mysql:host=$MDB_HOST;dbname=$MDB_NAME;port=$MDB_PORT;charset=utf8mb4";
+  $options = [
+      PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+      PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+      PDO::ATTR_EMULATE_PREPARES   => true,
+  ];
+  $mpdo = new PDO($dsn, $MDB_USER, $MDB_PSWD, $options);
+  return $mpdo;
+}
 function map_helper_init() {
   global $db;
   $db = initDB(DB_HOST, DB_USER, DB_PSWD, DB_NAME, DB_PORT);
+  global $mdb;
+  $mdb = initMDB(MDB_HOST, MDB_USER, MDB_PSWD, MDB_NAME, MDB_PORT);
   $args = json_decode($_POST['data']);
   if (isset($args->get_spawndata)) {
   if ($args->get_spawndata === true) { getSpawnData($args); }
@@ -4357,6 +4662,12 @@ function map_helper_init() {
   }
   if (isset($args->get_instance_names)) {
   if ($args->get_instance_names === true) { getInstanceNames($args); }
+  }
+  if (isset($args->set_nest_data)) {
+  if ($args->set_nest_data === true) { setNestData($args); }
+  }
+  if (isset($args->get_nest_data)) {
+  if ($args->get_nest_data === true) { getNests($args); }
   }
 }
 function getInstanceData($args) {
@@ -4425,7 +4736,23 @@ function getSpawnData($args) {
     }
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
-  echo json_encode(array('spawns' => $result, 'sql' => $sql_spawn));
+  echo json_encode(array('spawns' => $result));
+}
+function setNestData($args) {
+  global $mdb;
+  $binds = array();
+  $sql_nests = "INSERT INTO nests (pokemon_id, updated, name, pokemon_count, pokemon_avg, nest_id, lat, lon, polygon_path) VALUES (?,?,?,?,?,?,?,?,?) on DUPLICATE KEY UPDATE pokemon_id = ?, updated = ?, name = ?, pokemon_count = ?, pokemon_avg = ?";
+  $stmt = $mdb->prepare($sql_nests);  
+  $result = $stmt->execute(array_merge($binds, [$args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns, $args->nest_id, $args->lat, $args->lon, $args->path, $args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns]));
+  echo $result;
+}
+function getNests($args) {
+  global $mdb;
+  $sql_import_nests = "SELECT name, nest_id, lat, lon, polygon_path FROM nests";
+  $stmt = $mdb->prepare($sql_import_nests);   
+  $stmt->execute();
+  $import_nests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  echo json_encode(array('nests' => $import_nests));
 }
 function getData($args) {
   global $db;
