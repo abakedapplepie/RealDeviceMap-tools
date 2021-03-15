@@ -334,7 +334,6 @@ $(function(){
           let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
           let readableArea = L.GeometryUtil.readableArea(area, true);
           polygon.addTo(nestLayer);
-
           let name = '';
           let nameInput = '';
           let included = '';
@@ -694,16 +693,6 @@ function initMap() {
       }
     }]
   });
-  buttonImportNests = L.easyButton({
-    states: [{
-      stateName: 'openImportNestsModal',
-      icon: 'fas fa-tree',
-      title: subs.importOSM,
-      onClick: function (control){
-        getNests();
-      }
-    }]
-  });
   buttonImportAdBounds = L.easyButton({
     states: [{
       stateName: 'openImportAdBoundsModal',
@@ -762,7 +751,7 @@ function initMap() {
       }
     }]
   });
-  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonImportNests, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonModalNestOptions, buttonTrashRoute], { position: 'topleft' }).addTo(map);
+  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonModalNestOptions, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
   
   // barOutput
   buttonGenerateRoute = L.easyButton({
@@ -1149,7 +1138,6 @@ function initMap() {
     layer.tags.included = false;
     let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
     let readableArea = L.GeometryUtil.readableArea(area, true);
-    console.log(readableArea)
     let name = '';
     let nameInput = '';
     let included = '';
@@ -1627,7 +1615,6 @@ function getInstance(instanceName = null, color = '#1090fa') {
               newPolygon = L.polygon(coords, polygonOptions).addTo(editableLayer);
               let area = L.GeometryUtil.geodesicArea(newPolygon.getLatLngs()[0]);
               let readableArea = L.GeometryUtil.readableArea(area, true);
-              console.log(readableArea)
             });
           }
         }
@@ -2394,7 +2381,7 @@ function getAdBounds(adBoundsLv) {
     }
   });
 }
-function getNests() {
+function getNests(queryNestArgs) {
   clearAllLayers();
   const bounds = map.getBounds();
   const overpassApiEndpoint = 'https://overpass-api.de/api/interpreter';
@@ -2410,25 +2397,7 @@ function getNests() {
     '[bbox:' + queryBbox + ']',
     '[date:"' + queryDate + '"]'
   ].join('');
-  let queryNestWays = [
-    'way["leisure"="park"];',
-    'way["leisure"="recreation_ground"];',
-    'way["leisure"="pitch"];',
-    'way["leisure"="playground"];',
-    'way["leisure"="golf_course"];',
-    'way["landuse"="recreation_ground"];',
-    'way["landuse"="meadow"];',
-    'way["landuse"="grass"];',
-//    'relation["leisure"="park"];',
-//    'relation["leisure"="recreation_ground"];',
-//    'relation["leisure"="pitch"];',
-//    'relation["leisure"="playground"];',
-//    'relation["leisure"="golf_course"];',
-//    'relation["landuse"="recreation_ground"];',
-//    'relation["landuse"="meadow"];',
-//    'relation["landuse"="grass"];',
-  ].join('');
-  let overPassQuery = queryOptions + ';(' + queryNestWays + ')' + ';out;>;out skel qt;';
+  let overPassQuery = queryOptions + ';(' + queryNestArgs + ')' + ';out;>;out skel qt;';
   $.ajax({
     beforeSend: function() {
       $("#modalLoading").modal('show');
@@ -3151,6 +3120,31 @@ $(document).on("click", ".getSpawnReport", async function() {
   }
   const srData = await getSpawnReport(layer)
   generateSpawnReport(srData, layer);
+});
+$(document).on("click", "#importNestsOSM", function() {
+  let queryNestArgs = '';
+  if ($('#osmOption1').is(':checked')) {
+    queryNestArgs += 'way["leisure"="park"];relation["leisure"="park"];';
+  }
+  if ($('#osmOption2').is(':checked')) {
+    queryNestArgs += 'way["landuse"="meadow"];relation["landuse"="meadow"];';
+  }
+  if ($('#osmOption3').is(':checked')) {
+    queryNestArgs += 'way["leisure"="recreation_ground"];relation["leisure"="recreation_ground"];way["landuse"="recreation_ground"];relation["landuse"="recreation_ground"];';
+  }
+  if ($('#osmOption4').is(':checked')) {
+    queryNestArgs += 'way["landuse"="grass"];relation["landuse"="grass"];';
+  }
+  if ($('#osmOption5').is(':checked')) {
+    queryNestArgs += 'way["leisure"="pitch"];relation["leisure"="pitch"];';
+  }
+  if ($('#osmOption6').is(':checked')) {
+    queryNestArgs += 'way["leisure"="golf_course"];relation["leisure"="golf_course"];';
+  }
+  if ($('#osmOption7').is(':checked')) {
+    queryNestArgs += 'way["leisure"="playground"];relation["leisure"="playground"];';
+  }
+  getNests(queryNestArgs);
 });
 $(document).on("click", ".writeNest", function() {
   if (spawnReport != undefined) {
@@ -4268,8 +4262,56 @@ function newMSQuests() {
                 <button id="getAllNests" class="btn btn-primary float-left" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.getAllNests);</script></button>
               </div>
             </div>
-            <div class="row" style="margin-bottom: 5px;">
-              <label class="col-sm-7"><script type="text/javascript">document.write(subs.manualdbHint)</script></label>
+
+            <div class="input-group mb">              
+              <div class="input-group">
+                <h6 class="modal-title" style="margin-bottom: 5px;"><script type="text/javascript">document.write(subs.osmOptions);</script></h6>
+              </div>
+            </div>
+            <div>
+              <div class="form-check form-check-inline" style="width: 50%;">
+                <input class="form-check-input" type="checkbox" id="osmOption1" value="osmOption1" checked>
+                <label class="form-check-label" for="osmOption1"><script type="text/javascript">document.write(subs.osmPark);</script></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="osmOption2" value="osmOption2">
+                <label class="form-check-label" for="osmOption4"><script type="text/javascript">document.write(subs.osmMeadow);</script></label>
+              </div>
+            </div>
+            <div>
+              <div class="form-check form-check-inline" style="width: 50%;">
+                <input class="form-check-input" type="checkbox" id="osmOption3" value="osmOption3" checked>
+                <label class="form-check-label" for="osmOption3"><script type="text/javascript">document.write(subs.osmRecGround);</script></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="osmOption4" value="osmOption4">
+                <label class="form-check-label" for="osmOption6"><script type="text/javascript">document.write(subs.osmGrass);</script></label>
+              </div>
+            </div>
+            <div>
+              <div class="form-check form-check-inline" style="width: 50%;">
+                <input class="form-check-input" type="checkbox" id="osmOption5" value="osmOption5">
+                <label class="form-check-label" for="osmOption5"><script type="text/javascript">document.write(subs.osmPitch);</script></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="osmOption6" value="osmOption6">
+                <label class="form-check-label" for="osmOption6"><script type="text/javascript">document.write(subs.osmGolf);</script></label>
+              </div>
+            </div>
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="osmOption7" value="osmOption7">
+                <label class="form-check-label" for="osmOption7"><script type="text/javascript">document.write(subs.osmPlayground);</script></label>
+              </div>
+            </div>
+            <div class="btn-toolbar" style="margin-top: 20px;">
+              <div class="btn-group" role="group" aria-label="">
+                <button id="importNestsOSM" class="btn btn-primary float-left" type="button" style='margin-right: 10px;'><script type="text/javascript">document.write(subs.osmImport);</script></button>
+              </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 20px; margin-bottom: 10px;">
+              <h6 class="modal-title"><script type="text/javascript">document.write(subs.manualdbHint)</script></h6>
             </div>
             <div class="btn-toolbar" style="margin-bottom: 20px;">
               <div class="btn-group" role="group" aria-label="">
