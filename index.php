@@ -254,12 +254,14 @@ $(function(){
         } else {
           layer.tags.name = '';
         }
+        let area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+        let readableArea = L.GeometryUtil.readableArea(area, true);
         layer.tags.path = polygon.path;
         layer.tags.centerLat = polygon.centerLat;
         layer.tags.centerLon = polygon.centerLon;
         layer.bindPopup(function (layer) {
           if (layer.tags.name == '') {
-            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
             nameInput = '<hr><div class="input-group mb-3">' +
                               '<div class="input-group-prepend">' +
                                 '<span class="input-group-text">' + subs.name + '</span>' +
@@ -268,7 +270,7 @@ $(function(){
                   layer._leaflet_id + ' type="text" class="form-control" aria-label="Polygon name">' +
                             '</div>';
           } else {
-            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
             nameInput = '<hr>';        
           }
           if (layer.tags.included == true) {
@@ -329,16 +331,19 @@ $(function(){
           polygon.tags.centerLat = feature.properties.area_center_point.coordinates[1];
           polygon.tags.centerLon = feature.properties.area_center_point.coordinates[0];
           polygon.tags.included = false;
+          let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+          let readableArea = L.GeometryUtil.readableArea(area, true);
           polygon.addTo(nestLayer);
+
           let name = '';
           let nameInput = '';
           let included = '';
           polygon.bindPopup(function (layer) {
             if (typeof layer.tags.name !== 'undefined') {
-              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
               nameInput = '<hr>';
             } else {
-              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
               nameInput = '<hr><div class="input-group mb-3">' +
                               '<div class="input-group-prepend">' +
                                 '<span class="input-group-text">' + subs.name + '</span>' +
@@ -1142,12 +1147,15 @@ function initMap() {
     layer.tags = {};
     layer.tags.name = '';
     layer.tags.included = false;
+    let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+    let readableArea = L.GeometryUtil.readableArea(area, true);
+    console.log(readableArea)
     let name = '';
     let nameInput = '';
     let included = '';
     layer.bindPopup(function (layer) {
       if (layer.tags.name == '') {
-        name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+        name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
         nameInput = '<hr><div class="input-group mb-3">' +
                               '<div class="input-group-prepend">' +
                                 '<span class="input-group-text">' + subs.name + '</span>' +
@@ -1156,7 +1164,7 @@ function initMap() {
                   layer._leaflet_id + ' type="text" class="form-control" aria-label="Polygon name">' +
                             '</div>';
       } else {
-        name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
+        name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
         nameInput = '<hr>';        
       }
       if (layer.tags.included == true) {
@@ -1527,6 +1535,16 @@ function getInstance(instanceName = null, color = '#1090fa') {
       data: {'data': json},
       success: function (result) {
         points = result.data.area;
+        let distanceAll = 0;
+        for (i=0;i<points.length-1;i++) {
+          let pointA = L.point(points[i].lat, points[i].lon);
+          let pointB = L.point(points[i+1].lat, points[i+1].lon);
+          let distance = pointA.distanceTo(pointB)*100;
+          distanceAll += distance;
+        }
+        let avgDistance = (distanceAll/points.length*1000).toFixed(2);
+        console.log('average distance: ' + avgDistance + 'm')
+        let routeLength = distanceAll.toFixed(3);
         if (points.length > 0 ) {
           if (result.type == 'circle_pokemon') {
             if (!($('#instanceRadiusCheck').is(":checked"))) {
@@ -1535,10 +1553,12 @@ function getInstance(instanceName = null, color = '#1090fa') {
             let instance = [];
             instance.name = instanceName;
             instance.id = instances.length;
+            instance.routeLength = routeLength;
             points.forEach(function(item) {
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
+                  route_length: routeLength,
                   color: '#b410fa',
                   fillOpacity: 0.4,
                   draggable: false,
@@ -1547,6 +1567,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
               } else {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
+                  route_length: routeLength,
                   color: color,
                   fillOpacity: 0.2,
                   draggable: true,
@@ -1578,6 +1599,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
+                  route_length: routeLength,
                   color: '#b410fa',
                   fillOpacity: 0.4,
                   draggable: false,
@@ -1586,6 +1608,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
               } else {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
+                  route_length: routeLength,
                   color: color,
                   fillOpacity: 0.2,
                   draggable: true,
@@ -1602,6 +1625,9 @@ function getInstance(instanceName = null, color = '#1090fa') {
           } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
             points.forEach(function(coords) {
               newPolygon = L.polygon(coords, polygonOptions).addTo(editableLayer);
+              let area = L.GeometryUtil.geodesicArea(newPolygon.getLatLngs()[0]);
+              let readableArea = L.GeometryUtil.readableArea(area, true);
+              console.log(readableArea)
             });
           }
         }
@@ -1667,13 +1693,25 @@ function importCircles(instanceName = null, color = '#1090fa') {
       if (!($('#instanceRadiusCheck').is(":checked"))) {
         radius = settings.circleSize;
       }
+      let distanceAll = 0;
+      for (i=0;i<circleData.length-1;i++) {
+        let pointA = L.point(circleData[i][0], circleData[i][1]);
+        let pointB = L.point(circleData[i+1][0], circleData[i+1][1]);
+        let distance = pointA.distanceTo(pointB)*100;
+        distanceAll += distance;
+      }
+      let routeLength = distanceAll.toFixed(3);
+      let avgDistance = (distanceAll/circleData.length*1000).toFixed(2);
+      console.log('average distance: ' + avgDistance + 'm')
       let instance = [];
       instance.name = instanceName;
       instance.id = instances.length;
+      instance.routeLength = routeLength;
       circleData.forEach(function(item) {
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
             route_counter: circleData.length,
+            route_length: routeLength,
             color: '#b410fa',
             fillOpacity: 0.4,
             draggable: false,
@@ -1682,6 +1720,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
         } else {
           newCircle = L.circle(item, {
             route_counter: circleData.length,
+            route_length: routeLength,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
@@ -1715,6 +1754,8 @@ function importCircles(instanceName = null, color = '#1090fa') {
         }
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
+            route_counter: circleData.length,
+            route_length: routeLength,
             color: '#b410fa',
             fillOpacity: 0.4,
             draggable: false,
@@ -1722,6 +1763,8 @@ function importCircles(instanceName = null, color = '#1090fa') {
           }).addTo(bgLayer);
         } else {
           newCircle = L.circle(item, {
+            route_counter: circleData.length,
+            route_length: routeLength,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
@@ -1740,7 +1783,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
 }
 
 function getCircleHtml(instance_name, layer, subs) {
-  const htmlString = '<div class="input-group mb-3"><label class="form-check-label"><b>' + instance_name + '</b><br>' + subs.countCircles + ' ' + layer.options.route_counter + '<br>' + subs.circleID + ' ' + layer._leaflet_id + '<br>' + subs.circleRadius + ' ' + layer.options.radius + 'm<br>' + subs.coords + ' (lat,lon):<br>' + layer._latlng.lat + ', ' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+  const htmlString = '<div class="input-group mb-3"><label class="form-check-label"><b>' + instance_name + '</b><br>' + subs.countCircles + ' ' + layer.options.route_counter + '<br>' + subs.instanceLength + ' ' + layer.options.route_length + ' km<br>' + subs.circleID + ' ' + layer._leaflet_id + '<br>' + subs.circleRadius + ' ' + layer.options.radius + 'm<br>' + subs.coords + ' (lat,lon):<br>' + layer._latlng.lat + ', ' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
   return htmlString
 }
 
@@ -2081,16 +2124,18 @@ function importNests() {
           polygon.tags.centerLat = JSON.parse(feature.lat);
           polygon.tags.centerLon = JSON.parse(feature.lon);
           polygon.tags.included = false;
+          let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+          let readableArea = L.GeometryUtil.readableArea(area, true);
           polygon.addTo(nestLayer);
           let name = '';
           let nameInput = '';
           let included = '';
           polygon.bindPopup(function (layer) {
             if (typeof layer.tags.name !== 'undefined') {
-              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
               nameInput = '<hr>';
             } else {
-              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
               nameInput = '<hr><div class="input-group mb-3">' +
                               '<div class="input-group-prepend">' +
                                 '<span class="input-group-text">' + subs.name + '</span>' +
@@ -2307,11 +2352,13 @@ function getAdBounds(adBoundsLv) {
           polygon.tags.name = feature.properties.tags.name;
           polygon.tags.osmid = feature.properties.id;
           polygon.tags.included = false;
+          let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+          let readableArea = L.GeometryUtil.readableArea(area, true);
           let name = '';
           let included = '';
           polygon.bindPopup(function (layer) {
             if (typeof layer.tags.name !== 'undefined') {
-              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>';
+              name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
             }
             if (layer.tags.included == true) {
               included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="admLayer" data-layer-id=' +
@@ -2408,16 +2455,18 @@ function getNests() {
         polygon.tags.name = feature.properties.tags.name;
         polygon.tags.osmid = feature.properties.id;
         polygon.tags.included = false;
+        let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+        let readableArea = L.GeometryUtil.readableArea(area, true);
         polygon.addTo(nestLayer);
         let name = '';
         let nameInput = '';
         let included = '';
         polygon.bindPopup(function (layer) {
           if (typeof layer.tags.name !== 'undefined') {
-            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>';
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
             nameInput = '<hr>';
           } else {
-            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>';
+            name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
             nameInput = '<hr><div class="input-group mb-3">' +
                               '<div class="input-group-prepend">' +
                                 '<span class="input-group-text">' + subs.name + '</span>' +
@@ -2814,6 +2863,7 @@ $(document).ready(function() {
         let newLayer;
         circle = L.circle([item.getLatLng().lat, item.getLatLng().lng], {
           route_counter: sourceLayer.length,
+          route_length: sourceLayer.routeLength,
           color: color,
           fillOpacity: 0.2,
           draggable: true,
@@ -2862,9 +2912,20 @@ $(document).ready(function() {
         let temp_coeff = '0.99999' + temp1 + temp2;
         let solution = solve(points, temp_coeff); 
         let orderedPoints = solution.map(i => points [i]);
+        let distanceAll = 0;
+          for (i=0;i<points.length-1;i++) {
+            let pointA = L.point(orderedPoints[i].x, orderedPoints[i].y);
+            let pointB = L.point(orderedPoints[i+1].x, orderedPoints[i+1].y);
+            let distance = pointA.distanceTo(pointB)*100;
+            distanceAll += distance;
+          }
+        let routeLength = distanceAll.toFixed(3);
+        let avgDistance = (distanceAll/orderedPoints.length*1000).toFixed(2);
+        console.log('average distance: ' + avgDistance + 'm')
         orderedPoints.forEach(function(item) {
           newCircle = L.circle([item.x, item.y], {
             route_counter: allCircles.length,
+            route_length: routeLength,
             color: color,
             fillOpacity: 0.2,
             draggable: true,
@@ -3319,8 +3380,8 @@ function countPointsInCircles(display) {
 $(document).on("click", "#getCirclesCount", function() {
   let display = true;
   countPointsInCircles(display);
-});          
-$(document).load("#modalContent", getLanguage());
+});
+$(document).ready(getLanguage());
 $(document).on("click", "#getAllNests", function() {     
   $.when($("#modalLoading").modal('show')).then(async function() {
     const preparedData = await prepareData(nestLayer.getBounds());
