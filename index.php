@@ -1126,6 +1126,7 @@ function initMap() {
           document.getElementById(settings.selectCircleRange).checked = true;
         }
         if (settings.nestMigrationDate != null) {
+          settings.nestMigrationDate = (parseInt(settings.nestMigrationDate) < lastNestChange()) ? lastNestChange() : settings.nestMigrationDate;
           $('#nestMigrationDate').datetimepicker('date', moment.unix(settings.nestMigrationDate).utc().local().format('MM/DD/YYYY HH:mm'));
         }
         if (settings.oldSpawnpointsTimestamp != null) {
@@ -2813,6 +2814,16 @@ function loadData() {
   });
   updateS2Overlay()
 }
+function lastNestChange() {
+  let reference = 1599091200 * 1000;
+  let actual = Date.now();
+  let diff = actual - reference;
+  do {
+    diff -= 1209600000;
+  } while (diff > 0);
+  let result = (actual - (1209600000 - Math.abs(diff))) / 1000;
+  return result;
+}
 $(document).ready(function() {
   $('input[type=radio][name=exportPolygonDataType]').change(function() {
     if (this.value == 'exportPolygonDataTypeCoordsList') {
@@ -3688,7 +3699,7 @@ function loadSettings() {
     circleSize: 70,
     selectCircleRange: 'circleIV',
     optimizationAttempts: 10,
-    nestMigrationDate: 1539201600,
+    nestMigrationDate: lastNestChange(),
     oldSpawnpointsTimestamp: 1569438000,
     spawnReportLimit: 10,
     mapMode: 'RouteGenerator',
@@ -3706,13 +3717,14 @@ function loadSettings() {
   Object.keys(settings).forEach(function(key) {
     storedSetting = retrieveSetting(key);
     if (storedSetting !== null) {
-      settings[key] = storedSetting;
-      settings.showMissingQuests = false;
+      settings[key] = storedSetting;      
     } else {
       settings[key] = defaultSettings[key];
       storeSetting(key)
     }
   });
+  settings.nestMigrationDate = (parseInt(settings.nestMigrationDate) < lastNestChange()) ? lastNestChange() : settings.nestMigrationDate;
+  settings.showMissingQuests = false;
 }
 function getLanguage() {
   if (settings.language == null) {
