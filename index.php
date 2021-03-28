@@ -207,11 +207,13 @@ $(function(){
         geoJson.features.forEach(function(feature) {          
           if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
             polygonData.push(turf.flip(feature).geometry.coordinates);
-            polygonData[counter].id = feature.id;
-            polygonData[counter].name = feature.properties.name;
+            polygonData[counter].id = feature.id ? feature.id : counter;
+            polygonData[counter].name = feature.properties.name ? feature.properties.name : '';
             polygonData[counter].path = JSON.stringify(turf.flip(feature).geometry.coordinates);
-            polygonData[counter].centerLat = feature.properties.area_center_point.coordinates[1];
-            polygonData[counter].centerLon = feature.properties.area_center_point.coordinates[0];
+            if (feature.properties.area_center_point != undefined) {
+              polygonData[counter].centerLat = feature.properties.area_center_point.coordinates[1];
+              polygonData[counter].centerLon = feature.properties.area_center_point.coordinates[0];
+            }
             counter++;
             importReady = true;
           } else {
@@ -249,16 +251,12 @@ $(function(){
       polygonData.forEach(function(polygon) {
         let layer = L.polygon(polygon, polygonOptions).addTo(editableLayer);
         layer.tags.osmid = polygon.id;
-        if (polygon.name != undefined && polygon.name != 'Unknown Parkname') {
-          layer.tags.name = polygon.name;
-        } else {
-          layer.tags.name = '';
-        }
+        layer.tags.name = (polygon.name != 'Unknown Parkname') ? polygon.name : '';
         let area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
         let readableArea = L.GeometryUtil.readableArea(area, true);
         layer.tags.path = polygon.path;
-        layer.tags.centerLat = polygon.centerLat;
-        layer.tags.centerLon = polygon.centerLon;
+        layer.tags.centerLat = polygon.centerLat ? polygon.centerLat : layer._bounds._northEast.lat-((layer._bounds._northEast.lat-layer._bounds._southWest.lat)/2);
+        layer.tags.centerLon = polygon.centerLon ? polygon.centerLon : layer._bounds._northEast.lng-((layer._bounds._northEast.lng-layer._bounds._southWest.lng)/2);
         layer.bindPopup(function (layer) {
           if (layer.tags.name == '') {
             name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.polygon + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
@@ -304,41 +302,73 @@ $(function(){
     $('#modalImport').modal('hide');
   });
   $('#saveNestPolygon').on('click', function(event) {
+    let polygonData = [];
+    let importReady = true;
     let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
-    if (importType == 'importPolygonDataTypeGeoJson') {
-      geoJson = JSON.parse($('#importPolygonData').val());
+    if (importType == 'importPolygonDataTypeCoordList') {
+      polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
+      importReady = true;
+    } else if (importType == 'importPolygonDataTypeGeoJson') {
+      let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
+        let counter = 0;
         geoJson.features.forEach(function(feature) {
-          feature = turf.flip(feature);
-          let polygon = L.polygon(feature.geometry.coordinates, {
-            clickable: false,
-            color: "#ff8833",
-            fill: true,
-            fillColor: null,
-            fillOpacity: 0.2,
-            opacity: 0.5,
-            stroke: true,
-            weight: 4
-          });
-          polygon.tags = {};
-          polygon.tags.osmid = feature.id;
-          if (feature.properties.name != undefined && feature.properties.name != 'Unknown Parkname') {
-            polygon.tags.name = feature.properties.name;
+          if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
+            polygonData.push(turf.flip(feature).geometry.coordinates);
+            polygonData[counter].id = feature.id ? feature.id : counter;
+            polygonData[counter].name = feature.properties.name ? feature.properties.name : '';
+            polygonData[counter].path = JSON.stringify(turf.flip(feature).geometry.coordinates);
+            if (feature.properties.area_center_point != undefined) {
+              polygonData[counter].centerLat = feature.properties.area_center_point.coordinates[1];
+              polygonData[counter].centerLon = feature.properties.area_center_point.coordinates[0];
+            }
+            counter++;
+            importReady = true;
           } else {
-            polygon.tags.name = '';
+            importReady = false;
           }
-          polygon.tags.path = JSON.stringify(turf.flip(feature).geometry.coordinates);
-          polygon.tags.centerLat = feature.properties.area_center_point.coordinates[1];
-          polygon.tags.centerLon = feature.properties.area_center_point.coordinates[0];
-          polygon.tags.included = false;
-          let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
-          let readableArea = L.GeometryUtil.readableArea(area, true);
-          polygon.addTo(nestLayer);
-          let name = '';
-          let nameInput = '';
-          let included = '';
-          polygon.bindPopup(function (layer) {
-            if (typeof layer.tags.name !== 'undefined') {
+        });
+      } else if (geoJson.type == 'Feature' && geoJson.geometry.type == 'Polygon') {
+          polygonData.push(turf.flip(geoJson).geometry.coordinates);
+          polygonData[0].id = geoJson.id ? geoJson.id : 0;
+          polygonData[0].name = geoJson.properties.name ? geoJson.properties.name : '' ;
+          polygonData[0].path = JSON.stringify(turf.flip(geoJson).geometry.coordinates);
+          if (geoJson.properties.area_center_point != undefined) {
+            polygonData[0].centerLat = geoJson.properties.area_center_point.coordinates[1];
+            polygonData[0].centerLon = geoJson.properties.area_center_point.coordinates[0];
+          }
+          importReady = true;
+      }
+    } else {
+      importReady = false;
+    }
+    if (importReady = true) {
+      let polygonOptions = {
+        clickable: false,
+        color: "#ff8833",
+        fill: true,
+        fillColor: null,
+        fillOpacity: 0.2,
+        opacity: 0.5,
+        stroke: true,
+        weight: 4
+      }
+      polygonData.forEach(function(polygon) {
+        let layer = L.polygon(polygon, polygonOptions);
+        layer.tags = {};
+        layer.tags.osmid = polygon.id;
+        layer.tags.name = (polygon.name != 'Unknown Parkname') ? polygon.name : '';
+        let area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+        let readableArea = L.GeometryUtil.readableArea(area, true);
+        layer.tags.path = polygon.path;
+        layer.tags.centerLat = polygon.centerLat ? polygon.centerLat : layer._bounds._northEast.lat-((layer._bounds._northEast.lat-layer._bounds._southWest.lat)/2);
+        layer.tags.centerLon = polygon.centerLon ? polygon.centerLon : layer._bounds._northEast.lng-((layer._bounds._northEast.lng-layer._bounds._southWest.lng)/2);
+        layer.tags.included = false;
+        let name = '';
+        let nameInput = '';
+        let included = '';
+        layer.bindPopup(function (layer) {
+            if (layer.tags.name != '') {
               name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + subs.nest + ': ' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
               nameInput = '<hr>';
             } else {
@@ -370,9 +400,8 @@ $(function(){
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.exportPolygon + '</span></div></div>' +
                   nameInput + included;
             return output;
-          }, {maxWidth: 500, minWidth: 300});
-        });
-      }
+        }, {maxWidth: 500, minWidth: 300}).addTo(nestLayer);
+      });
     } 
     $('#modalImport').modal('hide');
   });
@@ -1136,7 +1165,7 @@ function initMap() {
     layer.tags = {};
     layer.tags.name = '';
     layer.tags.included = false;
-    let area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
+    let area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
     let readableArea = L.GeometryUtil.readableArea(area, true);
     let name = '';
     let nameInput = '';
