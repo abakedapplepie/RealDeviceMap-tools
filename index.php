@@ -1554,15 +1554,18 @@ function getInstance(instanceName = null, color = '#1090fa') {
       success: function (result) {
         points = result.data.area;
         let distanceAll = 0;
-        for (i=0;i<points.length-1;i++) {
-          let pointA = L.point(points[i].lat, points[i].lon);
-          let pointB = L.point(points[i+1].lat, points[i+1].lon);
-          let distance = pointA.distanceTo(pointB)*100;
-          distanceAll += distance;
+        let routeLength = 0;
+        if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
+          for (i=0;i<points.length-1;i++) {
+            let pointA = L.point(points[i].lat, points[i].lon);
+            let pointB = L.point(points[i+1].lat, points[i+1].lon);
+            let distance = pointA.distanceTo(pointB)*100;
+            distanceAll += distance;
+          }
+          let avgDistance = (distanceAll/points.length*1000).toFixed(2);
+          console.log('average distance: ' + avgDistance + 'm')
+          routeLength = distanceAll.toFixed(3);
         }
-        let avgDistance = (distanceAll/points.length*1000).toFixed(2);
-        console.log('average distance: ' + avgDistance + 'm')
-        let routeLength = distanceAll.toFixed(3);
         if (points.length > 0 ) {
           if (result.type == 'circle_pokemon') {
             if (!($('#instanceRadiusCheck').is(":checked"))) {
