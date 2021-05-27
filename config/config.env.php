@@ -8,6 +8,7 @@ define('DB_NAME', getenv("DB_NAME") ?: "rdmdb");
 define('DB_PORT', getenv("DB_PORT") ?: 3306);
 
 // ManualDB (for nests)
+define('MDB_ACTIVE', getenv("MDB_ACTIVE") ?: false);
 define('MDB_HOST', getenv("MDB_HOST") ?: "127.0.0.1");
 define('MDB_USER', getenv("MDB_HOST") ?: "mdbuser");
 define('MDB_PSWD', getenv("MDB_HOST") ?: "password");

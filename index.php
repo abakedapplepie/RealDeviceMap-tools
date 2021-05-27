@@ -4792,8 +4792,10 @@ function initMDB($MDB_HOST, $MDB_USER, $MDB_PSWD, $MDB_NAME, $MDB_PORT) {
 function map_helper_init() {
   global $db;
   $db = initDB(DB_HOST, DB_USER, DB_PSWD, DB_NAME, DB_PORT);
-  global $mdb;
-  $mdb = initMDB(MDB_HOST, MDB_USER, MDB_PSWD, MDB_NAME, MDB_PORT);
+  if (MDB_ACTIVE === true) {
+    global $mdb;
+    $mdb = initMDB(MDB_HOST, MDB_USER, MDB_PSWD, MDB_NAME, MDB_PORT);
+  }
   $args = json_decode($_POST['data']);
   if (isset($args->get_spawndata)) {
   if ($args->get_spawndata === true) { getSpawnData($args); }
