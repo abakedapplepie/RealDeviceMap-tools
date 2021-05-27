@@ -1555,7 +1555,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
         points = result.data.area;
         let distanceAll = 0;
         let routeLength = 0;
-        if (result.type == 'circle_pokemon' || result.type == 'circle_raid') {
+        if (result.type == 'circle_pokemon' || result.type == 'circle_smart_pokemon' || result.type == 'circle_raid') {
           for (i=0;i<points.length-1;i++) {
             let pointA = L.point(points[i].lat, points[i].lon);
             let pointB = L.point(points[i+1].lat, points[i+1].lon);
@@ -1567,7 +1567,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
           routeLength = distanceAll.toFixed(3);
         }
         if (points.length > 0 ) {
-          if (result.type == 'circle_pokemon') {
+          if (result.type == 'circle_pokemon' || result.type == 'circle_smart_pokemon') {
             if (!($('#instanceRadiusCheck').is(":checked"))) {
               radius = 70;
             }
