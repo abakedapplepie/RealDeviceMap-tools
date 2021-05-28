@@ -278,6 +278,11 @@ $(function(){
             included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
           }
+          let merge = '';
+          if (layer.tags.merged != true) {
+            merge = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm mergePolygons" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.mergePolygons + '</span></div></div>';
+          }
           let output = name +
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm getSpawnReport" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
@@ -294,7 +299,7 @@ $(function(){
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
-                   nameInput + included;
+                   nameInput + included + merge;
           return output;
         }, {maxWidth: 500, minWidth: 300});
       });
@@ -1192,6 +1197,11 @@ function initMap() {
         included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="editableLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
       }
+      let merge = '';
+      if (layer.tags.merged != true) {
+            merge = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm mergePolygons" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.mergePolygons + '</span></div></div>';
+      }
       let output;
       if (layer.getRadius != undefined) {
 //        Kreis-Popup
@@ -1216,10 +1226,10 @@ function initMap() {
                    '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="editableLayer" data-layer-id=' +
                    layer._leaflet_id +
                    ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
-                   nameInput + included;
+                   nameInput + included + merge;
       }
       return output;
-    }, {maxWidth: 500, minWidth: 250});
+    }, {maxWidth: 500, minWidth: 300});
   });
   circleLayer.on('layerremove', function(e) {
     let layer = e.layer;
@@ -2387,6 +2397,11 @@ function getAdBounds(adBoundsLv) {
               included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm addToExport" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.addToExport + '</span></div></div>';
             }
+            let merge = '';
+            if (layer.tags.merged != true) {
+              merge = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm mergePolygons" data-layer-container="editableLayer" data-layer-id=' +
+                  layer._leaflet_id + ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.mergePolygons + '</span></div></div>';
+            }
             let output = name +
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
@@ -2403,7 +2418,7 @@ function getAdBounds(adBoundsLv) {
                   '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm countPoints" data-layer-container="admLayer" data-layer-id=' +
                   layer._leaflet_id +
                   ' type="button">Go!</button><div class="input-group-append"><span style="padding: .375rem .75rem;">' + subs.countVP + '</span></div></div>' +
-                  included;
+                  included + merge;
             return output;
           }, {maxWidth: 500, minWidth: 300}).addTo(admLayer);
         }
@@ -3894,6 +3909,31 @@ function updateS2Overlay() {
     }
   }
 }
+$(document).on("click", ".mergePolygons", function() {
+  let polygonOptions = {
+    clickable: false,
+    color: "#111111",
+    fill: true,
+    fillColor: null,
+    fillOpacity: 0.1,
+    opacity: 0.5,
+    stroke: true,
+    weight: 4
+  };
+  let activeLayer;
+  if (editableLayer.getLayers().length != 0) {
+    activeLayer = editableLayer;
+  } else if (admLayer.getLayers().length != 0) {
+    activeLayer = admLayer;
+  }
+  let base = activeLayer.getLayers()[0].toGeoJSON();
+  activeLayer.getLayers().forEach(function(item) {
+    base = turf.union(base, item.toGeoJSON());
+  });
+  activeLayer.clearLayers();
+  let layer = L.polygon(turf.flip(base).geometry.coordinates, polygonOptions).addTo(editableLayer);
+  layer.tags.merged = true;
+});
 function makeTextFile (text) {
   let textFile = null;
   let data = new Blob([text], {
@@ -3994,7 +4034,7 @@ $(document).on("click", "#generateNestFile", function () {
   if (exportType == 'simple') {
     exportList.eachLayer(function(layer){
       // simple coordlist
-      let start = 'Name: ' + layer.tags.name;
+      let start = '[' + layer.tags.name + ']';
       let coords = '';
       layer.toGeoJSON().geometry.coordinates[0].forEach(function(item) {
         coords += '\n' + item[1] + ',' + item[0];
