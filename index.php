@@ -1563,7 +1563,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
         points = result.data.area;
         let distanceAll = 0;
         let routeLength = 0;
-        if (result.type == 'circle_pokemon' || result.type == 'circle_smart_pokemon' || result.type == 'circle_raid') {
+        if (result.type === 'circle_pokemon' || result.type === 'circle_smart_pokemon' || result.type === 'circle_raid') {
           for (i=0;i<points.length-1;i++) {
             let pointA = L.point(points[i].lat, points[i].lon);
             let pointB = L.point(points[i+1].lat, points[i+1].lon);
@@ -1575,7 +1575,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
           routeLength = distanceAll.toFixed(3);
         }
         if (points.length > 0 ) {
-          if (result.type == 'circle_pokemon' || result.type == 'circle_smart_pokemon') {
+          if (result.type === 'circle_pokemon' || result.type === 'circle_smart_pokemon') {
             if (!($('#instanceRadiusCheck').is(":checked"))) {
               radius = 70;
             }
@@ -1584,6 +1584,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             instance.id = instances.length;
             instance.routeLength = routeLength;
             points.forEach(function(item) {
+              let newCircle;
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
@@ -1625,6 +1626,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   radius = -13 * lat + 1225;
                 }
               }
+              let newCircle;
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
                   route_counter: points.length,
@@ -1651,7 +1653,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             });
             instances.push(instance);
             drawRoute(instance);
-          } else if (result.type == 'auto_quest' || result.type == 'pokemon_iv') {
+          } else if (result.type === 'auto_quest' || result.type === 'pokemon_iv') {
             points.forEach(function(coords) {
               newPolygon = L.polygon(coords, polygonOptions).addTo(editableLayer);
               let area = L.GeometryUtil.geodesicArea(newPolygon.getLatLngs()[0]);
@@ -1659,6 +1661,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             });
           }
         }
+        $('#modalImportInstance').modal('hide');
       }
     });
   }
@@ -1708,21 +1711,21 @@ function importCircles(instanceName = null, color = '#1090fa') {
   let radius = 0;
   let importReady = false;
 
-  if ($('#importCircleData').val() != '') {
+  if ($('#importCircleData').val() !== '') {
     circleData = csvtoarray($('#importCircleData').val().trim());
     importReady = true;
-  }  
+  }
   if ($('#instanceRadiusCheck').is(":checked")) {
     radius = $('#ownRadius').val();
   }
 
-  if (circleData.length > 0 && importReady != false) {
-    if (settings.circleSize != 'raid' && settings.circleSize != '1gb') {
+  if (circleData.length > 0 && importReady) {
+    if (settings.circleSize !== 'raid' && settings.circleSize !== '1gb') {
       if (!($('#instanceRadiusCheck').is(":checked"))) {
         radius = settings.circleSize;
       }
       let distanceAll = 0;
-      for (i=0;i<circleData.length-1;i++) {
+      for (let i=0; i<circleData.length-1; i++) {
         let pointA = L.point(circleData[i][0], circleData[i][1]);
         let pointB = L.point(circleData[i+1][0], circleData[i+1][1]);
         let distance = pointA.distanceTo(pointB)*100;
@@ -1736,6 +1739,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
       instance.id = instances.length;
       instance.routeLength = routeLength;
       circleData.forEach(function(item) {
+        let newCircle;
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
             route_counter: circleData.length,
@@ -1758,11 +1762,11 @@ function importCircles(instanceName = null, color = '#1090fa') {
             return getCircleHtml(instanceName, layer, subs);
           }).addTo(instanceLayer);
           instance.push(newCircle._leaflet_id);
-        }         
+        }
       });
       instances.push(instance);
       drawRoute(instance);
-    } else if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
+    } else if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
       let instance = [];
       instance.name = instanceName;
       instance.id = instances.length;
@@ -1776,10 +1780,11 @@ function importCircles(instanceName = null, color = '#1090fa') {
           } else {
             radius = -13 * lat + 1225;
           }
-          if (settings.circleSize == '1gb') {
+          if (settings.circleSize === '1gb') {
             radius = radius/2;
           }
         }
+        let newCircle;
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
             route_counter: circleData.length,
@@ -1807,6 +1812,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
       instances.push(instance);
       drawRoute(instance);
     }
+    $('#modalImportInstance').modal('hide');
   }
 }
 
