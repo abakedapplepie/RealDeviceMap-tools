@@ -195,11 +195,13 @@ $(function(){
   });
   $('#savePolygon').on('click', function(event) {
     let polygonData = [];
-    let importReady = true;
+    let importReady = false;
     let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
     if (importType == 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
-      importReady = true;
+      if (polygonData[0].length >= 3) { // A polygon should consist of at least 3 points
+        importReady = true;
+	  }
     } else if (importType == 'importPolygonDataTypeGeoJson') {
       let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
@@ -233,10 +235,8 @@ $(function(){
           importReady = true;
         }
       }
-    } else {
-      importReady = false;
     }
-    if (importReady = true) {
+    if (importReady) {
       polygonColor = $("#polygonColor input").val();
       let polygonOptions = {
         clickable: false,
@@ -303,16 +303,18 @@ $(function(){
           return output;
         }, {maxWidth: 500, minWidth: 300});
       });
+      $('#modalImportPolygon').modal('hide');
     }
-    $('#modalImport').modal('hide');
   });
   $('#saveNestPolygon').on('click', function(event) {
     let polygonData = [];
-    let importReady = true;
+    let importReady = false;
     let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
     if (importType == 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
-      importReady = true;
+      if (polygonData[0].length >= 3) { // A polygon should consist of at least 3 points
+        importReady = true;
+	  }
     } else if (importType == 'importPolygonDataTypeGeoJson') {
       let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
@@ -329,8 +331,6 @@ $(function(){
             }
             counter++;
             importReady = true;
-          } else {
-            importReady = false;
           }
         });
       } else if (geoJson.type == 'Feature' && geoJson.geometry.type == 'Polygon') {
@@ -344,10 +344,8 @@ $(function(){
           }
           importReady = true;
       }
-    } else {
-      importReady = false;
     }
-    if (importReady = true) {
+    if (importReady) {
       let polygonOptions = {
         clickable: false,
         color: "#ff8833",
@@ -407,8 +405,8 @@ $(function(){
             return output;
         }, {maxWidth: 500, minWidth: 300}).addTo(nestLayer);
       });
-    } 
-    $('#modalImport').modal('hide');
+      $('#modalImportPolygon').modal('hide');
+    }
   });
   $('#importSubmissions').on('click', function(event) {
     subsLayer.clearLayers();
