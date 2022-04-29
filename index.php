@@ -1711,7 +1711,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
   let importReady = false;
 
   if ($('#importCircleData').val() != '') {
-    circleData = csvtoarray($('#importCircleData').val());
+    circleData = csvtoarray($('#importCircleData').val().trim());
     importReady = true;
   }  
   if ($('#instanceRadiusCheck').is(":checked")) {
@@ -2548,9 +2548,8 @@ function splitCsv(str){
   return result;
 };
 function csvtoarray(dataString, wf = false) {
-  let lines = dataString
-    .split(/\n/)           // Convert to one string per line
-    .map(function(lineStr) {
+  let lines = cleanArray(dataString.split('\n'))           // Convert to one string per line
+  .map(function(lineStr) {
       if (wf == true) {
         return splitCsv(lineStr);   // Convert considering ("") 
       } else {
@@ -2558,6 +2557,14 @@ function csvtoarray(dataString, wf = false) {
       }
     })
   return lines;
+}
+function cleanArray(array) {
+  const regex = /^([-+]?)([\d]{1,2})(((\.)(\d+)(,)))(\s*)(([-+]?)([\d]{1,3})((\.)(\d+))?)$/; // This will test if the element of the array is a coord.
+
+  var seen = {};
+  return array.filter(function(item) {  // This filter removes duplicates.
+    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+  }).filter(value => regex.test(value));  // Use regular expresion to remove anything that is not a coordinate.
 }
 function loadData() {
   const bounds = map.getBounds();
