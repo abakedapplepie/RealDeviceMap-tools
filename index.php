@@ -154,7 +154,8 @@ let settings = {
   tlLink: null,
   tlChoice: null,
   language: null,
-  generateWithS2Cells: false
+  generateWithS2Cells: false,
+  generateS2cellsCheck: false
 };
 //map layer vars
 let gymLayer,
@@ -206,7 +207,7 @@ $(function(){
       let geoJson = JSON.parse($('#importPolygonData').val());
       if (geoJson.type == 'FeatureCollection') {
         let counter = 0;
-        geoJson.features.forEach(function(feature) {          
+        geoJson.features.forEach(function(feature) {
           if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
             polygonData.push(turf.flip(feature).geometry.coordinates);
             polygonData[counter].id = feature.id ? feature.id : counter;
@@ -269,7 +270,7 @@ $(function(){
                             '</div>';
           } else {
             name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
-            nameInput = '<hr>';        
+            nameInput = '<hr>';
           }
           if (layer.tags.included == true) {
             included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="editableLayer" data-layer-id=' +
@@ -421,7 +422,7 @@ $(function(){
     }
     let formatCheck = pointsData[0][0];
     if (formatCheck != 'id'){
-      pointsData.forEach(function(item) {      
+      pointsData.forEach(function(item) {
         let marker = L.marker([item[0], item[1]], {
           draggable: true
         }).bindPopup('<span>' + item[2] + '</span>').addTo(subsLayer);
@@ -513,6 +514,7 @@ $(function(){
     let cellsLevel2Check = $('#cellsLevel2Check').is(":checked");
     let s2CountPOICheck = $('#s2CountPOI').is(":checked");
     let generateS2Check = $('#generateWithS2Cells').is(":checked");
+    let generateS2cellsCheck = $('#generateS2cellsCheck').is(":checked");
     let nestMigrationDate = moment($("#nestMigrationDate").datetimepicker('date')).local().format('X');
     let oldSpawnpointsTimestamp = moment($("#oldSpawnpointsTimestamp").datetimepicker('date')).local().format('X');
     let oldTlChoice = settings.tlChoice;
@@ -548,7 +550,7 @@ $(function(){
     } else {
       let csTemp = $('#circleSize').val();
       circleSize = parseInt(csTemp);
-    } 
+    }
     let oldLang = settings.language;
     let language = $('#language').val();
     const newSettings = {
@@ -562,6 +564,7 @@ $(function(){
       cellsLevel2Check: cellsLevel2Check,
       s2CountPOI: s2CountPOICheck,
       generateWithS2Cells: generateS2Check,
+      generateS2cellsCheck: generateS2cellsCheck,
       selectCircleRange: selectCircleRange,
       tlChoice: tlChoice,
       tlLink: tileset,
@@ -583,7 +586,7 @@ $(function(){
     if (settings.tlChoice != oldTlChoice) {
       location.reload();
     }
-    updateS2Overlay() 
+    updateS2Overlay()
   });
   $('#cancelSettings').on('click', function(event) {
     processSettings(true);
@@ -603,7 +606,7 @@ function initMap() {
   let attrOsm = 'Map data &copy; <a href="https://openstreetmap.org/">OpenStreetMap</a> contributors';
   let attrOverpass = 'POI via <a href="https://www.overpass-api.de/">Overpass API</a>';
   let osm = new L.TileLayer(
-  settings.tlLink, {  
+  settings.tlLink, {
     attribution: [attrOsm, attrOverpass].join(', ')
   });
   map = L.map('map', {
@@ -611,7 +614,9 @@ function initMap() {
     zoomSnap: 0.25,
     zoomControl: true,
     worldCopyJump: true,
-    wheelPxPerZoomLevel: 30}).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
+    wheelPxPerZoomLevel: 30
+  }).addLayer(osm).setView(settings.mapCenter, settings.mapZoom);
+
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
   bgLayer = new L.FeatureGroup();
@@ -650,7 +655,7 @@ function initMap() {
   routingLayer.addTo(map);
   bootstrapLayer = new L.featureGroup();
   bootstrapLayer.addTo(map);
-  
+
   // changing predefined tooltips
   L.drawLocal.draw.toolbar.buttons.polygon = subs.drawPolygon;
   L.drawLocal.draw.toolbar.buttons.circle = subs.drawCircle;
@@ -667,7 +672,7 @@ function initMap() {
     autoCollapse: true,
     autoType: false,
     minLength: 2,
-    textErr: subs.searchErr, 
+    textErr: subs.searchErr,
     textCancel: subs.searchCancel,
     textPlaceholder: subs.searchPlaceholder
   }).addTo(map);
@@ -786,7 +791,7 @@ function initMap() {
     }]
   });
   barShowPolyOpts = L.easyBar([buttonManualCircle, buttonModalNestOptions, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
-  
+
   // barOutput
   buttonGenerateRoute = L.easyButton({
     id: 'generateRoute',
@@ -1127,6 +1132,9 @@ function initMap() {
         if (settings.generateWithS2Cells != false) {
           $('#generateWithS2Cells').checked = true;
         }
+        if (settings.generateS2cellsCheck != false) {
+          $('#generateS2cellsCheck').checked = settings.generateS2cellsCheck;
+        }
         if (settings.selectCircleRange != null) {
           document.getElementById(settings.selectCircleRange).checked = true;
         }
@@ -1188,7 +1196,7 @@ function initMap() {
                             '</div>';
       } else {
         name = '<div class="input-group mb-3 nestName"><span style="padding: .375rem .75rem; width: 100%">' + layer.tags.name + '</span></div>' + '<div class="input-group mb-3">' + subs.area + ': ' + readableArea + '</div>';
-        nameInput = '<hr>';        
+        nameInput = '<hr>';
       }
       if (layer.tags.included == true) {
         included = '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm removeFromExport" data-layer-container="editableLayer" data-layer-id=' +
@@ -1233,9 +1241,11 @@ function initMap() {
   });
   circleLayer.on('layerremove', function(e) {
     let layer = e.layer;
-    layer.s2cells.forEach(function(item) {
-      circleS2Layer.removeLayer(parseInt(item));
-    });
+    if (layer.s2cells != undefined) {
+      layer.s2cells.forEach(function (item) {
+        circleS2Layer.removeLayer(parseInt(item));
+      });
+    }
     let id = circleInstance.id;
     let name = circleInstance.name;
     circleInstance = removeArrayElement(circleInstance, layer._leaflet_id)
@@ -1246,11 +1256,13 @@ function initMap() {
     instances[id].name = name;
   });
   circleLayer.on('layeradd', function(e) {
-    drawCircleS2Cells(e.layer);
     circleLayer.removeFrom(map).addTo(map);
-    e.layer.on('drag', function() {
+    if (settings.generateS2cellsCheck) {
       drawCircleS2Cells(e.layer);
-    })
+      e.layer.on('drag', function() {
+        drawCircleS2Cells(e.layer);
+      });
+    }
   });
   instanceLayer.on('layerremove', function(e) {
     let layer = e.layer;
@@ -1265,7 +1277,7 @@ function initMap() {
     instances[id].id = id;
     instances[id].name = name;
     if (routingLayer.getLayers().length > 1) {
-      instances[id].forEach(function(item) {  
+      instances[id].forEach(function(item) {
         let x = instanceLayer.getLayer(parseInt(item)).lineID;
         routingLayer.removeLayer(parseInt(x))
       });
@@ -1276,10 +1288,14 @@ function initMap() {
     }
   });
   instanceLayer.on('layeradd', function(e) {
-    drawCircleS2Cells(e.layer);
     instanceLayer.removeFrom(map).addTo(map);
+    if (settings.generateS2cellsCheck) {
+      drawCircleS2Cells(e.layer);
+    }
     e.layer.on('drag', function() {
-      drawCircleS2Cells(e.layer)
+      if (settings.generateS2cellsCheck) {
+        drawCircleS2Cells(e.layer)
+      }
       instances[e.layer.options.instanceID].forEach(function(item) {
         let x = instanceLayer.getLayer(parseInt(item)).lineID;
         routingLayer.removeLayer(parseInt(x))
@@ -1310,6 +1326,7 @@ function initMap() {
         fillColor: '#f03',
         fillOpacity: 0.2,
         draggable: true,
+        interactive: false,
         radius: radius
       }).bindPopup(function (layer) {
         return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="circleLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>' + '<p>Radius: ' + radiusOut + 'm<br>' + subs.coords + ':<br>' + latOut + ', ' + lonOut + '</p>';
@@ -1461,8 +1478,8 @@ function setShowMode() {
     if (instances != '') {
       instances.forEach(function(item){
         drawRoute(item)
-      });  
-    }  
+      });
+    }
     buttonShowRoute.state('enableShowRoute');
     buttonShowRoute.button.style.backgroundColor = '#B7E9B7';
   } else {
@@ -1534,7 +1551,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
     let radius = 0;
     if ($('#instanceRadiusCheck').is(":checked")) {
       radius = $('#ownRadius').val();
-    } 
+    }
     $.ajax({
       url: this.href,
       type: 'POST',
@@ -1588,7 +1605,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
                   return getCircleHtml(instanceName, layer, subs);
                 }).addTo(instanceLayer);
                 instance.push(newCircle._leaflet_id);
-              }              
+              }
             });
             instances.push(instance);
             drawRoute(instance);
@@ -2163,7 +2180,7 @@ function importNests() {
             return output;
           }, {maxWidth: 500, minWidth: 300});
         });
-      
+
     },
     error: function () {
       console.log('Something went horribly wrong')
@@ -2334,7 +2351,7 @@ function getAdBounds(adBoundsLv) {
     success: function (result) {
       let geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
-        if (feature.geometry.type == 'Polygon' || feature.geometry.type == 'MultiPolygon') { 
+        if (feature.geometry.type == 'Polygon' || feature.geometry.type == 'MultiPolygon') {
           feature = turf.flip(feature);
           let polygon = L.polygon(feature.geometry.coordinates, {
           clickable: false,
@@ -2519,7 +2536,7 @@ function csvtoarray(dataString, wf = false) {
   let lines = cleanArray(dataString.split('\n'))           // Convert to one string per line
   .map(function(lineStr) {
       if (wf == true) {
-        return splitCsv(lineStr);   // Convert considering ("") 
+        return splitCsv(lineStr);   // Convert considering ("")
       } else {
         return lineStr.split(",");   // Convert each line to array (,)
       }
@@ -2566,7 +2583,7 @@ function loadData() {
       if (result.gyms != null && settings.showGyms === true) {
         result.gyms.forEach(function(item) {
           gyms.push(item);
-          if (settings.showUnknownPois == false) {  
+          if (settings.showUnknownPois == false) {
             let lastUpdate = new Date(item.updated*1000).toUTCString().slice(4,-4);
             let radius = (6/8) + ((7/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
             let weight = (1/8) + ((1/8) * (map.getZoom() - 11)) // Depends on Zoomlevel
@@ -2698,7 +2715,7 @@ function loadData() {
         });
       }
       if (result.spawnpoints != null && settings.showSpawnpoints === true) {
-        if (settings.hideOldSpawnpoints == true){ 
+        if (settings.hideOldSpawnpoints == true){
           let oldSpawnpointsTimestamp = settings.oldSpawnpointsTimestamp;
           result.spawnpoints.forEach(function(item) {
             if (item.despawn_sec != null && item.updated >= oldSpawnpointsTimestamp) {
@@ -2912,7 +2929,7 @@ $(document).ready(function() {
         let temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
         let temp2 = Math.ceil(allCircles.length/10);
         let temp_coeff = '0.99999' + temp1 + temp2;
-        let solution = solve(points, temp_coeff); 
+        let solution = solve(points, temp_coeff);
         let orderedPoints = solution.map(i => points [i]);
         let distanceAll = 0;
           for (i=0;i<points.length-1;i++) {
@@ -2936,7 +2953,7 @@ $(document).ready(function() {
           }).bindPopup(function (layer) {
             return getCircleHtml(newInstance.name, layer, subs);
           }).addTo(instanceLayer);
-          newInstance.push(newCircle._leaflet_id);  
+          newInstance.push(newCircle._leaflet_id);
         });
         instances.push(newInstance);
         drawRoute(newInstance);
@@ -2982,8 +2999,8 @@ $(document).ready(function() {
             let temp1 = '9'.repeat(((allCircles.length).toString().length)-1);
             let temp2 = Math.ceil(allCircles.length/10);
             let temp_coeff = '0.99999' + temp1 + temp2;
-            let solution = solve(points, temp_coeff); 
-            let orderedPoints = solution.map(i => points [i]); 
+            let solution = solve(points, temp_coeff);
+            let orderedPoints = solution.map(i => points [i]);
             for (i=0;i<orderedPoints.length;i++) {
               $('#outputCircles').val(function(index, text) {
                 if (i != orderedPoints.length-1) {
@@ -3050,7 +3067,7 @@ $(document).on("click", ".deleteLayer", function() {
       break;
   }
 });
-$(document).on('keyup', '#polygonName', function(event) { 
+$(document).on('keyup', '#polygonName', function(event) {
   let id = $(this).attr('data-layer-id');
   let layer;
   let lG;
@@ -3076,7 +3093,7 @@ $(document).on('keyup', '#polygonName', function(event) {
       }
     }
     lG.removeFrom(map).addTo(map);
-  } 
+  }
 });
 $(document).on("click", ".addToExport", function() {
   let id = $(this).attr('data-layer-id');
@@ -3095,7 +3112,7 @@ $(document).on("click", ".addToExport", function() {
     case 'admLayer':
       layer = admLayer.getLayer(parseInt(id));
       lG = admLayer;
-      break;  
+      break;
   }
   if ((layer.tags.name == undefined && container == 'nestLayer') || (layer.tags.name == '' && container == 'editableLayer') || (layer.tags.name == '' && container == 'admLayer')) {
     let newName = $('#polygonName').val();
@@ -3228,7 +3245,7 @@ $(document).on("click", "#updateDb", function() {
           let path = item.tags.path;
           writeNests(nestId, nestPokemon, avgSpawns, nowUt, pkmCount, nestName, lat, lon, path)
           console.log(nestName)
-      }     
+      }
     }
   });
   $("#modalNests .updateButton").text(subs.writeSuccess);
@@ -3267,7 +3284,7 @@ function showMissingQuests(choice) {
       data: {'data': json},
       success: function (result) {
         points = result.data.area;
-        if (points.length > 0 ) {       
+        if (points.length > 0 ) {
           points.forEach(function(coords) {
             newPolygon = L.polygon(coords, polygonOptions).addTo(questLayer);
           });
@@ -3370,7 +3387,7 @@ function countPointsInCircles(display) {
   let includedSpawnpoints = [];
   allCircles.eachLayer(function(layer){
     let radius = layer.getRadius();
-    let circleCenter = layer.getLatLng();  
+    let circleCenter = layer.getLatLng();
     if (settings.showGyms == true) {
       gyms.forEach(function(item) {
         let point =  L.latLng(item.lat,item.lng);
@@ -3409,7 +3426,7 @@ $(document).on("click", "#getCirclesCount", function() {
   countPointsInCircles(display);
 });
 $(document).ready(getLanguage());
-$(document).on("click", "#getAllNests", function() {     
+$(document).on("click", "#getAllNests", function() {
   $.when($("#modalLoading").modal('show')).then(async function() {
     const preparedData = await prepareData(nestLayer.getBounds());
     nestLayer.eachLayer(async function(layer) {
@@ -3454,7 +3471,7 @@ $(document).on("click", "#getAllNests", function() {
     $('#modalSpawnReport .modal-title').text(subs.nestReport);
     $("#modalSpawnReport .writeNest").text(subs.writeToDB);
     $('#modalSpawnReport').modal('show');
-    
+
   }).then(function() {
     $("#modalLoading").modal('hide');
   });
@@ -3710,7 +3727,7 @@ function loadSettings() {
   Object.keys(settings).forEach(function(key) {
     storedSetting = retrieveSetting(key);
     if (storedSetting !== null) {
-      settings[key] = storedSetting;      
+      settings[key] = storedSetting;
     } else {
       settings[key] = defaultSettings[key];
       storeSetting(key)
@@ -3790,7 +3807,7 @@ function showS2Cells1(level, style) {
       viewCellLayer.addLayer(poly)
       if (settings.s2CountPOI != false) {
         let poiCount = cellCount(poly).toString();
-        let marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 }); 
+        let marker = L.circleMarker([vertices[3].lat, vertices[3].lng], { stroke: false, radius: 1, fillOpacity: 0.0 });
         marker.bindTooltip(poiCount, {permanent: true, textOnly: true, opacity: 0.8, direction: 'center', offset: [25, -20] })
         viewCellLayer.addLayer(marker);
       }
@@ -3856,8 +3873,8 @@ function updateS2Overlay() {
         zoomIn(17.5)
         console.log('Zoom adapted for L20 cells')
       } else {
-        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 0.5}) 
-      }       
+        showS2Cells0(settings.cellsLevel0, {color: 'Red', weight: 0.5})
+      }
     }
     if (settings.cellsLevel1Check != false && settings.s2CountPOI == false) {
       showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
@@ -3869,10 +3886,10 @@ function updateS2Overlay() {
       } else {
         showS2Cells1(settings.cellsLevel1, {color: 'Blue', weight: 2})
       }
-    }  
+    }
     if (settings.cellsLevel2Check != false) {
       showS2Cells2(settings.cellsLevel2, {color: 'Green', weight: 1})
-    }        
+    }
     editableLayer.removeFrom(map).addTo(map);
     nestLayer.removeFrom(map).addTo(map);
     circleLayer.removeFrom(map).addTo(map);
@@ -3942,13 +3959,13 @@ $(document).on("click", "#generateNestFile", function () {
       let end = '      ]]\n    }\n  },';
       let coords = '';
       turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
-        coords += '      [' + item[1] + ',' + item[0] + '],\n'; 
+        coords += '      [' + item[1] + ',' + item[0] + '],\n';
       });
       coords = coords.slice(0, -2) + '\n';
       let json = start + coords + end;
 
       nests += json;
-      
+
     });
     nests = nests.slice(0, -1);
     content = '{\n  "type": "FeatureCollection",\n  "features":[' + nests + ']\n}';
@@ -3973,7 +3990,7 @@ $(document).on("click", "#generateNestFile", function () {
       let end = '                    ]\n                ]\n            },\n            "type": "Feature",\n            "id": ' + id + ',\n            "properties": {\n                "fill-opacity": 0.3,\n                "min_lat": ' + min_lat + ',\n                "max_lon": ' + max_lon + ',\n                "stroke": "#0c6602",\n                "stroke-width": 1.0,\n                "fill": "#0c6602",\n                "name": "' + layer.tags.name + '",\n                "stroke-opacity": 1.0,\n                "max_lat": ' + max_lat + ',\n                "min_lon": ' + min_lon + ',\n                "area_center_point": {\n                    "type": "Point",\n                    "coordinates": [\n                        ' + cen_lon + ',\n                        ' + cen_lat + '\n                    ]\n                }\n            }\n        },';
       let coords = '';
       turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
-        coords += '                        [\n                            ' + item[1] + ',\n                            ' + item[0] + '\n                        ],\n'; 
+        coords += '                        [\n                            ' + item[1] + ',\n                            ' + item[0] + '\n                        ],\n';
       });
       coords = coords.slice(0, -2) + '\n';
       let pmsf = start + coords + end;
@@ -3996,7 +4013,7 @@ $(document).on("click", "#generateNestFile", function () {
       let end = '    ]\n  },';
       let coords = '';
       turf.flip(layer.toGeoJSON()).geometry.coordinates[0].forEach(function(item) {
-        coords += '      [\n        ' + item[0] + ',\n        ' + item[1] + '\n      ],\n'; 
+        coords += '      [\n        ' + item[0] + ',\n        ' + item[1] + '\n      ],\n';
       });
       coords = coords.slice(0, -2) + '\n';
       let poracle = start + coords + end;
@@ -4101,12 +4118,12 @@ function newMSQuests() {
               </div>
             </div>
 
-            <div class="input-group mb">              
+            <div class="input-group mb">
               <div class="input-group">
                 <label class="form-check-label"><script type="text/javascript">document.write("S2 Cells");</script></label>
               </div>
             </div>
-            
+
             <div class="input-group mb-3">
               <div class="input-group-text" style="background-color: white; border-width: 0px;">
                 <span class="form-check-label"><script type="text/javascript">document.write(subs.s2cells1);</script>
@@ -4135,7 +4152,7 @@ function newMSQuests() {
                 <label><script type="text/javascript">document.write(subs.generateWithS2Cells);</script></label>
               </div>
             </div>
-            <div class="input-group mb">              
+            <div class="input-group mb">
               <div class="input-group">
                 <label class="form-check-label"><script type="text/javascript">document.write(subs.circleRadius);</script></label>
               </div>
@@ -4160,6 +4177,10 @@ function newMSQuests() {
               <input id="circleSize" name="circleSize" type="text" size="3" class="form-control" aria-label="Circle radius (in meters)" placeholder="500">
               <div class="input-group-append">
                 <span class="input-group-text"><script type="text/javascript">document.write('m');</script></span>
+              </div>
+              <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
+                <span class="form-check-label">Generate S2 cells</span>
+                <input type="checkbox" name="generateS2cellsCheck" id="generateS2cellsCheck" style="margin-left: 10px;">
               </div>
             </div>
 
@@ -4322,7 +4343,7 @@ function newMSQuests() {
               </div>
             </div>
 
-            <div class="input-group mb">              
+            <div class="input-group mb">
               <div class="input-group">
                 <h6 class="modal-title" style="margin-bottom: 5px;"><script type="text/javascript">document.write(subs.osmOptions);</script></h6>
               </div>
@@ -4548,7 +4569,7 @@ function newMSQuests() {
                   };
                 </script>
             </div>
-            <div class="modal-body">       
+            <div class="modal-body">
               <label for="submissionRangeCheck"><script type="text/javascript">document.write(subs.submissionRangeCheck);</script></label>
               <input type="checkbox" name="submissionRangeCheck" id="submissionRangeCheck" style="margin-left: 15px; vertical-align: middle;">
             </div>
@@ -4720,7 +4741,7 @@ function newMSQuests() {
                 </tr>
                 <tr>
                   <td>
-                    <label class="form-check-label" style="margin-right: 40px;"><script type="text/javascript">document.write(subs.adBounds3);</script></label> 
+                    <label class="form-check-label" style="margin-right: 40px;"><script type="text/javascript">document.write(subs.adBounds3);</script></label>
                   </td>
                   <td>
                     <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds3_1">
@@ -4905,14 +4926,14 @@ function setNestData($args) {
   global $mdb;
   $binds = array();
   $sql_nests = "INSERT INTO nests (pokemon_id, updated, name, pokemon_count, pokemon_avg, nest_id, lat, lon, polygon_path) VALUES (?,?,?,?,?,?,?,?,?) on DUPLICATE KEY UPDATE pokemon_id = ?, updated = ?, name = ?, pokemon_count = ?, pokemon_avg = ?";
-  $stmt = $mdb->prepare($sql_nests);  
+  $stmt = $mdb->prepare($sql_nests);
   $result = $stmt->execute(array_merge($binds, [$args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns, $args->nest_id, $args->lat, $args->lon, $args->path, $args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns]));
   echo $result;
 }
 function getNests() {
   global $mdb;
   $sql_import_nests = "SELECT name, nest_id, lat, lon, polygon_path FROM nests";
-  $stmt = $mdb->prepare($sql_import_nests);   
+  $stmt = $mdb->prepare($sql_import_nests);
   $stmt->execute();
   $import_nests = $stmt->fetchAll(PDO::FETCH_ASSOC);
   echo json_encode(array('nests' => $import_nests));
@@ -4920,7 +4941,7 @@ function getNests() {
 function getData($args) {
   global $db;
   $binds = array();
-  
+
   if ($args->show_gyms === true) {
     $sql_gym = "SELECT id, lat, lon as lng, ex_raid_eligible as ex, name, updated FROM gym WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
     $stmt = $db->prepare($sql_gym);
