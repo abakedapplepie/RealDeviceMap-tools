@@ -2527,7 +2527,7 @@ function csvtoarray(dataString, wf = false) {
   return lines;
 }
 function cleanArray(array) {
-  const regex = /^([-+]?)([\d]{1,2})(((\.)(\d+)(,)))(\s*)(([-+]?)([\d]{1,3})((\.)(\d+))?)$/; // This will test if the element of the array is a coord.
+  const regex = /^([-+]?)([\d]{1,2})((\.)(\d+)(,))(\s*)(([-+]?)([\d]{1,3})((\.)(\d+))?)$/; // This will test if the element of the array is a coord.
 
   var seen = {};
   return array.filter(function(item) {  // This filter removes duplicates.
@@ -4793,8 +4793,7 @@ function initDB($DB_HOST, $DB_USER, $DB_PSWD, $DB_NAME, $DB_PORT) {
       PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
       PDO::ATTR_EMULATE_PREPARES   => true,
   ];
-  $pdo = new PDO($dsn, $DB_USER, $DB_PSWD, $options);
-  return $pdo;
+  return new PDO($dsn, $DB_USER, $DB_PSWD, $options);
 }
 function initMDB($MDB_HOST, $MDB_USER, $MDB_PSWD, $MDB_NAME, $MDB_PORT) {
   $dsn = "mysql:host=$MDB_HOST;dbname=$MDB_NAME;port=$MDB_PORT;charset=utf8mb4";
@@ -4803,8 +4802,7 @@ function initMDB($MDB_HOST, $MDB_USER, $MDB_PSWD, $MDB_NAME, $MDB_PORT) {
       PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
       PDO::ATTR_EMULATE_PREPARES   => true,
   ];
-  $mpdo = new PDO($dsn, $MDB_USER, $MDB_PSWD, $options);
-  return $mpdo;
+  return new PDO($dsn, $MDB_USER, $MDB_PSWD, $options);
 }
 function map_helper_init() {
   global $db;
@@ -4827,13 +4825,13 @@ function map_helper_init() {
   if ($args->get_instance_data === true) { getInstanceData($args); }
   }
   if (isset($args->get_instance_names)) {
-  if ($args->get_instance_names === true) { getInstanceNames($args); }
+  if ($args->get_instance_names === true) { getInstanceNames(); }
   }
   if (isset($args->set_nest_data)) {
   if ($args->set_nest_data === true) { setNestData($args); }
   }
   if (isset($args->get_nest_data)) {
-  if ($args->get_nest_data === true) { getNests($args); }
+  if ($args->get_nest_data === true) { getNests(); }
   }
 }
 function getInstanceData($args) {
@@ -4848,10 +4846,9 @@ function getInstanceData($args) {
     echo json_encode($result);
   } else {
     echo json_encode(array('status'=>'Error: no instance name?'));
-    return;
   }
 }
-function getInstanceNames($args) {
+function getInstanceNames() {
   global $db;
   $sql_instances = "SELECT name, type FROM instance";
   $result = $db->query($sql_instances)->fetchAll(PDO::FETCH_ASSOC);
@@ -4912,7 +4909,7 @@ function setNestData($args) {
   $result = $stmt->execute(array_merge($binds, [$args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns, $args->nest_id, $args->lat, $args->lon, $args->path, $args->nest_pokemon, $args->updated, $args->name, $args->pokemon_count, $args->avg_spawns]));
   echo $result;
 }
-function getNests($args) {
+function getNests() {
   global $mdb;
   $sql_import_nests = "SELECT name, nest_id, lat, lon, polygon_path FROM nests";
   $stmt = $mdb->prepare($sql_import_nests);   
@@ -4955,7 +4952,6 @@ function getData($args) {
   echo json_encode(array('gyms' => $gyms, 'pokestops' => $stops, 'quests' => $quests, 'spawnpoints' => $spawns ));
 }
 function getOptimization($args) {
-  global $db;
   if (isset($args->points)) {
     $points = $args->points;
   } else {
