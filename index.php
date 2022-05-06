@@ -478,6 +478,8 @@ $(function(){
     } else if ($('#adBounds2_1').is(':checked')) {
       adBoundsLv = '6';
     } else if ($('#adBounds2_2').is(':checked')) {
+      adBoundsLv = '7';
+    } else if ($('#adBounds2_3').is(':checked')) {
       adBoundsLv = '8';
     } else if ($('#adBounds3_1').is(':checked')) {
       adBoundsLv = '9';
@@ -4748,8 +4750,10 @@ function newMSQuests() {
                   <td>
                     <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_1">
                     <label class="form-check-label" for="adBounds2_1" style="margin-right: 30px;">Lv. 6</label>
-                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_2" checked>
-                    <label class="form-check-label" for="adBounds2_2">Lv. 8</label>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_2">
+                    <label class="form-check-label" for="adBounds2_2" style="margin-right: 30px;">Lv. 7</label>
+                    <input class="form-check-input" type="radio" name="selectAdBoundsLv" id="adBounds2_3" checked>
+                    <label class="form-check-label" for="adBounds2_3">Lv. 8</label>
                   </td>
                 </tr>
                 <tr>
