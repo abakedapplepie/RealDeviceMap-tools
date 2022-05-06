@@ -1784,7 +1784,7 @@ function getCircleHtml(instance_name, layer, subs) {
 function calculateCircleRadius() {
   let lat = Math.abs(map.getCenter().lat);
   let circleRadius;
-  if (settings.circleSize === 'raid') {
+  if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
     if (lat <= 39) {
       circleRadius = 715;
     } else if (lat >= 69) {
@@ -1792,8 +1792,9 @@ function calculateCircleRadius() {
     } else {
       circleRadius = -13 * lat + 1225;
     }
-  } else if (settings.circleSize === '1gb') {
-    circleRadius = circleRadius/2;
+    if (settings.circleSize === '1gb') {
+      circleRadius = circleRadius / 2;
+    }
   } else {
     circleRadius = settings.circleSize;
   }
