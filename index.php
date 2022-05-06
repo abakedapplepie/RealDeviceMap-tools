@@ -2004,6 +2004,7 @@ function generateRoute() {
   bootstrapLayer.clearLayers();
   circleInstance = [];
   instances = [];
+  let circleRadius = settings.circleSize;
   if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
     circleRadius = calculateCircleRadius();
   }
@@ -4179,7 +4180,7 @@ function newMSQuests() {
                 <span class="input-group-text"><script type="text/javascript">document.write('m');</script></span>
               </div>
               <div class="input-group-text" style="margin-left: 10px; background-color: white; border-width: 0px;">
-                <span class="form-check-label">Generate S2 cells</span>
+                <span class="form-check-label">Draw S2 cells with circles</span>
                 <input type="checkbox" name="generateS2cellsCheck" id="generateS2cellsCheck" style="margin-left: 10px;">
               </div>
             </div>
