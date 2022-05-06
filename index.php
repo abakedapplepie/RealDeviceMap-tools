@@ -1300,31 +1300,10 @@ function initMap() {
     loadData();
   });
   map.on('click', function(e) {
-    let lat = Math.abs(e.latlng.lat);
-    let latOut = lat.toFixed(5);
-    let lonOut = Math.abs(e.latlng.lng).toFixed(5);
-    let radius;
     if (manualCircle === true) {
-      if (settings.circleSize == 'raid' ) {
-        if (lat <= 39) {
-          radius = 715;
-        } else if (lat >= 69) {
-          radius = 330;
-        } else {
-          radius = -13 * lat + 1225;
-        }
-      } else if (settings.circleSize == '1gb') {
-        if (lat <= 39) {
-          radius = 715;
-        } else if (lat >= 69) {
-          radius = 330;
-        } else {
-          radius = -13 * lat + 1225;
-        }
-        radius = radius/2;
-      } else {
-        radius = settings.circleSize;
-      }
+      let latOut = Math.abs(map.getCenter().lat).toFixed(5);
+      let lonOut = Math.abs(e.latlng.lng).toFixed(5);
+      let radius = calculateCircleRadius(settings.circleSize);
       let radiusOut = radius.toFixed(2);
       let newCircle = new L.circle(e.latlng, {
         color: 'red',
@@ -1618,16 +1597,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             instance.name = instanceName;
             instance.id = instances.length;
             points.forEach(function(item) {
-              let lat = Math.abs(item.lat);
-              if (!($('#instanceRadiusCheck').is(":checked"))) {
-                if (lat <= 39) {
-                  radius = 715;
-                } else if (lat >= 69) {
-                  radius = 330;
-                } else {
-                  radius = -13 * lat + 1225;
-                }
-              }
+              radius = calculateCircleRadius();
               let newCircle;
               if ($('#instanceMode').is(':checked')) {
                 newCircle = L.circle(item, {
@@ -1726,16 +1696,10 @@ function importCircles(instanceName = null, color = '#1090fa') {
       if (!($('#instanceRadiusCheck').is(":checked"))) {
         radius = settings.circleSize;
       }
-      let distanceAll = 0;
-      for (let i=0; i<circleData.length-1; i++) {
-        let pointA = L.point(circleData[i][0], circleData[i][1]);
-        let pointB = L.point(circleData[i+1][0], circleData[i+1][1]);
-        let distance = pointA.distanceTo(pointB)*100;
-        distanceAll += distance;
-      }
+      let distanceAll = calculateDistance(circleData);
       let routeLength = distanceAll.toFixed(3);
       let avgDistance = (distanceAll/circleData.length*1000).toFixed(2);
-      console.log('average distance: ' + avgDistance + 'm')
+      console.log('average distance: ' + avgDistance + 'm');
       let instance = [];
       instance.name = instanceName;
       instance.id = instances.length;
@@ -1769,23 +1733,18 @@ function importCircles(instanceName = null, color = '#1090fa') {
       instances.push(instance);
       drawRoute(instance);
     } else if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
+      if (!($('#instanceRadiusCheck').is(":checked"))) {
+        radius = calculateCircleRadius();
+      }
+      let distanceAll = calculateDistance(circleData);
+      let routeLength = distanceAll.toFixed(3);
+      let avgDistance = (distanceAll/circleData.length*1000).toFixed(2);
+      console.log('average distance: ' + avgDistance + 'm');
       let instance = [];
       instance.name = instanceName;
       instance.id = instances.length;
+      instance.routeLength = routeLength;
       circleData.forEach(function(item) {
-        let lat = Math.abs(item.lat);
-        if (!($('#instanceRadiusCheck').is(":checked"))) {
-          if (lat <= 39) {
-            radius = 715;
-          } else if (lat >= 69) {
-            radius = 330;
-          } else {
-            radius = -13 * lat + 1225;
-          }
-          if (settings.circleSize === '1gb') {
-            radius = radius/2;
-          }
-        }
         let newCircle;
         if ($('#instanceMode').is(':checked')) {
           newCircle = L.circle(item, {
@@ -1806,7 +1765,7 @@ function importCircles(instanceName = null, color = '#1090fa') {
             radius: radius,
             instanceID: instance.id
           }).bindPopup(function (layer) {
-            return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
+            return getCircleHtml(instanceName, layer, subs);
           }).addTo(instanceLayer);
           instance.push(newCircle._leaflet_id);
         }
@@ -1822,7 +1781,34 @@ function getCircleHtml(instance_name, layer, subs) {
   const htmlString = '<div class="input-group mb-3"><label class="form-check-label"><b>' + instance_name + '</b><br>' + subs.countCircles + ' ' + layer.options.route_counter + '<br>' + subs.instanceLength + ' ' + layer.options.route_length + ' km<br>' + subs.circleID + ' ' + layer._leaflet_id + '<br>' + subs.circleRadius + ' ' + layer.options.radius + 'm<br>' + subs.coords + ' (lat,lon):<br>' + layer._latlng.lat + ', ' + layer._latlng.lng + '</label></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="instanceLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.newRoute + '</button></div>';
   return htmlString
 }
-
+function calculateCircleRadius() {
+  let lat = Math.abs(map.getCenter().lat);
+  let circleRadius;
+  if (settings.circleSize === 'raid') {
+    if (lat <= 39) {
+      circleRadius = 715;
+    } else if (lat >= 69) {
+      circleRadius = 330;
+    } else {
+      circleRadius = -13 * lat + 1225;
+    }
+  } else if (settings.circleSize === '1gb') {
+    circleRadius = circleRadius/2;
+  } else {
+    circleRadius = settings.circleSize;
+  }
+  return circleRadius;
+}
+function calculateDistance(circleData) {
+  let totalDistance = 0;
+  for (let i=0; i < circleData.length-1; i++) {
+    let pointA = L.point(circleData[i][0], circleData[i][1]);
+    let pointB = L.point(circleData[i+1][0], circleData[i+1][1]);
+    let distance = pointA.distanceTo(pointB)*100;
+    totalDistance += distance;
+  }
+  return totalDistance;
+}
 function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeForSpawnpoints, optimizeForUnknownSpawnpoints, optimizeNests, optimizePolygons, optimizeCircles) {
   $("#modalLoading").modal('show');
   let newCircle,
@@ -1833,20 +1819,8 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
   instanceLayer.clearLayers();
   circleInstance = [];
   instances = [];
-  let lat = Math.abs(map.getCenter().lat);
-  if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
-    if (lat <= 39) {
-      circleRadius = 715;
-    } else if (lat >= 69) {
-      circleRadius = 330;
-    } else {
-      circleRadius = -13 * lat + 1225;
-    }
-    if (settings.circleSize == '1gb') {
-      circleRadius = circleRadius/2;
-    }
-  } else {
-    circleRadius = settings.circleSize;
+  if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
+    circleRadius = calculateCircleRadius();
   }
   let data = {
     'get_optimization': true,
@@ -2012,21 +1986,8 @@ function generateRoute() {
   bootstrapLayer.clearLayers();
   circleInstance = [];
   instances = [];
-  let circleRadius;
-  let lat = Math.abs(map.getCenter().lat);
   if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
-    if (lat <= 39) {
-      circleRadius = 715;
-    } else if (lat >= 69) {
-      circleRadius = 330;
-    } else {
-      circleRadius = -13 * lat + 1225;
-    }
-    if (settings.circleSize == '1gb') {
-      circleRadius = circleRadius/2;
-    }
-  } else {
-    circleRadius = settings.circleSize;
+    circleRadius = calculateCircleRadius();
   }
   let xMod = Math.sqrt(0.75);
   let yMod = Math.sqrt(0.568);
