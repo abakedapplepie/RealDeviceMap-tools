@@ -1837,6 +1837,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
   instanceLayer.clearLayers();
   circleInstance = [];
   instances = [];
+  circleRadius = settings.circleSize;
   if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
     circleRadius = calculateCircleRadius();
   }
