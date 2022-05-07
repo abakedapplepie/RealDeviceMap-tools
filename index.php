@@ -1893,7 +1893,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     let radius = layer.getRadius();
     let bounds = layer.getBounds();
     let center = bounds.getCenter();
-    if (optimizeForGyms == true) {
+    if (optimizeForGyms) {
       gyms.forEach(function(item) {
         let workingLatLng = L.latLng(item.lat, item.lng);
         let distance = workingLatLng.distanceTo(center)
@@ -1901,8 +1901,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
           points.push(item);
         }
       });
-    }
-    if (optimizeForPokestops == true) {
+    } else if (optimizeForPokestops) {
       pokestops.forEach(function(item) {
         let workingLatLng = L.latLng(item.lat, item.lng);
         let distance = workingLatLng.distanceTo(center)
@@ -1910,8 +1909,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
           points.push(item);
         }
       });
-    }
-    if (optimizeForSpawnpoints == true) {
+    } else if (optimizeForSpawnpoints) {
       spawnpoints.forEach(function(item) {
         let workingLatLng = L.latLng(item.lat, item.lng);
         let distance = workingLatLng.distanceTo(center)
@@ -1919,8 +1917,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
           points.push(item);
         }
       });
-    }
-    if (optimizeForUnknownSpawnpoints == true) {
+    } else if (optimizeForUnknownSpawnpoints) {
       spawnpoints_u.forEach(function(item) {
         let workingLatLng = L.latLng(item.lat, item.lng);
         let distance = workingLatLng.distanceTo(center)
@@ -1971,17 +1968,15 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
       complete: function() { }
     });
   }
-  if (optimizePolygons == true) {
+  if (optimizePolygons) {
     editableLayer.eachLayer(function (layer) {
        routeLayers(layer);
     });
-  }
-  if (optimizeNests == true) {
+  } else if (optimizeNests) {
     nestLayer.eachLayer(function (layer) {
        routeLayers(layer);
     });
-  }
-  if (optimizeCircles == true) {
+  } else if (optimizeCircles) {
     circleLayer.eachLayer(function (layer) {
       pointsOut = pointsOut.concat(routeCircles(layer));
       circleLayer.removeLayer(layer);
