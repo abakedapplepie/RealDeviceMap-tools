@@ -707,7 +707,7 @@ function initMap() {
     edit: {
       featureGroup: editableLayer,
       edit: true,
-      remove: false,
+      remove: true,
       poly: false
     }
   }).addTo(map);
