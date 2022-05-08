@@ -1978,6 +1978,7 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     });
     getRoute(pointsOut);
   }
+  bootstrapLayer.clearLayers();
   $("#modalLoading").modal('hide');
 }
 function generateRoute() {
