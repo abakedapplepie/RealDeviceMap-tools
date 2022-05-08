@@ -198,17 +198,17 @@ $(function(){
     let polygonData = [];
     let importReady = false;
     let importType = $("#importPolygonForm input[name=importPolygonDataType]:checked").val();
-    if (importType == 'importPolygonDataTypeCoordList') {
+    if (importType === 'importPolygonDataTypeCoordList') {
       polygonData.push(csvtoarray($('#importPolygonData').val().trim()));
       if (polygonData[0].length >= 3) { // A polygon should consist of at least 3 points
         importReady = true;
-	  }
-    } else if (importType == 'importPolygonDataTypeGeoJson') {
+	    }
+    } else if (importType === 'importPolygonDataTypeGeoJson') {
       let geoJson = JSON.parse($('#importPolygonData').val());
-      if (geoJson.type == 'FeatureCollection') {
+      if (geoJson.type === 'FeatureCollection') {
         let counter = 0;
         geoJson.features.forEach(function(feature) {
-          if (feature.type == 'Feature' && feature.geometry.type == 'Polygon' && importReady == true) {
+          if (feature.type === 'Feature' && feature.geometry.type === 'Polygon' && importReady) {
             polygonData.push(turf.flip(feature).geometry.coordinates);
             polygonData[counter].id = feature.id ? feature.id : counter;
             polygonData[counter].name = feature.properties.name ? feature.properties.name : '';
@@ -219,12 +219,10 @@ $(function(){
             }
             counter++;
             importReady = true;
-          } else {
-            importReady = false;
           }
         });
       } else {
-        if (geoJson.type == 'Feature' && geoJson.geometry.type == 'Polygon') {
+        if (geoJson.type === 'Feature' && geoJson.geometry.type === 'Polygon') {
           polygonData.push(turf.flip(geoJson).geometry.coordinates);
           polygonData[0].id = geoJson.id ? geoJson.id : 0;
           polygonData[0].name = geoJson.properties.name ? geoJson.properties.name : '' ;
@@ -1852,31 +1850,28 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     let points = [];
     let poly = layer.toGeoJSON();
     let line = turf.polygonToLine(poly);
-    if (optimizeForGyms == true) {
+    if (optimizeForGyms) {
       gyms.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           points.push(item)
         }
       });
-    }
-    if (optimizeForPokestops == true) {
+    } else if (optimizeForPokestops) {
       pokestops.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           points.push(item)
         }
       });
-    }
-    if (optimizeForSpawnpoints == true) {
+    } else if (optimizeForSpawnpoints) {
       spawnpoints.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
           points.push(item)
         }
       });
-    }
-    if (optimizeForUnknownSpawnpoints == true) {
+    } else if (optimizeForUnknownSpawnpoints) {
       spawnpoints_u.forEach(function(item) {
         point = turf.point([item.lng, item.lat]);
         if (turf.inside(point, poly)) {
@@ -2001,7 +1996,7 @@ function generateRoute() {
   circleInstance = [];
   instances = [];
   let circleRadius = settings.circleSize;
-  if (settings.circleSize == 'raid' || settings.circleSize == '1gb') {
+  if (settings.circleSize === 'raid' || settings.circleSize === '1gb') {
     circleRadius = calculateCircleRadius();
   }
   let xMod = Math.sqrt(0.75);
@@ -2348,7 +2343,7 @@ function getAdBounds(adBoundsLv) {
     success: function (result) {
       let geoJsonFeatures = osmtogeojson(result);
       geoJsonFeatures.features.forEach(function(feature) {
-        if (feature.geometry.type == 'Polygon' || feature.geometry.type == 'MultiPolygon') {
+        if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
           feature = turf.flip(feature);
           let polygon = L.polygon(feature.geometry.coordinates, {
           clickable: false,
@@ -2833,19 +2828,19 @@ function lastNestChange() {
 }
 $(document).ready(function() {
   $('input[type=radio][name=exportPolygonDataType]').change(function() {
-    if (this.value == 'exportPolygonDataTypeCoordsList') {
+    if (this.value === 'exportPolygonDataTypeCoordsList') {
       $('#exportPolygonDataCoordsList').show();
       $('#exportPolygonDataGeoJson').hide();
       $('#exportPolygonDataPoracle').hide();
       copyOutput = 'exportPolygonDataCoordsList';
       $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
-    } else if (this.value == 'exportPolygonDataTypeGeoJson') {
+    } else if (this.value === 'exportPolygonDataTypeGeoJson') {
       $('#exportPolygonDataCoordsList').hide();
       $('#exportPolygonDataGeoJson').show();
       $('#exportPolygonDataPoracle').hide();
       copyOutput = 'exportPolygonDataGeoJson';
       $(document.getElementById('copyPolygonOutput')).text(subs.copyClipboard);
-    } else if (this.value == 'exportPolygonDataTypePoracle') {
+    } else if (this.value === 'exportPolygonDataTypePoracle') {
       $('#exportPolygonDataCoordsList').hide();
       $('#exportPolygonDataGeoJson').hide();
       $('#exportPolygonDataPoracle').show();
