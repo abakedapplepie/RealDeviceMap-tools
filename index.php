@@ -1960,7 +1960,10 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
           }
         });
       },
-      complete: function() { }
+      complete: function() {
+        bootstrapLayer.clearLayers();
+        $("#modalLoading").modal('hide');
+      }
     });
   }
   if (optimizePolygons) {
@@ -1978,8 +1981,6 @@ function generateOptimizedRoute(optimizeForGyms, optimizeForPokestops, optimizeF
     });
     getRoute(pointsOut);
   }
-  bootstrapLayer.clearLayers();
-  $("#modalLoading").modal('hide');
 }
 function generateRoute() {
   let targetLayer;
