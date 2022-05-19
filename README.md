@@ -11,7 +11,7 @@ Tools for managing RealDeviceMap data
 * Color Picker built in for instance- and polygon-import
 
 ### Installation
-Git clone https://github.com/PickleRickVE/RealDeviceMap-tools, copy config.example.php to config.php in /config and add your credentials for the RDM DB or follow the wiki for docker installation.
+Git clone https://github.com/PickleRickVE/RealDeviceMap-tools, copy config.env.php to config.php in /config and add your credentials for the RDM DB or follow the wiki for docker installation.
 
 ### Usage
 For more info please use the [wiki](https://github.com/PickleRickVE/RealDeviceMap-tools/wiki).
