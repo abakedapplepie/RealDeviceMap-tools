@@ -79,6 +79,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
 //map and control vars
 let map;
 let manualCircle = false;
+let cellScan = false;
 let newPOI = false;
 let csvImport = null;
 let copyOutput = null;
@@ -86,6 +87,7 @@ let exportListCount = null;
 let subs = enSubs;
 let drawControl,
   buttonManualCircle,
+  buttonCellScan,
   buttonImportNests,
   buttonModalImportPolygon,
   buttonModalImportSubmissions,
@@ -122,6 +124,7 @@ let gyms = [],
   spawnpoints_u = [],
   instances = [],
   circleInstance = [],
+  cellInstance = [],
   mySelect = [],
   myQuestSelect = [],
   spawnReport = [];
@@ -166,6 +169,8 @@ let gymLayer,
   admLayer,
   circleS2Layer,
   circleLayer,
+  cellScanLayer,
+  cellLayer,
   instanceLayer,
   questLayer,
   bgLayer,
@@ -617,6 +622,10 @@ function initMap() {
 
   circleLayer = new L.FeatureGroup();
   circleLayer.addTo(map);
+  cellScanLayer = new L.FeatureGroup();
+  cellScanLayer.addTo(map);
+  cellLayer = new L.FeatureGroup();
+  cellLayer.addTo(map);
   bgLayer = new L.FeatureGroup();
   bgLayer.addTo(map);
   editableLayer = new L.FeatureGroup();
@@ -718,6 +727,7 @@ function initMap() {
       title: subs.enableManualCircle,
       onClick: function (btn) {
         manualCircle = true;
+        cellScan = false;
         btn.state('disableManualCircle');
       }
     }, {
@@ -727,6 +737,26 @@ function initMap() {
       onClick: function (btn) {
         manualCircle = false;
         btn.state('enableManualCircle');
+      }
+    }]
+  });
+  buttonCellScan = L.easyButton({
+    states: [{
+      stateName: 'enableCellScan',
+      icon: 'far fa-clone',
+      title: subs.enableCellScan,
+      onClick: function (btn) {
+        cellScan = true;
+        manualCircle = false;
+        btn.state('disableCellScan');
+      }
+    }, {
+      stateName: 'disableCellScan',
+      icon: 'fas fa-clone',
+      title: subs.disableCellScan,
+      onClick: function (btn) {
+        cellScan = false;
+        btn.state('enableCellScan');
       }
     }]
   });
@@ -783,12 +813,14 @@ function initMap() {
         circleLayer.clearLayers();
         bootstrapLayer.clearLayers();
         instanceLayer.clearLayers();
+        cellScanLayer.clearLayers();
         instances = [];
         circleInstance = [];
+        cellInstance = [];
       }
     }]
   });
-  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonModalNestOptions, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
+  barShowPolyOpts = L.easyBar([buttonManualCircle, buttonCellScan, buttonModalNestOptions, buttonImportAdBounds, buttonModalImportPolygon, buttonModalImportInstance, buttonTrashRoute], { position: 'topleft' }).addTo(map);
 
   // barOutput
   buttonGenerateRoute = L.easyButton({
@@ -1162,8 +1194,10 @@ function initMap() {
 
   map.on('draw:drawstart', function(e) {
     manualCircle = false;
+    cellScan = false;
     newPOI = false;
     buttonManualCircle.state('enableManualCircle');
+    buttonCellScan.state('enableCellScan');
     buttonNewPOI.state('enableNewPOI');
   });
 
@@ -1262,6 +1296,35 @@ function initMap() {
       });
     }
   });
+  cellScanLayer.on('layerremove', function(e) {
+    let layer = e.layer;
+    //cellScanLayer.removeLayer(layer._leaflet_id)
+    layer.cells.forEach(function(item) {
+      cellLayer.removeLayer(parseInt(item));
+    });
+    let id = cellInstance.id;
+    let name = cellInstance.name;
+    cellInstance = removeArrayElement(cellInstance, layer._leaflet_id)
+    cellInstance.id = id;
+    cellInstance.name = name;
+    instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
+    instances[id].id = id;
+    instances[id].name = name;
+  });
+  cellScanLayer.on('layeradd', function(e) {
+    drawScanCells(e.layer);
+    e.layer.on('drag', function() {
+      e.layer.cells.forEach(function(item) {
+        //console.log(item)
+        cellLayer.removeLayer(parseInt(item));
+      });
+      e.layer.cells = [];
+      drawScanCells(e.layer);
+      cellLayer.removeFrom(map).addTo(map);
+      cellScanLayer.bringToFront();
+    });
+    cellScanLayer.bringToFront();
+  });
   instanceLayer.on('layerremove', function(e) {
     let layer = e.layer;
     if (typeof layer.s2cells !== 'undefined') {
@@ -1342,7 +1405,71 @@ function initMap() {
         instances[circleInstance.id].push(newCircle._leaflet_id);
       }
     }
+    if (cellScan === true) {
+      let cell = S2.S2Cell.FromLatLng(e.latlng, 17)
+      let cellCenter = cell.getLatLng();
+      let centerCircle = new L.circle(cellCenter, {
+        color: 'black',
+        fillColor: 'black',
+        fillOpacity: 1.0,
+        draggable: true,
+        radius: 5
+      }).bindPopup(function (layer) {
+        return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="cellScanLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><p>' + subs.coordsS2 + '<br>' + layer.coords.lat + ', ' + layer.coords.lng + '</p>';
+      })
+      centerCircle.cells = [];
+      centerCircle.coords = {};
+      centerCircle.addTo(cellScanLayer);
+
+      if (cellInstance == '') {
+        cellInstance.push(centerCircle._leaflet_id);
+        if (instances.length != 'undefined') {
+          cellInstance.id = instances.length;
+        } else {
+          cellInstance.id = 0;
+        }
+        cellInstance.name = 'cellInstance';
+        instances.push(cellInstance);
+      } else {
+        instances[cellInstance.id].push(centerCircle._leaflet_id);
+      }
+    }
   });
+  function drawScanCells(centerCircle) {
+    let cell = S2.S2Cell.FromLatLng(centerCircle.getLatLng(), 15)
+    centerCircle.coords = cell.getLatLng();
+
+      function addPoly(cell) {
+        const vertices = cell.getCornerLatLngs()
+        let poly = L.polygon(vertices,{
+          color: 'red',
+          opacity: 0.8,
+          weight: 2,
+          fillOpacity: 0.2
+        }).addTo(cellLayer);
+        //console.log(cellInstance)
+        centerCircle.cells.push(poly._leaflet_id);
+      }
+      let count = 9;
+      let steps = 0
+      let direction = 0
+      do {
+        for (let i = 0; i < 2; i++) {
+          for (let i = 0; i < steps; i++) {
+            addPoly(cell)
+            cell = cell.getNeighbors()[direction % 4]
+          }
+          direction++
+        }
+        steps++
+        if (steps == 9) {
+          for (let i = 0; i < steps; i++) {
+            addPoly(cell)
+            cell = cell.getNeighbors()[direction % 4]
+          }
+        }
+      } while (steps < count)
+  }
   subsLayer.on('layerremove', function(e) {
     let layer = e.layer;
     layer.forEach(function(item) {
@@ -1506,6 +1633,7 @@ function setMapMode(){
       barOutput.disable();
       barWayfarer.enable();
       manualCircle = false;
+      cellScan = false;
       break;
   }
 }
@@ -1656,7 +1784,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
 function drawRoute(instance) {
   let distanceAll = 0;
   let color;
-  if (settings.showRoute != false && instance != '' && instance.name != subs.drawnCircles) {
+  if (settings.showRoute != false && instance != '' && instance.name != subs.drawnCircles && instance.name != 'cellInstance') {
     for (i=0;i<instance.length-1;i++) {
       let pointA = instanceLayer.getLayer(instance[i]);
       let pointB = instanceLayer.getLayer(instance[i+1]);
@@ -2300,6 +2428,7 @@ function generateSpawnReport(result, layer) {
 function clearAllLayers() {
   bgLayer.clearLayers();
   circleLayer.clearLayers();
+  cellScanLayer.clearLayers();
   instanceLayer.clearLayers();
   editableLayer.clearLayers();
   admLayer.clearLayers();
@@ -2311,6 +2440,7 @@ function clearAllLayers() {
   questLayer.clearLayers();
   bootstrapLayer.clearLayers();
   circleInstance = [];
+  cellInstance = [];
   instances = [];
 }
 function getAdBounds(adBoundsLv) {
@@ -3059,6 +3189,9 @@ $(document).on("click", ".deleteLayer", function() {
     case 'admLayer':
       admLayer.removeLayer(parseInt(id));
       break;
+    case 'cellScanLayer':
+      cellScanLayer.removeLayer(parseInt(id));
+      break;
   }
 });
 $(document).on('keyup', '#polygonName', function(event) {
@@ -3354,12 +3487,17 @@ function getAllCircles() {
       let layer = [];
       if (circleLayer.getLayer(id) != undefined) {
         layer = circleLayer.getLayer(id);
+      } else if (cellScanLayer.getLayer(id) != undefined) {
+        layer = cellScanLayer.getLayer(id);
       } else if (instanceLayer.getLayer(id) != undefined) {
         layer = instanceLayer.getLayer(id);
       } else if (bootstrapLayer.getLayer(id) != undefined) {
         layer = bootstrapLayer.getLayer(id);
       }
-      if (layer.length != 0) {
+      if (layer.length != 0 && layer.coords == undefined) {
+        layer.addTo(allCircles);
+      } else if (layer.coords != undefined){
+        layer._latlng = layer.coords;
         layer.addTo(allCircles);
       }
     });
