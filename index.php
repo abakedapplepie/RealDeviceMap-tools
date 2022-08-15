@@ -42,7 +42,7 @@ if ($_POST['data']) { map_helper_init(); } else { ?><!DOCTYPE html>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-toolbar@0.4.0-alpha.1/dist/leaflet.toolbar.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.67.0/dist/L.Control.Locate.min.css" />
@@ -827,7 +827,7 @@ function initMap() {
     id: 'generateRoute',
     states:[{
       stateName: 'generateRoute',
-      icon: 'fas fa-cookie',
+      icon: 'fas fa-ellipsis-h',
       title: subs.generateRoute,
       onClick: function (btn) {
         generateRoute();
@@ -838,7 +838,7 @@ function initMap() {
     id: 'optimizeRoute',
     states:[{
       stateName: 'optimizeRoute',
-      icon: 'fas fa-cookie-bite',
+      icon: 'fas fa-code-branch',
       title: subs.generateOptimizedRoute,
       onClick: function (btn) {
         $('#modalOptimize').modal('show');
