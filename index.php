@@ -935,7 +935,7 @@ function initMap() {
     id: 'showGyms',
     states: [{
       stateName: 'enableShowGyms',
-      icon: 'fas fa-dumbbell',
+      icon: 'fas fa-vihara',
       title: subs.hideGyms,
       onClick: function (btn) {
         settings.showGyms = false;
@@ -944,7 +944,7 @@ function initMap() {
         }
     }, {
       stateName: 'disableShowGyms',
-      icon: 'fas fa-dumbbell',
+      icon: 'fas fa-vihara',
       title: subs.showGyms,
       onClick: function (btn) {
         settings.showGyms = true;
@@ -979,7 +979,7 @@ function initMap() {
     id: 'showPokestopsRange',
     states: [{
       stateName: 'enableShowPokestopsRange',
-      icon: 'fas fa-layer-group',
+      icon: 'fas fa-bullseye',
       title: subs.hidePokestopRange,
       onClick: function (btn) {
         settings.showPokestopsRange = false;
@@ -988,7 +988,7 @@ function initMap() {
       }
     }, {
       stateName: 'disableShowPokestopsRange',
-      icon: 'fas fa-layer-group',
+      icon: 'fas fa-bullseye',
       title: subs.showPokestopRange,
       onClick: function (btn) {
         settings.showPokestopsRange = true;
