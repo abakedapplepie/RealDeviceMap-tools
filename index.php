@@ -1298,15 +1298,11 @@ function initMap() {
   });
   cellScanLayer.on('layerremove', function(e) {
     let layer = e.layer;
-    //cellScanLayer.removeLayer(layer._leaflet_id)
     layer.cells.forEach(function(item) {
       cellLayer.removeLayer(parseInt(item));
     });
-    let id = cellInstance.id;
-    let name = cellInstance.name;
-    cellInstance = removeArrayElement(cellInstance, layer._leaflet_id)
-    cellInstance.id = id;
-    cellInstance.name = name;
+    let id = layer.options.instanceID;
+    let name = instances[id].name;
     instances[id] = removeArrayElement(instances[id], layer._leaflet_id);
     instances[id].id = id;
     instances[id].name = name;
@@ -1318,6 +1314,7 @@ function initMap() {
         cellLayer.removeLayer(parseInt(item));
       });
       e.layer.cells = [];
+      e.layer.options.instanceID = cellInstance.id;
       drawScanCells(e.layer);
       cellLayer.removeFrom(map).addTo(map);
       cellScanLayer.bringToFront();
@@ -1426,7 +1423,6 @@ function initMap() {
       centerCircle.addTo(cellScanLayer);
 
       if (cellInstance == '') {
-        cellInstance.push(centerCircle._leaflet_id);
         if (instances.length != 'undefined') {
           cellInstance.id = instances.length;
         } else {
@@ -1437,43 +1433,11 @@ function initMap() {
       } else {
         instances[cellInstance.id].push(centerCircle._leaflet_id);
       }
+      centerCircle.options.instanceID = cellInstance.id;
+      cellInstance.push(centerCircle._leaflet_id);
     }
   });
-  function drawScanCells(centerCircle) {
-    let cell = S2.S2Cell.FromLatLng(centerCircle.getLatLng(), 15)
-    centerCircle.coords = cell.getLatLng();
 
-      function addPoly(cell) {
-        const vertices = cell.getCornerLatLngs()
-        let poly = L.polygon(vertices,{
-          color: 'red',
-          opacity: 0.8,
-          weight: 2,
-          fillOpacity: 0.2
-        }).addTo(cellLayer);
-        //console.log(cellInstance)
-        centerCircle.cells.push(poly._leaflet_id);
-      }
-      let count = 9;
-      let steps = 0
-      let direction = 0
-      do {
-        for (let i = 0; i < 2; i++) {
-          for (let i = 0; i < steps; i++) {
-            addPoly(cell)
-            cell = cell.getNeighbors()[direction % 4]
-          }
-          direction++
-        }
-        steps++
-        if (steps == 9) {
-          for (let i = 0; i < steps; i++) {
-            addPoly(cell)
-            cell = cell.getNeighbors()[direction % 4]
-          }
-        }
-      } while (steps < count)
-  }
   subsLayer.on('layerremove', function(e) {
     let layer = e.layer;
     layer.forEach(function(item) {
@@ -1494,6 +1458,39 @@ function initMap() {
       })
     };
   });
+}
+function drawScanCells(centerCircle) {
+  let cell = S2.S2Cell.FromLatLng(centerCircle.getLatLng(), 15);
+  centerCircle.coords = cell.getLatLng();
+  function addPoly(cell) {
+    const vertices = cell.getCornerLatLngs()
+    let poly = L.polygon(vertices,{
+      color: 'red',
+      opacity: 0.8,
+      weight: 2,
+      fillOpacity: 0.2
+    }).addTo(cellLayer);
+    centerCircle.cells.push(poly._leaflet_id);
+  }
+  let count = 9;
+  let steps = 0
+  let direction = 0
+  do {
+    for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < steps; i++) {
+        addPoly(cell)
+        cell = cell.getNeighbors()[direction % 4]
+      }
+      direction++
+    }
+    steps++
+    if (steps == 9) {
+      for (let i = 0; i < steps; i++) {
+        addPoly(cell)
+        cell = cell.getNeighbors()[direction % 4]
+      }
+    }
+  } while (steps < count)
 }
 function addPOIRange (layer) {
   let range = L.circle(layer.getLatLng(), {
@@ -1713,7 +1710,32 @@ function getInstance(instanceName = null, color = '#1090fa') {
           routeLength = distanceAll.toFixed(3);
         }
         if (points.length > 0 ) {
-          if (result.type === 'circle_pokemon' || result.type === 'circle_smart_pokemon') {
+          if ($('#9x9Check').is(":checked")) {
+            let instance = [];
+            instance.name = instanceName;
+            instance.id = instances.length;
+            instance.routeLength = routeLength;
+            points.forEach(function (item) {
+              let cell = S2.S2Cell.FromLatLng({lat: item.lat, lng: item.lon}, 17)
+              let cellCenter = cell.getLatLng();
+              let centerCircle = new L.circle(cellCenter, {
+                color: 'black',
+                fillColor: 'black',
+                fillOpacity: 1.0,
+                draggable: true,
+                radius: 5
+              }).bindPopup(function (layer) {
+                return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="cellScanLayer" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button></div><p>' + subs.coordsS2 + '<br>' + layer.coords.lat + ', ' + layer.coords.lng + '</p>';
+              })
+              centerCircle.cells = [];
+              centerCircle.coords = {};
+              centerCircle.options.instanceID = instance.id;
+              centerCircle.addTo(cellScanLayer);
+              instance.push(centerCircle._leaflet_id);
+            });
+            instances.push(instance);
+          }
+          if (result.type === 'circle_pokemon' && !($('#9x9Check').is(":checked")) || result.type === 'circle_smart_pokemon' && !($('#9x9Check').is(":checked"))) {
             if (!($('#instanceRadiusCheck').is(":checked")) && !($('#v2Check').is(":checked"))) {
               radius = 70;
             }
@@ -1749,7 +1771,7 @@ function getInstance(instanceName = null, color = '#1090fa') {
             });
             instances.push(instance);
             drawRoute(instance);
-          } else if (result.type == 'circle_raid') {
+          } else if (result.type == 'circle_raid' && !($('#9x9Check').is(":checked"))) {
             let instance = [];
             instance.name = instanceName;
             instance.id = instances.length;
@@ -4617,6 +4639,10 @@ function newMSQuests() {
               <div>
                 <input type="checkbox" name="v2Check" id="v2Check" style="margin-right: 15px; vertical-align: middle;">
                 <label><script type="text/javascript">document.write("v2.0");</script></label>
+              </div>
+              <div>
+                <input type="checkbox" name="9x9Check" id="9x9Check" style="margin-right: 15px; margin-left: 30px; vertical-align: middle;">
+                <label><script type="text/javascript">document.write("9x9");</script></label>
               </div>
             </div>
 
