@@ -789,6 +789,11 @@ function initMap() {
       onClick: function (control){
         getInstance();
         $('#importCircleData').val('');
+        $('#9x9Check')[0].checked = false;
+        $('#v2Check')[0].checked = false;
+        $('#instanceRadiusCheck')[0].checked = false;
+        $('#ownRadius').val('');
+        $('#instanceMode')[0].checked = false;
         $('#modalImportInstance').modal('show');
       }
     }]
@@ -4630,19 +4635,19 @@ function newMSQuests() {
             </div>
             <div class="input-group mb-3">
               <div>
-                <input type="checkbox" name="instanceRadiusCheck" id="instanceRadiusCheck" style="margin-right: 15px; vertical-align: bottom;">
+                <input type="radio" name="importType" id="instanceRadiusCheck" style="margin-right: 15px; vertical-align: bottom;">
               </div>
               <div class="input-group-prepend">
-                <span class="input-group-text"><script type="text/javascript">document.write(subs.ownRadius);</script></span>
+                <span class="input-group-text"><label for="instanceRadiusCheck"><script type="text/javascript">document.write(subs.ownRadius);</script></label></span>
               </div>
-              <input id="ownRadius" name="ownRadius" type="text" aria-label="Own radius for instance import" style="padding-left: 10px; width: 80px; margin-right: 30px;">
+              <input type="text" name="ownRadius" id="ownRadius" aria-label="Own radius for instance import" style="padding-left: 10px; width: 80px; margin-right: 30px;">
               <div>
-                <input type="checkbox" name="v2Check" id="v2Check" style="margin-right: 15px; vertical-align: middle;">
-                <label><script type="text/javascript">document.write("v2.0");</script></label>
+                <input type="radio" name="importType" id="v2Check" style="margin-right: 15px; vertical-align: middle;">
+                <label for="v2Check">v2.0</script></label>
               </div>
               <div>
-                <input type="checkbox" name="9x9Check" id="9x9Check" style="margin-right: 15px; margin-left: 30px; vertical-align: middle;">
-                <label><script type="text/javascript">document.write("9x9");</script></label>
+                <input type="radio" name="importType" id="9x9Check" style="margin-right: 15px; margin-left: 30px; vertical-align: middle;">
+                <label for="9x9Check">9x9</script></label>
               </div>
             </div>
 
