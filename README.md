@@ -12,8 +12,9 @@ Tools for managing RealDeviceMap data
 
 ## Installation
 1. `git clone https://github.com/PickleRickVE/RealDeviceMap-tools`
-2. Edit `config/config.env.php` and add your credentials for the RDM and/or Nest database.
-3. Edit `config/.htpasswd` to set a username and password. The default user is **admin** with password **admin**, you can generate one [here](https://www.web2generators.com/apache-tools/htpasswd-generator).
+2. Enter the new folder `cd RealDeviceMap-tools` and go to the config folder `cd config`
+2. Edit `nano config.env.php` and add your credentials for the RDM and/or Nest database.
+3. Edit `nano .htpasswd` to set a username and password. The default user is **admin** with password **admin**, you can generate one [here](https://www.web2generators.com/apache-tools/htpasswd-generator).
 
 ### Optional: when running Docker
 1. Paste the contents from docker-compose.example.yml in the files where RDM & it's database is located and edit where needed
