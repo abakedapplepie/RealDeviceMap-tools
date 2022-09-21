@@ -10,7 +10,9 @@ COPY ./other/* /var/www/html/other/
 COPY ./index.php /var/www/html/
 
 # Copy config-files over to the working directory
+# Uncomment the lines if you have set up a password
 COPY ./config/config.env.php /var/www/html/config/config.php
+#COPY ./config/.htpasswd /var/www/html/config/.htpasswd
 #COPY ./.htaccess.example /var/www/html/.htaccess
 
 # Run the application
