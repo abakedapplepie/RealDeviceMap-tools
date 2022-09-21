@@ -11,7 +11,18 @@ Tools for managing RealDeviceMap data
 * Color Picker built in for instance- and polygon-import
 
 ### Installation
-Git clone https://github.com/PickleRickVE/RealDeviceMap-tools, copy config.env.php to config.php in /config and add your credentials for the RDM DB or follow the wiki for docker installation.
+1. `git clone https://github.com/PickleRickVE/RealDeviceMap-tools`
+2. Edit `config/config.env.php` and add your credentials for the RDM and/or Nest database.
+3. Edit `config/.htpasswd` to set a username and password. The default user is **admin** with password **admin**, you can generate one [here](https://www.web2generators.com/apache-tools/htpasswd-generator).
+
+Optional: when running Docker:
+1. Paste the contents from docker-compose.example.yml in the files where RDM & it's database is located and edit where needed
+2. Check Dockerfile and uncomment the line with .htaccess if you want to use a password
+3. Run `docker-compose up -d --build rdm_tools`
+
+### Updates
+1. Use git pull in the folder
+2. When using docker, rerun `docker-compose up -d --build rdm_tools`
 
 ### Usage
 For more info please use the [wiki](https://github.com/PickleRickVE/RealDeviceMap-tools/wiki).
