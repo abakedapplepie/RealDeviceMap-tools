@@ -150,7 +150,7 @@ let deSubs = {
   "searchPlaceholder": "Suchen...",
   "editEdit": "Layer bearbeiten",
   "editEditDisabled": "Keine Layer vorhanden",
-  "v2": "v2.0 (~1.2km)",
+  "v2": "v2.0 (1100m)",
   "circleID": "Kreis ID:",
   "manualdbHint": "nur mit manualdb nutzbar:",
   "importFromDB": "Nester aus DB importieren",

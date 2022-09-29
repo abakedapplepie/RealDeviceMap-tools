@@ -150,7 +150,7 @@ let enSubs = {
   "searchPlaceholder": "Search...",
   "editEdit": "Edit layers",
   "editEditDisabled": "No layers to edit",
-  "v2": "v2.0 (~1.1km)",
+  "v2": "v2.0 (1100m)",
   "circleID": "Circle ID:",
   "manualdbHint": "only usable with manualdb:",
   "importFromDB": "Import nests from db",

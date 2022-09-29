@@ -150,7 +150,7 @@ let frSubs = {
   "searchPlaceholder": "Chercher...",
   "editEdit": "Editer les couches",
   "editEditDisabled": "Pas de couche à éditer",
-  "v2": "v2.0 (~1.2km)",
+  "v2": "v2.0 (1100m)",
   "circleID": "ID du cercle:",
   "manualdbHint": "seulement utilisable avec manualdb:",
   "importFromDB": "Importer les nids de la bd",

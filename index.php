@@ -2164,68 +2164,202 @@ function generateRoute() {
     targetLayer = bootstrapLayer;
     targetLayerName = 'bootstrapLayer';
   }
-  circleLayer.clearLayers();
-  instanceLayer.clearLayers();
-  bootstrapLayer.clearLayers();
-  circleInstance = [];
-  instances = [];
-  let circleRadius = settings.circleSize;
-  if (settings.circleSize === 'raid') {
-    circleRadius = calculateCircleRadius();
-  } else if (settings.circleSize === '1k') {
-    circleRadius = 1100;
-  }
-  let xMod = Math.sqrt(0.75);
-  let yMod = Math.sqrt(0.568);
-  let route = function(layer) {
-    let poly = layer.toGeoJSON();
-    let line = turf.polygonToLine(poly);
-    let newCircle;
-    let currentLatLng = layer.getBounds().getNorthEast();
-    let startLatLng = L.GeometryUtil.destination(currentLatLng, 90, circleRadius*1.5);
-    let endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, circleRadius*1.5), 180, circleRadius);
-    let row = 0;
-    let heading = 270;
-    let i = 0;
-    while (currentLatLng.lat > endLatLng.lat) {
-      do {
-        let point = turf.point([currentLatLng.lng, currentLatLng.lat]);
-        let distance = turf.pointToLineDistance(point, line, { units: 'meters' });
-        if (distance <= circleRadius || distance == 0 || turf.inside(point, poly)) {
-          newCircle = L.circle(currentLatLng, {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.2,
-            draggable: true,
-            radius: circleRadius
-          }).bindPopup(function (layer) {
-            return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="' + targetLayerName + '" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="' + targetLayerName + '" data-layer-id="' + layer._leaflet_id + '" type="button">' + subs.newRoute + '</button></div></div>';
-          }).addTo(targetLayer);
-          if (circleInstance == '') {
-            circleInstance.push(newCircle._leaflet_id);
-            if (instances.length != 'undefined') {
-              circleInstance.id = instances.length;
+  let route;
+  if (cellScan == false) {
+    circleLayer.clearLayers();
+    instanceLayer.clearLayers();
+    bootstrapLayer.clearLayers();
+    circleInstance = [];
+    instances = [];
+    let circleRadius = settings.circleSize;
+    if (settings.circleSize === 'raid') {
+      circleRadius = calculateCircleRadius();
+    } else if (settings.circleSize === '1k') {
+      circleRadius = 1100;
+    }
+    let xMod = Math.sqrt(0.75);
+    let yMod = Math.sqrt(0.568);
+    route = function(layer) {
+      let poly = layer.toGeoJSON();
+      let line = turf.polygonToLine(poly);
+      let newCircle;
+      let currentLatLng = layer.getBounds().getNorthEast();
+      let startLatLng = L.GeometryUtil.destination(currentLatLng, 90, circleRadius*1.5);
+      let endLatLng = L.GeometryUtil.destination(L.GeometryUtil.destination(layer.getBounds().getSouthWest(), 270, circleRadius*1.5), 180, circleRadius);
+      let row = 0;
+      let heading = 270;
+      let i = 0;
+      while (currentLatLng.lat > endLatLng.lat) {
+        do {
+          let point = turf.point([currentLatLng.lng, currentLatLng.lat]);
+          let distance = turf.pointToLineDistance(point, line, { units: 'meters' });
+          if (distance <= circleRadius || distance == 0 || turf.inside(point, poly)) {
+            newCircle = L.circle(currentLatLng, {
+              color: 'red',
+              fillColor: '#f03',
+              fillOpacity: 0.2,
+              draggable: true,
+              radius: circleRadius
+            }).bindPopup(function (layer) {
+              return '<button class="btn btn-secondary btn-sm deleteLayer" data-layer-container="' + targetLayerName + '" data-layer-id=' + layer._leaflet_id + ' type="button">' + subs.delete + '</button><div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="' + targetLayerName + '" data-layer-id="' + layer._leaflet_id + '" type="button">' + subs.newRoute + '</button></div></div>';
+            }).addTo(targetLayer);
+            if (circleInstance == '') {
+              circleInstance.push(newCircle._leaflet_id);
+              if (instances.length != 'undefined') {
+                circleInstance.id = instances.length;
+              } else {
+                circleInstance.id = 0;
+              }
+              circleInstance.name = 'bootstrap';
+              instances.push(circleInstance);
             } else {
-              circleInstance.id = 0;
+              instances[circleInstance.id].push(newCircle._leaflet_id);
             }
-            circleInstance.name = 'bootstrap';
-            instances.push(circleInstance);
-          } else {
-            instances[circleInstance.id].push(newCircle._leaflet_id);
           }
+          currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
+          i++;
+        } while ((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
+        currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*circleRadius*2));
+        rem = row%2;
+        if (rem == 1) {
+          heading = 270;
+        } else {
+          heading = 90;
         }
-        currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius*2));
-        i++;
-      } while ((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
-      currentLatLng = L.GeometryUtil.destination(currentLatLng, 180, (yMod*circleRadius*2));
-      rem = row%2;
-      if (rem == 1) {
-        heading = 270;
-      } else {
-        heading = 90;
+        currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius)*3);
+        row++;
       }
-      currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod*circleRadius)*3);
-      row++;
+    }
+  } else {
+    targetLayerName = 'circleLayer';
+    circleLayer.clearLayers();
+    instanceLayer.clearLayers();
+    bootstrapLayer.clearLayers();
+    cellScanLayer.clearLayers();
+    cellLayer.clearLayers();
+    circleInstance = [];
+    instances = [];
+    route = function(layer) {
+      function prepareCells (centerCircle) {
+        let cell = S2.S2Cell.FromLatLng(centerCircle.getLatLng(), 15);
+        let cells = [];
+        function addPoly(cell) {
+          const vertices = cell.getCornerLatLngs()
+          let poly = L.polygon(vertices,{
+            color: 'red',
+            opacity: 0.8,
+            weight: 2,
+            fillOpacity: 0.2
+          }).addTo(cellLayer);
+          cells.push(poly._leaflet_id);
+        }
+        let count = 9;
+        let steps = 0
+        let direction = 0
+        do {
+          for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < steps; i++) {
+              addPoly(cell)
+              cell = cell.getNeighbors()[direction % 4]
+            }
+            direction++
+          }
+          steps++
+          if (steps == 9) {
+            for (let i = 0; i < steps; i++) {
+              addPoly(cell)
+              cell = cell.getNeighbors()[direction % 4]
+            }
+          }
+        } while (steps < count)
+        let mergedCell = cellLayer.getLayer(cells[0]).toGeoJSON();
+        cells.forEach(function(item) {
+          mergedCell = turf.union(mergedCell, cellLayer.getLayer(item).toGeoJSON());
+        });
+        cellLayer.clearLayers();
+        return mergedCell;
+      }
+      let poly = layer.toGeoJSON();
+      let centerCircle;
+      let initialLatLng = layer.getBounds().getNorthEast();
+      let endLatLng = layer.getBounds().getSouthWest().lat > layer.getBounds().getSouthEast().lat ? layer.getBounds().getSouthEast() : layer.getBounds().getSouthWest();
+      let initialCell = S2.S2Cell.FromLatLng(initialLatLng, 15);
+      let se = L.circleMarker(initialCell.getCornerLatLngs()[1]).toGeoJSON();
+      let ne = L.circleMarker(initialCell.getCornerLatLngs()[2]).toGeoJSON();
+      let cellHeight = turf.distance(se, ne, {units: 'meters'}) * 9;
+      let startLatLng = L.GeometryUtil.destination(initialLatLng, 45, cellHeight*2);
+      let startCell = S2.S2Cell.FromLatLng(startLatLng, 15);
+      let nextCell = startCell;
+      let row = 1;
+      while (nextCell.getLatLng().lat > L.GeometryUtil.destination(endLatLng, 180, cellHeight*2).lat) {
+        if (row %2 != 0) {
+          do {
+            let centerCircle = L.circle(nextCell.getLatLng(), {
+              color: 'black',
+              fillColor: 'black',
+              fillOpacity: 0.2,
+              draggable: true,
+              radius: 20
+            })
+            let cellBorder = prepareCells(centerCircle);
+            if (turf.intersect(cellBorder, poly)) {
+              centerCircle.bindPopup(function (layer) {
+                return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="' + targetLayerName + '" data-layer-id="' + layer._leaflet_id + '" type="button">' + subs.newRoute + '</button></div></div>';
+              });
+              centerCircle.addTo(circleLayer);
+              if (circleInstance == '') {
+                circleInstance.push(centerCircle._leaflet_id);
+                if (instances.length != 'undefined') {
+                circleInstance.id = instances.length;
+                } else {
+                  circleInstance.id = 0;
+                }
+                circleInstance.name = 'bootstrap';
+                instances.push(circleInstance);
+              } else {
+                instances[circleInstance.id].push(centerCircle._leaflet_id);
+              }
+              L.geoJson(cellBorder).addTo(bootstrapLayer);
+            }
+            nextCell.ij[1] = nextCell.ij[1] + 9;
+          } while (nextCell.getLatLng().lng > L.GeometryUtil.destination(endLatLng, 270, cellHeight).lng);
+          nextCell.ij[0] = nextCell.ij[0] - 9;
+          row++
+        } else if (row %2 == 0) {
+          do {
+            let centerCircle = L.circle(nextCell.getLatLng(), {
+              color: 'black',
+              fillColor: 'black',
+              fillOpacity: 0.2,
+              draggable: true,
+              radius: 10
+            })
+            let cellBorder = prepareCells(centerCircle);
+            if (turf.intersect(cellBorder, poly)) {
+              centerCircle.bindPopup(function (layer) {
+                return '<div class="input-group mb-3"><button class="btn btn-secondary btn-sm sortInstance" data-layer-container="' + targetLayerName + '" data-layer-id="' + layer._leaflet_id + '" type="button">' + subs.newRoute + '</button></div></div>';
+              });
+              centerCircle.addTo(circleLayer);
+              if (circleInstance == '') {
+                circleInstance.push(centerCircle._leaflet_id);
+                if (instances.length != 'undefined') {
+                circleInstance.id = instances.length;
+                } else {
+                  cellInstance.id = 0;
+                }
+                circleInstance.name = 'bootstrap';
+                instances.push(circleInstance);
+              } else {
+                instances[circleInstance.id].push(centerCircle._leaflet_id);
+              }
+              L.geoJson(cellBorder).addTo(bootstrapLayer);
+            }
+            nextCell.ij[1] = nextCell.ij[1] - 9;
+          } while (nextCell.getLatLng().lng < L.GeometryUtil.destination(initialLatLng, 90, cellHeight).lng);
+          nextCell.ij[0] = nextCell.ij[0] - 9;
+          row++
+        }
+      }
     }
   }
   editableLayer.eachLayer(function (layer) {
