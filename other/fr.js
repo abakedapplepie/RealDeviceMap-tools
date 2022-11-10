@@ -168,6 +168,7 @@ let frSubs = {
   "osmPitch": "Terrain de jeu",
   "osmGolf": "Parcours de golf",
   "osmPlayground": "Terrain de jeux",
+  "osmScrub": "Broussailles",
   "osmImport": "Importer les nids d'OSM",
   "mergePolygons": "Fussioner les polygons visibles",
   "circleS2Cells": "Dessiner les cellules S2"

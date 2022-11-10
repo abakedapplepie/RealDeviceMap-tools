@@ -168,6 +168,7 @@ let deSubs = {
   "osmPitch": "Spielfeld",
   "osmGolf": "Golfkurs",
   "osmPlayground": "Spielplatz",
+  "osmScrub": "Brachland",
   "osmImport": "Nester von OSM importieren",
   "mergePolygons": "Sichtbare Polygone zusammenfassen",
   "enableCellScan": "cell scan tool aktivieren",

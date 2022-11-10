@@ -168,6 +168,7 @@ let enSubs = {
   "osmPitch": "Pitch",
   "osmGolf": "Golf course",
   "osmPlayground": "Playground",
+  "osmScrub": "Scrub",
   "osmImport": "Import nests from OSM",
   "mergePolygons": "Merge visible polygons",
   "enableCellScan": "activate cell scan tool",

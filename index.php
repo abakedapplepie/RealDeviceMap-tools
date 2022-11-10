@@ -3501,6 +3501,9 @@ $(document).on("click", "#importNestsOSM", function() {
   if ($('#osmOption7').is(':checked')) {
     queryNestArgs += 'way["leisure"="playground"];relation["leisure"="playground"];';
   }
+  if ($('#osmOption8').is(':checked')) {
+    queryNestArgs += 'way["natural"="scrub"];relation["natural"="scrub"];';
+  }
   getNests(queryNestArgs);
 });
 $(document).on("click", ".writeNest", function() {
@@ -4689,9 +4692,13 @@ function newMSQuests() {
               </div>
             </div>
             <div>
-              <div class="form-check form-check-inline">
+              <div class="form-check form-check-inline" style="width: 50%;">
                 <input class="form-check-input" type="checkbox" id="osmOption7" value="osmOption7">
                 <label class="form-check-label" for="osmOption7"><script type="text/javascript">document.write(subs.osmPlayground);</script></label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="osmOption8" value="osmOption8">
+                <label class="form-check-label" for="osmOption8"><script type="text/javascript">document.write(subs.osmScrub);</script></label>
               </div>
             </div>
             <div class="btn-toolbar" style="margin-top: 20px;">
@@ -5282,7 +5289,7 @@ function getData($args) {
   }
 
   if ($args->show_spawnpoints === true) {
-    $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, updated FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
+    $sql_spawnpoint = "SELECT id, despawn_sec, lat, lon as lng, last_seen as updated FROM spawnpoint WHERE lat > ? AND lon > ? AND lat < ? AND lon < ?";
     $stmt = $db->prepare($sql_spawnpoint);
     $stmt->execute([$args->min_lat, $args->min_lng, $args->max_lat, $args->max_lng]);
     $spawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
