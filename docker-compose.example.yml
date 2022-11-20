@@ -1,0 +1,28 @@
+version: '3.1'
+services:
+  rdm_tools:
+    build:
+      # Change according to your mapping
+      context: ./RealDeviceMap-tools
+    # You can remove this option if you are not using Traefik as reverse proxy
+    labels:
+      - traefik.enable=true
+      # Change yourdomain to your own domain
+      - traefik.http.routers.rdmtools.rule=Host(`rdm-tools.yourdomain.com`)
+      # Change your-network to your specified network below
+      - traefik.http.routers.rdmtools.entrypoints=your-network 
+    container_name: rdm_tools
+    depends_on:
+      - rdm_db
+    volumes:
+      - ./RealDeviceMap-tools/config/config.env.php:/var/www/html/config/config.php
+      # Uncomment this if you want to use a password on your RDM Tools frontend
+      # - ./RealDeviceMap-tools/.htpasswd:/var/www/html/config/.htpasswd
+      # - ./RealDeviceMap-tools/.htaccess.example:/var/www/html/.htaccess
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      #Change according to your own port-mapping
+      - 9006:80
+    networks:
+      # Change to your own network
+      - your-network
