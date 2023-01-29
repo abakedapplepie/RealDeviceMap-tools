@@ -1495,6 +1495,11 @@ function drawScanCells(centerCircle) {
         cell = cell.getNeighbors()[direction % 4]
       }
     }
+    /*let poly;
+    for (let test of cell.getNeighbors()) {
+      addPoly(test);
+    }
+    steps++*/
   } while (steps < count)
 }
 function addPOIRange (layer) {
@@ -2165,7 +2170,7 @@ function generateRoute() {
     targetLayerName = 'bootstrapLayer';
   }
   let route;
-  if (cellScan == false) {
+  if (cellScan != true) {
     circleLayer.clearLayers();
     instanceLayer.clearLayers();
     bootstrapLayer.clearLayers();
@@ -2279,19 +2284,40 @@ function generateRoute() {
         cellLayer.clearLayers();
         return mergedCell;
       }
+      function angle(cx, cy, ex, ey) {
+        let dy = ey - cy;
+        let dx = ex - cx;
+        let theta = Math.atan2(dy, dx);
+        theta *= 180 / Math.PI;
+        if (theta < 0) theta = 360 + theta;
+        return theta;
+      }
       let poly = layer.toGeoJSON();
       let centerCircle;
       let initialLatLng = layer.getBounds().getNorthEast();
       let endLatLng = layer.getBounds().getSouthWest().lat > layer.getBounds().getSouthEast().lat ? layer.getBounds().getSouthEast() : layer.getBounds().getSouthWest();
       let initialCell = S2.S2Cell.FromLatLng(initialLatLng, 15);
-      let se = L.circleMarker(initialCell.getCornerLatLngs()[1]).toGeoJSON();
-      let ne = L.circleMarker(initialCell.getCornerLatLngs()[2]).toGeoJSON();
+      let se, ne, nw;
+      if (initialCell.getCornerLatLngs()[0].lng != initialCell.getCornerLatLngs()[1].lng) {
+        se = L.circleMarker(initialCell.getCornerLatLngs()[1]).toGeoJSON();
+        ne = L.circleMarker(initialCell.getCornerLatLngs()[2]).toGeoJSON();
+        nw = L.circleMarker(initialCell.getCornerLatLngs()[3]).toGeoJSON();
+      } else {
+        se = L.circleMarker(initialCell.getCornerLatLngs()[0]).toGeoJSON();
+        ne = L.circleMarker(initialCell.getCornerLatLngs()[1]).toGeoJSON();
+        nw = L.circleMarker(initialCell.getCornerLatLngs()[2]).toGeoJSON();
+      }
+      let horAngle = angle(nw.geometry.coordinates[1], nw.geometry.coordinates[0], ne.geometry.coordinates[1], ne.geometry.coordinates[0]);
+      if (horAngle < 180) horAngle += 180;
+      let verAngle = angle(ne.geometry.coordinates[1], ne.geometry.coordinates[0], se.geometry.coordinates[1], se.geometry.coordinates[0]);
+      if (verAngle < 180) verAngle += 180;
       let cellHeight = turf.distance(se, ne, {units: 'meters'}) * 9;
-      let startLatLng = L.GeometryUtil.destination(initialLatLng, 45, cellHeight*2);
+      let cellWidth = turf.distance(ne, nw, {units: 'meters'}) * 9;
+      let startLatLng = L.GeometryUtil.destination(initialLatLng, 10, cellHeight*2.5);
       let startCell = S2.S2Cell.FromLatLng(startLatLng, 15);
       let nextCell = startCell;
       let row = 1;
-      while (nextCell.getLatLng().lat > L.GeometryUtil.destination(endLatLng, 180, cellHeight*2).lat) {
+      while (nextCell.getLatLng().lat > L.GeometryUtil.destination(endLatLng, verAngle, cellHeight*3).lat) {
         if (row %2 != 0) {
           do {
             let centerCircle = L.circle(nextCell.getLatLng(), {
@@ -2299,7 +2325,7 @@ function generateRoute() {
               fillColor: 'black',
               fillOpacity: 0.2,
               draggable: true,
-              radius: 20
+              radius: 70
             })
             let cellBorder = prepareCells(centerCircle);
             if (turf.intersect(cellBorder, poly)) {
@@ -2321,9 +2347,11 @@ function generateRoute() {
               }
               L.geoJson(cellBorder).addTo(bootstrapLayer);
             }
-            nextCell.ij[1] = nextCell.ij[1] + 9;
-          } while (nextCell.getLatLng().lng > L.GeometryUtil.destination(endLatLng, 270, cellHeight).lng);
-          nextCell.ij[0] = nextCell.ij[0] - 9;
+            let nextLatLng = L.GeometryUtil.destination(nextCell.getLatLng(), horAngle, cellWidth)
+            nextCell = S2.S2Cell.FromLatLng(nextLatLng, 15);
+          } while (nextCell.getLatLng().lng > L.GeometryUtil.destination(endLatLng, horAngle, cellWidth).lng);
+          let nextLatLng = L.GeometryUtil.destination(nextCell.getLatLng(), verAngle, cellHeight)
+          nextCell = S2.S2Cell.FromLatLng(nextLatLng, 15);
           row++
         } else if (row %2 == 0) {
           do {
@@ -2332,7 +2360,7 @@ function generateRoute() {
               fillColor: 'black',
               fillOpacity: 0.2,
               draggable: true,
-              radius: 10
+              radius: 70
             })
             let cellBorder = prepareCells(centerCircle);
             if (turf.intersect(cellBorder, poly)) {
@@ -2354,9 +2382,11 @@ function generateRoute() {
               }
               L.geoJson(cellBorder).addTo(bootstrapLayer);
             }
-            nextCell.ij[1] = nextCell.ij[1] - 9;
-          } while (nextCell.getLatLng().lng < L.GeometryUtil.destination(initialLatLng, 90, cellHeight).lng);
-          nextCell.ij[0] = nextCell.ij[0] - 9;
+            let nextLatLng = L.GeometryUtil.destination(nextCell.getLatLng(), horAngle - 180, cellWidth)
+            nextCell = S2.S2Cell.FromLatLng(nextLatLng, 15);
+          } while (nextCell.getLatLng().lng < initialLatLng.lng);
+          let nextLatLng = L.GeometryUtil.destination(nextCell.getLatLng(), verAngle, cellHeight)
+          nextCell = S2.S2Cell.FromLatLng(nextLatLng, 15);
           row++
         }
       }
@@ -2366,6 +2396,9 @@ function generateRoute() {
     route(layer);
   });
   nestLayer.eachLayer(function (layer) {
+    route(layer);
+  });
+  admLayer.eachLayer(function (layer) {
     route(layer);
   });
 }
