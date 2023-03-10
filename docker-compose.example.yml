@@ -1,9 +1,7 @@
 version: '3.1'
 services:
   rdm_tools:
-    build:
-      # Change according to your mapping
-      context: ./RealDeviceMap-tools
+    image: ghcr.io/picklerickve/realdevicemap-tools:master
     # You can remove this option if you are not using Traefik as reverse proxy
     labels:
       - traefik.enable=true
@@ -15,11 +13,23 @@ services:
     depends_on:
       - rdm_db
     volumes:
-      - ./RealDeviceMap-tools/config/config.env.php:/var/www/html/config/config.php
       # Uncomment this if you want to use a password on your RDM Tools frontend
       # - ./RealDeviceMap-tools/.htpasswd:/var/www/html/config/.htpasswd
       # - ./RealDeviceMap-tools/.htaccess.example:/var/www/html/.htaccess
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      DB_HOST: rdm-db
+      DB_NAME: rdmdb
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PSWD: password
+      # MDB_ACTIVE: false
+      # MDB_HOST: 127.0.0.1
+      # MDB_NAME: manualdb
+      # MDB_PORT: 3306
+      # MDB_USER: mdbuser
+      # MDB_PSWD: password
+      # OWN_TS: https://IP:PORT/tile/STYLE/{z}/{x}/{y}/1/png
     ports:
       #Change according to your own port-mapping
       - 9006:80
